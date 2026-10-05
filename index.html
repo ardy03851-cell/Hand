@@ -29,6 +29,7 @@
 
     :root {
       --accent-hex: #ffffff;
+      --glow-hex: #ffffff;
       --panel-bg: rgba(7, 8, 10, 0.94);
       --hairline: rgba(255, 255, 255, 0.08);
       --hairline-soft: rgba(255, 255, 255, 0.05);
@@ -61,7 +62,7 @@
 
     #video {
       object-fit: cover;
-      filter: contrast(1.08) brightness(0.92) saturate(0.55);
+      filter: contrast(1.10) brightness(0.92) saturate(0.55);
       transform-origin: 50% 50%;
       will-change: transform, filter;
     }
@@ -69,6 +70,8 @@
     #overlay {
       pointer-events: none;
       z-index: 2;
+      transition: transform 0.06s linear;
+      will-change: transform;
     }
 
     .topbar {
@@ -279,12 +282,37 @@
       }
     }
 
+    #toast {
+      position: absolute;
+      left: 50%;
+      top: 14%;
+      transform: translate(-50%, -6px);
+      padding: 8px 18px;
+      background: rgba(0, 0, 0, 0.72);
+      border: 1px solid var(--accent-hex);
+      color: #fff;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
     #settingsPanel {
       position: absolute;
       top: 0;
       right: 0;
       height: 100%;
-      width: min(440px, 92vw);
+      width: min(460px, 92vw);
       background: var(--panel-bg);
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
@@ -434,8 +462,7 @@
       appearance: none;
       width: 100%;
       height: 2px;
-      background:
-        linear-gradient(to right,
+      background: linear-gradient(to right,
           var(--accent-hex) var(--fill, 0%),
           rgba(255, 255, 255, 0.12) var(--fill, 0%));
       outline: none;
@@ -553,39 +580,6 @@
       outline-offset: 1px;
     }
 
-    /* Multi-select pill row for finger rings */
-    .chip-row {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      flex: 1;
-      min-width: 56px;
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: rgba(255, 255, 255, 0.55);
-      font-family: inherit;
-      font-size: 9px;
-      letter-spacing: 0.14em;
-      padding: 7px 6px;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: border-color .15s, color .15s, background .15s;
-    }
-
-    .chip:hover {
-      border-color: rgba(255, 255, 255, 0.5);
-      color: #fff;
-    }
-
-    .chip.on {
-      border-color: var(--accent-hex);
-      color: #000;
-      background: var(--accent-hex);
-    }
-
     .color-row {
       display: flex;
       gap: 8px;
@@ -655,6 +649,29 @@
       text-transform: uppercase;
     }
 
+    .color-input {
+      width: 100%;
+      height: 26px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      padding: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .color-input::-webkit-color-swatch-wrapper {
+      padding: 2px;
+    }
+
+    .color-input::-webkit-color-swatch {
+      border: none;
+    }
+
+    .color-input::-moz-color-swatch {
+      border: none;
+    }
+
     #panelOverlay {
       position: absolute;
       inset: 0;
@@ -701,6 +718,7 @@
       font-size: 10px;
       letter-spacing: 0.26em;
       color: rgba(255, 255, 255, 0.42);
+      max-width: 300px;
     }
 
     #boot .bar {
@@ -785,6 +803,7 @@
       </div>
     </div>
 
+    <div id="toast"></div>
     <div id="panelOverlay"></div>
 
     <aside id="settingsPanel" aria-hidden="true">
@@ -793,6 +812,25 @@
         <button class="close" id="settingsClose" type="button">CLOSE</button>
       </div>
       <div class="panel-body">
+
+        <div class="section" data-section="presets">
+          <div class="section-head"><span>Presets</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Load Preset</span></div>
+              <select class="select" id="presetSelect">
+                <option value="">— Choose —</option>
+                <option value="default">Default</option>
+                <option value="cyber">Cyber</option>
+                <option value="thermal">Thermal</option>
+                <option value="minimal">Minimal</option>
+                <option value="arcade">Arcade</option>
+                <option value="cinema">Cinema</option>
+              </select>
+            </div>
+            <div class="hint">Presets override every setting. Reset (in System) restores defaults.</div>
+          </div>
+        </div>
 
         <div class="section" data-section="source">
           <div class="section-head"><span>Source</span><span class="chev">▼</span></div>
@@ -868,7 +906,7 @@
               <input type="range" min="0" max="20" step="1" data-key="graceFrames">
             </div>
             <div class="hint">Adaptive one-euro filter. Higher stabilization suppresses jitter; higher responsiveness
-              reduces motion lag. Prediction leads the drawn position to compensate for filter latency.</div>
+              reduces motion lag.</div>
           </div>
         </div>
 
@@ -876,6 +914,24 @@
           <div class="section-head"><span>Skeleton</span><span class="chev">▼</span></div>
           <div class="section-content">
             <label class="toggle" data-key="showHand"><span>Show Skeleton</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Render Mode</span></div>
+              <select class="select" data-key="skeletonMode">
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+                <option value="neon">Neon Tube</option>
+                <option value="rope">Rope</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Bone Color</span></div>
+              <select class="select" data-key="boneColorMode">
+                <option value="accent">Accent</option>
+                <option value="per-finger">Per Finger</option>
+                <option value="gradient">Depth Gradient</option>
+              </select>
+            </div>
             <div class="field">
               <div class="label"><span>Bone Width</span><span class="value" data-value="boneWidth">1.0</span></div>
               <input type="range" min="0.4" max="5" step="0.1" data-key="boneWidth">
@@ -909,7 +965,7 @@
             <div class="field">
               <div class="label"><span>Glow Intensity</span><span class="value" data-value="glowOpacity">0.10</span>
               </div>
-              <input type="range" min="0" max="0.5" step="0.02" data-key="glowOpacity">
+              <input type="range" min="0" max="0.6" step="0.02" data-key="glowOpacity">
             </div>
           </div>
         </div>
@@ -921,12 +977,17 @@
             <div class="field">
               <div class="label"><span>Mesh Style</span></div>
               <select class="select" data-key="meshStyle">
-              <option value="slab">Slab Solid</option>
-              <option value="wire">Wireframe</option>
-              <option value="xray">X-Ray</option>
-              <option value="holo">Holographic</option>
-              <option value="chrome">Chrome</option>
-            </select>
+                <option value="slab">Slab Solid</option>
+                <option value="wire">Wireframe</option>
+                <option value="xray">X-Ray</option>
+                <option value="holo">Holographic</option>
+                <option value="chrome">Chrome</option>
+                <option value="neon">Neon Grid</option>
+                <option value="matrix">Matrix Green</option>
+                <option value="glass">Frosted Glass</option>
+                <option value="thermal">Thermal</option>
+                <option value="sketch">Sketch</option>
+              </select>
             </div>
             <div class="field">
               <div class="label"><span>Mesh Opacity</span><span class="value" data-value="lowPolyOpacity">0.72</span>
@@ -943,60 +1004,8 @@
             </div>
             <label class="toggle" data-key="lowPolyShade"><span>Surface Shading</span><span class="switch"></span></label>
             <label class="toggle" data-key="lowPolyEdges"><span>Panel Edges</span><span class="switch"></span></label>
-            <div class="hint">Closed volume mesh — extruded palm slab + tapered prism fingers. Renderer is re-skinned
-              per style without touching topology.</div>
-          </div>
-        </div>
-
-        <div class="section" data-section="accessories">
-          <div class="section-head"><span>Accessories</span><span class="chev">▼</span></div>
-          <div class="section-content">
-            <label class="toggle" data-key="showRings"><span>Finger Rings</span><span class="switch"></span></label>
-            <div class="field">
-              <div class="label"><span>Ring Style</span></div>
-              <select class="select" data-key="ringStyle">
-                <option value="band">Plain Band</option>
-                <option value="gem">Gem Set</option>
-                <option value="signet">Signet</option>
-                <option value="tech">Tech Ring</option>
-              </select>
-            </div>
-            <div class="field">
-              <div class="label"><span>Ring Size</span><span class="value" data-value="ringSize">1.00</span></div>
-              <input type="range" min="0.5" max="1.8" step="0.05" data-key="ringSize">
-            </div>
-            <div class="field">
-              <div class="label"><span>Ring Fingers</span></div>
-              <div class="chip-row" id="ringFingers">
-                <button type="button" class="chip" data-finger="0">T</button>
-                <button type="button" class="chip" data-finger="1">I</button>
-                <button type="button" class="chip" data-finger="2">M</button>
-                <button type="button" class="chip" data-finger="3">R</button>
-                <button type="button" class="chip" data-finger="4">P</button>
-              </div>
-            </div>
-            <label class="toggle" data-key="showBracelet"><span>Bracelet</span><span class="switch"></span></label>
-            <div class="field">
-              <div class="label"><span>Bracelet Style</span></div>
-              <select class="select" data-key="braceletStyle">
-                <option value="cuff">Cuff</option>
-                <option value="chain">Chain</option>
-                <option value="beads">Beads</option>
-                <option value="tech">Tech Band</option>
-              </select>
-            </div>
-            <div class="field">
-              <div class="label"><span>Bracelet Size</span><span class="value" data-value="braceletSize">1.00</span>
-              </div>
-              <input type="range" min="0.5" max="2" step="0.05" data-key="braceletSize">
-            </div>
-            <div class="field">
-              <div class="label"><span>Bracelet Width</span><span class="value" data-value="braceletWidth">0.28</span>
-              </div>
-              <input type="range" min="0.05" max="0.7" step="0.01" data-key="braceletWidth">
-            </div>
-            <div class="hint">Accessories are projected in 3D from the smoothed landmarks — they track the finger and
-              wrist geometry in real time.</div>
+            <div class="hint">Closed volume mesh — extruded palm slab + tapered prism fingers. Renderer re-skins per
+              style without rebuilding topology.</div>
           </div>
         </div>
 
@@ -1004,18 +1013,23 @@
           <div class="section-head"><span>Tactical FX</span><span class="chev">▼</span></div>
           <div class="section-content">
             <label class="toggle" data-key="fxReticle"><span>Fingertip Reticles</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxLabels"><span>Finger Labels</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxAngles"><span>Joint Angle Readout</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxAxis"><span>Palm Orientation Gizmo</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxTrail"><span>Motion Trails</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxComet"><span>Comet Fingertips</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxBounds"><span>3D Bounding Volume</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxVector"><span>Velocity Vectors</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxRings"><span>Range Rings</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPulse"><span>Wrist Pulse Waves</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxScan"><span>Scan Sweep</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxTag"><span>Hand Data Tag</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxPose"><span>Pose &amp; Finger Bars</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxPinch"><span>Pinch Indicator</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxPoint"><span>Pointing Ray</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxPredict"><span>Predictive Lead</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxZfog"><span>Depth Fog Tint</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxGrid"><span>Palm Lattice</span><span class="switch"></span></label>
             <div class="hint">Overlays stack on top of the mesh. Combine with the orientation gizmo for a full tracking
               readout.</div>
           </div>
@@ -1025,10 +1039,25 @@
           <div class="section-head"><span>Fun</span><span class="chev">▼</span></div>
           <div class="section-content">
             <label class="toggle" data-key="fxParticles"><span>Gesture Particles</span><span class="switch"></span></label>
-            <label class="toggle" data-key="fxSpeedGlow"><span>Speed Glow</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxSparkle"><span>Fingertip Sparkle</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxConstellation"><span>Constellation</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxHearts"><span>Heart Pops</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxRipple"><span>Pinch Ripple</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxConfetti"><span>Pose Confetti</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxSnow"><span>Ambient Snow</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxSpeedGlow"><span>Speed Glow</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxShake"><span>Screen Shake</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxGlitch"><span>Glitch Bars</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxAura"><span>Hand Aura</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxRainbow"><span>Rainbow Accent</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Trail Length</span><span class="value" data-value="trailLength">22</span></div>
+              <input type="range" min="4" max="48" step="1" data-key="trailLength">
+            </div>
+            <div class="field">
+              <div class="label"><span>Particle Cap</span><span class="value" data-value="particleCap">240</span></div>
+              <input type="range" min="40" max="500" step="20" data-key="particleCap">
+            </div>
             <div class="hint">Playful overlays. Particles spawn on fast movements and pinch; rainbow cycles the accent
               hue.</div>
           </div>
@@ -1049,8 +1078,31 @@
                 <div class="color-swatch" data-accent="#7dff8a" style="background:#7dff8a"></div>
               </div>
             </div>
+            <div class="field">
+              <div class="label"><span>Custom Accent</span></div>
+              <input type="color" class="color-input" id="accentCustom" value="#ffffff">
+            </div>
+            <div class="field">
+              <div class="label"><span>Glow Color</span></div>
+              <input type="color" class="color-input" id="glowCustom" value="#ffffff">
+            </div>
             <label class="toggle" data-key="videoGrayscale"><span>Desaturate Video</span><span class="switch"></span></label>
             <label class="toggle" data-key="videoMirror"><span>Mirror View</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label">
+                <span>Video Brightness</span><span class="value" data-value="videoBrightness">0.92</span></div>
+              <input type="range" min="0.3" max="1.6" step="0.02" data-key="videoBrightness">
+            </div>
+            <div class="field">
+              <div class="label"><span>Video Contrast</span><span class="value" data-value="videoContrast">1.10</span>
+              </div>
+              <input type="range" min="0.5" max="2" step="0.05" data-key="videoContrast">
+            </div>
+            <div class="field">
+              <div class="label"><span>Video Saturation</span><span class="value" data-value="videoSaturate">0.55</span>
+              </div>
+              <input type="range" min="0" max="2" step="0.05" data-key="videoSaturate">
+            </div>
           </div>
         </div>
 
@@ -1059,9 +1111,13 @@
           <div class="section-content">
             <label class="toggle" data-key="showTelemetry"><span>Telemetry</span><span class="switch"></span></label>
             <label class="toggle" data-key="showClock"><span>Clock</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showFps"><span>FPS Readout</span><span class="switch"></span></label>
+            <label class="toggle" data-key="gestureShortcuts"><span>Gesture Shortcuts</span><span class="switch"></span></label>
             <div class="field">
               <div class="label"><span>Inference Rate Cap</span><span class="value" data-value="fpsCap">60</span></div>
               <input type="range" min="10" max="60" step="5" data-key="fpsCap">
+            </div>
+            <div class="hint">Gesture shortcuts — hold OPEN palm to activate, FIST to stop, PEACE to open settings.
             </div>
           </div>
         </div>
@@ -1077,7 +1133,10 @@
               <button id="importConfig" type="button">Import</button>
               <button id="toggleFullscreen" type="button">Fullscreen</button>
             </div>
-            <div class="hint">Keys — A activate · S settings · H hud · F fullscreen · Esc close</div>
+            <div class="btn-row">
+              <button id="screenshotBtn" type="button">Save Frame</button>
+            </div>
+            <div class="hint">Keys — A activate · S settings · H hud · F fullscreen · P save frame · Esc close</div>
           </div>
         </div>
 
@@ -1097,6 +1156,12 @@
     (() => {
   "use strict";
 
+  // Early error hook so future failures aren't silent
+  window.addEventListener('error', (e) => {
+    // eslint-disable-next-line no-console
+    console.error('[SENTINEL]', e.message, e.error && e.error.stack);
+  });
+
   // ============================================================
   //  ELEMENTS
   // ============================================================
@@ -1109,6 +1174,7 @@
   const clockEl     = document.getElementById('clock');
   const hudEl       = document.getElementById('hud');
   const telemetryEl = document.getElementById('telemetry');
+  const toastEl     = document.getElementById('toast');
 
   const tFps      = document.getElementById('tFps');
   const tHands    = document.getElementById('tHands');
@@ -1121,25 +1187,35 @@
   const settingsClose  = document.getElementById('settingsClose');
   const panelOverlay   = document.getElementById('panelOverlay');
 
+  const accentCustom = document.getElementById('accentCustom');
+  const glowCustom   = document.getElementById('glowCustom');
+  const presetSelect = document.getElementById('presetSelect');
+
+  // ============================================================
+  //  SHARED POOLS  (declared early so nothing else can TDZ on them)
+  // ============================================================
+  const particles        = [];
+  const ambientParticles = [];
+  const glitchBars       = [];
+
   // ============================================================
   //  CONFIG
   // ============================================================
   const DEFAULTS = {
-    // detection
     enableHands: true,
     maxHands: 2,
     modelComplexity: 1,
     minDetection: 0.6,
     minTracking: 0.6,
 
-    // tracking / stability
     stabilization: 0.55,
     responsiveness: 0.5,
     prediction: 1.0,
     graceFrames: 6,
 
-    // skeleton
     showHand: true,
+    skeletonMode: 'solid',
+    boneColorMode: 'accent',
     boneWidth: 1.0,
     segCount: 1,
     segGap: 0.18,
@@ -1148,7 +1224,6 @@
     jointRadius: 1.8,
     glowOpacity: 0.10,
 
-    // volumetric
     showLowPoly: false,
     meshStyle: 'slab',
     lowPolyOpacity: 0.72,
@@ -1157,74 +1232,130 @@
     lowPolyShade: true,
     lowPolyEdges: true,
 
-    // accessories
-    showRings: false,
-    ringStyle: 'band',
-    ringSize: 1.0,
-    ringFingers: [false, true, false, true, false], // T,I,M,R,P
-    showBracelet: false,
-    braceletStyle: 'cuff',
-    braceletSize: 1.0,
-    braceletWidth: 0.28,
-
-    // fx
     fxReticle: false,
+    fxLabels: false,
     fxAngles: false,
     fxAxis: false,
     fxTrail: false,
+    fxComet: false,
     fxBounds: false,
     fxVector: false,
     fxRings: false,
+    fxPulse: false,
     fxScan: false,
     fxTag: false,
     fxPose: false,
     fxPinch: false,
     fxPoint: false,
     fxPredict: false,
+    fxZfog: false,
+    fxGrid: false,
 
-    // fun
     fxParticles: false,
-    fxSpeedGlow: false,
+    fxSparkle: false,
+    fxConstellation: false,
+    fxHearts: false,
     fxRipple: false,
+    fxConfetti: false,
+    fxSnow: false,
+    fxSpeedGlow: false,
+    fxShake: false,
+    fxGlitch: false,
     fxAura: false,
     fxRainbow: false,
+    trailLength: 22,
+    particleCap: 240,
 
-    // appearance
     accent: '#ffffff',
     accentName: 'WHITE',
+    glowColor: '#ffffff',
     videoGrayscale: true,
     videoMirror: true,
+    videoBrightness: 0.92,
+    videoContrast: 1.10,
+    videoSaturate: 0.55,
 
-    // source
     facingMode: 'user',
     resolution: '1280x720',
     pauseOnHide: true,
 
-    // interface
     showTelemetry: true,
     showClock: true,
+    showFps: true,
+    gestureShortcuts: false,
     fpsCap: 60,
   };
 
-  const STORAGE_KEY = 'sentinel.config.v4';
+  const STORAGE_KEY = 'sentinel.config.v5';
   const config = { ...DEFAULTS };
-  // Defensive copy for array defaults
-  config.ringFingers = DEFAULTS.ringFingers.slice();
 
   function loadConfig() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        Object.assign(config, DEFAULTS, parsed);
-        if (!Array.isArray(config.ringFingers) || config.ringFingers.length !== 5) {
-          config.ringFingers = DEFAULTS.ringFingers.slice();
-        }
-      }
+      if (raw) Object.assign(config, DEFAULTS, JSON.parse(raw));
     } catch (e) {}
   }
   function saveConfig() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch (e) {}
+  }
+
+  // ============================================================
+  //  PRESETS
+  // ============================================================
+  const PRESETS = {
+    default: { },
+    cyber: {
+      accent: '#00e0b8', accentName: 'TEAL', glowColor: '#00e0b8',
+      showLowPoly: true, meshStyle: 'neon', lowPolyOpacity: 0.6,
+      skeletonMode: 'neon', glowOpacity: 0.32, boneWidth: 1.6,
+      fxSparkle: true, fxConstellation: true, fxPulse: true,
+      fxTrail: true, fxParticles: true,
+      videoSaturate: 0.35, videoBrightness: 0.85,
+    },
+    thermal: {
+      accent: '#ff5c5c', accentName: 'RED', glowColor: '#ffb37a',
+      showLowPoly: true, meshStyle: 'thermal', lowPolyOpacity: 0.85,
+      fxZfog: true, fxLabels: true,
+      videoSaturate: 0.15, videoBrightness: 0.75, videoContrast: 1.25,
+    },
+    minimal: {
+      accent: '#ffffff', accentName: 'WHITE', glowColor: '#ffffff',
+      showLowPoly: false, showHand: true,
+      skeletonMode: 'solid', boneColorMode: 'accent',
+      boneWidth: 1.4, glowOpacity: 0.06, jointStyle: 'dot', jointRadius: 2,
+      fxReticle: false, fxTrail: false, fxRings: false,
+    },
+    arcade: {
+      accent: '#ffd166', accentName: 'AMBER', glowColor: '#ff5c5c',
+      showHand: true, boneWidth: 2.4, skeletonMode: 'rope',
+      glowOpacity: 0.30, jointStyle: 'square', jointRadius: 3,
+      fxSparkle: true, fxConfetti: true, fxParticles: true,
+      fxHearts: true, fxShake: true, fxGlitch: true,
+      meshStyle: 'holo', showLowPoly: true, lowPolyOpacity: 0.55,
+      videoSaturate: 0.9, videoBrightness: 1.05,
+    },
+    cinema: {
+      accent: '#b28dff', accentName: 'VIOLET', glowColor: '#5fc9ff',
+      videoSaturate: 0.28, videoBrightness: 0.72, videoContrast: 1.35,
+      meshStyle: 'xray', showLowPoly: true, lowPolyOpacity: 0.45,
+      glowOpacity: 0.06, skeletonMode: 'dotted', boneWidth: 0.9,
+      fxZfog: true, fxComet: true, fxTrail: true,
+    },
+  };
+
+  function applyPreset(name) {
+    const p = PRESETS[name];
+    if (!p) return;
+    Object.assign(config, DEFAULTS, p);
+    updateAccentRGB();
+    updateGlowRGB();
+    applyVideoFilter();
+    syncAllInputs();
+    updateSliderFillAll();
+    onConfigChange('showTelemetry', config.showTelemetry);
+    onConfigChange('showClock', config.showClock);
+    saveConfig();
+    showToast(`Preset · ${name.toUpperCase()}`);
   }
 
   // ============================================================
@@ -1234,18 +1365,34 @@
   function dist3(x, y, z) { return Math.sqrt(x * x + y * y + z * z); }
 
   // ============================================================
-  //  ACCENT / RGBA LUT
+  //  COLOR LUTS
   // ============================================================
   const ACCENT_RGB = { r: 255, g: 255, b: 255 };
-  const RGBA_LUT = new Array(33);
+  const GLOW_RGB   = { r: 255, g: 255, b: 255 };
+  const RGBA_LUT   = new Array(33);
+  const GLOW_LUT   = new Array(33);
+
+  function hexToRgb(hex) {
+    const h = (hex || '#ffffff').replace('#', '');
+    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    return {
+      r: parseInt(full.substring(0, 2), 16) || 0,
+      g: parseInt(full.substring(2, 4), 16) || 0,
+      b: parseInt(full.substring(4, 6), 16) || 0,
+    };
+  }
 
   function updateAccentRGB() {
-    const h = config.accent.replace('#', '');
-    ACCENT_RGB.r = parseInt(h.substring(0, 2), 16);
-    ACCENT_RGB.g = parseInt(h.substring(2, 4), 16);
-    ACCENT_RGB.b = parseInt(h.substring(4, 6), 16);
+    const c = hexToRgb(config.accent);
+    ACCENT_RGB.r = c.r; ACCENT_RGB.g = c.g; ACCENT_RGB.b = c.b;
     document.documentElement.style.setProperty('--accent-hex', config.accent);
     RGBA_LUT.fill(undefined);
+  }
+  function updateGlowRGB() {
+    const c = hexToRgb(config.glowColor || config.accent);
+    GLOW_RGB.r = c.r; GLOW_RGB.g = c.g; GLOW_RGB.b = c.b;
+    document.documentElement.style.setProperty('--glow-hex', config.glowColor);
+    GLOW_LUT.fill(undefined);
   }
   function rgbaQ(a) {
     if (a <= 0) return 'rgba(0,0,0,0)';
@@ -1256,6 +1403,18 @@
     if (s === undefined) {
       s = `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${idx / 32})`;
       RGBA_LUT[idx] = s;
+    }
+    return s;
+  }
+  function glowQ(a) {
+    if (a <= 0) return 'rgba(0,0,0,0)';
+    if (a >= 1) a = 1;
+    let idx = (a * 32 + 0.5) | 0;
+    if (idx < 0) idx = 0; else if (idx > 32) idx = 32;
+    let s = GLOW_LUT[idx];
+    if (s === undefined) {
+      s = `rgba(${GLOW_RGB.r},${GLOW_RGB.g},${GLOW_RGB.b},${idx / 32})`;
+      GLOW_LUT[idx] = s;
     }
     return s;
   }
@@ -1275,20 +1434,13 @@
 
   class OneEuroFilter {
     constructor(minCutoff, beta, dCutoff) {
-      this.minCutoff = minCutoff;
-      this.beta = beta;
-      this.dCutoff = dCutoff;
-      this.xFilt = new LowPass();
-      this.dxFilt = new LowPass();
-      this.prevX = null;
-      this.prevT = null;
-      this.value = 0;
-      this.velocity = 0;
+      this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+      this.xFilt = new LowPass(); this.dxFilt = new LowPass();
+      this.prevX = null; this.prevT = null;
+      this.value = 0; this.velocity = 0;
     }
     setParams(minCutoff, beta, dCutoff) {
-      this.minCutoff = minCutoff;
-      this.beta = beta;
-      this.dCutoff = dCutoff;
+      this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
     }
     alpha(cutoff, dt) {
       const tau = 1 / (2 * Math.PI * cutoff);
@@ -1296,8 +1448,7 @@
     }
     filter(x, tSec) {
       if (this.prevT === null) {
-        this.prevT = tSec;
-        this.prevX = x;
+        this.prevT = tSec; this.prevX = x;
         this.value = this.xFilt.filter(x, 1);
         this.velocity = 0;
         return this.value;
@@ -1305,12 +1456,9 @@
       const dt = tSec - this.prevT;
       if (dt <= 0) return this.value;
       const dx = (x - this.prevX) / dt;
-      this.prevX = x;
-      this.prevT = tSec;
-
+      this.prevX = x; this.prevT = tSec;
       const aD = this.alpha(this.dCutoff, dt);
       const dxHat = this.dxFilt.filter(dx, aD);
-
       const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
       const a = this.alpha(cutoff, dt);
       this.value = this.xFilt.filter(x, a);
@@ -1318,22 +1466,14 @@
       return this.value;
     }
     reset() {
-      this.xFilt.reset();
-      this.dxFilt.reset();
-      this.prevX = null;
-      this.prevT = null;
-      this.value = 0;
-      this.velocity = 0;
+      this.xFilt.reset(); this.dxFilt.reset();
+      this.prevX = null; this.prevT = null;
+      this.value = 0; this.velocity = 0;
     }
   }
 
-  function minCutoffFromStabilization(s) {
-    return 12 * Math.pow(0.038, s);
-  }
-  function betaFromResponsiveness(r) {
-    return 0.003 + r * 0.117;
-  }
-
+  const minCutoffFromStabilization = s => 12 * Math.pow(0.038, s);
+  const betaFromResponsiveness = r => 0.003 + r * 0.117;
   const D_CUTOFF = 1.0;
 
   // ============================================================
@@ -1346,8 +1486,8 @@
   let inferLast = 0;
   let fpsSmooth = 0;
   let inferenceInFlight = false;
-
   let handData = [];
+  let hands = null;
 
   // ============================================================
   //  CANVAS SIZE + COVER MAPPING
@@ -1381,6 +1521,7 @@
     canvas.style.height = viewH + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     updateCover();
+    // NOTE: snow is seeded once from init(); resizing leaves existing flakes be.
   }
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 120));
@@ -1410,6 +1551,42 @@
   const IS_TIP = new Uint8Array(21);
   for (let i = 0; i < 5; i++) IS_TIP[FINGERTIPS[i]] = 1;
 
+  // Per-finger colors (T, I, M, R, P) used by `per-finger` bone mode.
+  const FINGER_COLORS = [
+    [255, 96, 96],   // Thumb
+    [255, 210, 80],  // Index
+    [120, 255, 120], // Middle
+    [90, 180, 255],  // Ring
+    [210, 120, 255], // Pinky
+  ];
+  // Map each HAND_CONNECTIONS index to a finger 0..4 (palm bones fall back to middle)
+  const BONE_FINGER = new Uint8Array(HAND_CONNECTIONS.length);
+  for (let i = 0; i < BONE_FINGER.length; i++) {
+    if (i <= 3) BONE_FINGER[i] = 0;
+    else if (i >= 5 && i <= 7) BONE_FINGER[i] = 1;
+    else if (i >= 9 && i <= 11) BONE_FINGER[i] = 2;
+    else if (i >= 13 && i <= 15) BONE_FINGER[i] = 3;
+    else if (i >= 17 && i <= 19) BONE_FINGER[i] = 4;
+    else BONE_FINGER[i] = 2; // palm bones
+  }
+
+  function colorForBone(boneIdx, pts) {
+    const mode = config.boneColorMode;
+    if (mode === 'per-finger') {
+      const c = FINGER_COLORS[BONE_FINGER[boneIdx]];
+      return `rgba(${c[0]},${c[1]},${c[2]},0.94)`;
+    }
+    if (mode === 'gradient') {
+      const c = HAND_CONNECTIONS[boneIdx];
+      const a = pts[c[0]], b = pts[c[1]];
+      const t = clamp(((a.z + b.z) * 0.5 + 120) / 240, 0, 1);
+      const r = (255 * (1 - t)) | 0;
+      const bl = (255 * t) | 0;
+      return `rgba(${r},160,${bl},0.94)`;
+    }
+    return rgbaQ(0.94);
+  }
+
   // ============================================================
   //  CLOCK
   // ============================================================
@@ -1422,14 +1599,25 @@
   tickClock();
 
   // ============================================================
-  //  CACHED FONT STRINGS (perf: ctx.font assignment is expensive)
+  //  TOAST
+  // ============================================================
+  let toastTimer = 0;
+  function showToast(text, ms) {
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 1100);
+  }
+
+  // ============================================================
+  //  CACHED FONTS
   // ============================================================
   const FONT_MONO_9   = '9px ui-monospace, Menlo, monospace';
   const FONT_MONO_8   = '8px ui-monospace, Menlo, monospace';
   const FONT_MONO_11B = 'bold 11px ui-monospace, Menlo, monospace';
 
   // ============================================================
-  //  MESH TOPOLOGY (built once per density)
+  //  MESH TOPOLOGY
   // ============================================================
   const meshTopologyCache = new Map();
 
@@ -1472,7 +1660,6 @@
       recipes[base + 3 * sides] = { k: 4, f };
 
       const r0 = base;
-      const r1 = base + sides;
       const r2 = base + 2 * sides;
       const apex = base + 3 * sides;
 
@@ -1557,13 +1744,8 @@
     for (let i = 0; i < vertCount; i++) {
       const r = recipes[i];
       let x, y, z;
-
       switch (r.k) {
-        case 0: {
-          const p = pts[r.lm];
-          x = p.x; y = p.y; z = p.z;
-          break;
-        }
+        case 0: { const p = pts[r.lm]; x = p.x; y = p.y; z = p.z; break; }
         case 1: {
           const p = pts[r.lm];
           const ax = ccx - p.x, ay = ccy - p.y, az = ccz - p.z;
@@ -1611,9 +1793,7 @@
           const dl = dist3(dx, dy, dz) || 1;
           dx /= dl; dy /= dl; dz /= dl;
           const rad = fingerRad[r.f] * scale * 0.95;
-          x = t.x + dx * rad;
-          y = t.y + dy * rad;
-          z = t.z + dz * rad;
+          x = t.x + dx * rad; y = t.y + dy * rad; z = t.z + dz * rad;
         }
       }
       const o = i * 3;
@@ -1635,7 +1815,6 @@
       initialized: false,
       smooth: new Array(21),
       pts: new Array(21),
-      predicted: new Array(21),
       filters: new Array(63),
       center: { x: 0, y: 0, z: 0 },
       palmNormal: { x: 0, y: 0, z: 0 },
@@ -1645,12 +1824,11 @@
       speed: 0,
       fingerState: [false, false, false, false, false],
       pose: '—',
+      prevPose: '—',
       pinchActive: false,
       pinchStrength: 0,
-      pinchTipIdx: 8,
       prevPinchActive: false,
 
-      // identity match / grace
       lastWrist: null,
       lastActive: now,
       active: false,
@@ -1662,23 +1840,21 @@
         pulses: [],
         ripples: [],
         cx: 0, cy: 0,
+        px0: 0, py0: 0,
         t: now,
         lastPulse: 0,
         lastParticle: 0,
+        pulsePhase: 0,
       },
     };
     for (let j = 0; j < 21; j++) {
       slot.smooth[j] = { x: 0, y: 0, z: 0 };
       slot.pts[j] = { x: 0, y: 0, z: 0 };
-      slot.predicted[j] = { x: 0, y: 0, z: 0 };
     }
-    for (let i = 0; i < 63; i++) {
-      slot.filters[i] = new OneEuroFilter(1.0, 0.02, D_CUTOFF);
-    }
+    for (let i = 0; i < 63; i++) slot.filters[i] = new OneEuroFilter(1.0, 0.02, D_CUTOFF);
     return slot;
   }
 
-  // Perf: preallocated buffers for pairing
   const _pairs = [];
 
   function matchDetections(dets) {
@@ -1701,9 +1877,7 @@
         if (d2 < MAX_DIST2) _pairs.push({ i, slot, d2 });
       }
     }
-
     _pairs.sort((a, b) => a.d2 - b.d2);
-
     for (let p = 0; p < _pairs.length; p++) {
       const pair = _pairs[p];
       if (assigned[pair.i] !== null) continue;
@@ -1711,12 +1885,11 @@
       assigned[pair.i] = pair.slot;
       slotUsed.add(pair.slot.id);
     }
-
     return assigned;
   }
 
   // ============================================================
-  //  GESTURE ANALYSIS
+  //  GESTURES
   // ============================================================
   function computeFingerState(pts, palmScale) {
     const state = [false, false, false, false, false];
@@ -1728,21 +1901,16 @@
     for (let f = 1; f < 5; f++) {
       const ch = FINGER_CHAINS[f];
       const a = pts[ch[0]], b = pts[ch[1]], c = pts[ch[2]], d = pts[ch[3]];
-
       const v1x = a.x - b.x, v1y = a.y - b.y;
       const v2x = c.x - b.x, v2y = c.y - b.y;
       const v3x = d.x - c.x, v3y = d.y - c.y;
-
       const l1 = Math.sqrt(v1x * v1x + v1y * v1y) || 1;
       const l2 = Math.sqrt(v2x * v2x + v2y * v2y) || 1;
       const l3 = Math.sqrt(v3x * v3x + v3y * v3y) || 1;
-
       const cos1 = (v1x * v2x + v1y * v2y) / (l1 * l2);
       const cos2 = (v2x * v3x + v2y * v3y) / (l2 * l3);
-
       state[f] = cos1 < -0.4 && cos2 < -0.4;
     }
-
     return state;
   }
 
@@ -1762,14 +1930,40 @@
   }
 
   // ============================================================
-  //  PARTICLE SYSTEM (global, shared across hands)
+  //  PARTICLES
   // ============================================================
-  const particles = [];
-  const MAX_PARTICLES = 240;
+  function emitParticle(x, y, vx, vy, life, size, hue) {
+    if (particles.length >= config.particleCap) particles.shift();
+    particles.push({ x, y, vx, vy, life, maxLife: life, size, hue: hue || -1 });
+  }
 
-  function emitParticle(x, y, vx, vy, life, size) {
-    if (particles.length >= MAX_PARTICLES) particles.shift();
-    particles.push({ x, y, vx, vy, life, maxLife: life, size });
+  function emitHeart(x, y) {
+    if (particles.length >= config.particleCap) particles.shift();
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 30,
+      vy: -40 - Math.random() * 40,
+      life: 1.4, maxLife: 1.4,
+      size: 6 + Math.random() * 4,
+      heart: true, hue: -1,
+    });
+  }
+
+  function emitConfetti(x, y, count) {
+    for (let i = 0; i < count; i++) {
+      if (particles.length >= config.particleCap) particles.shift();
+      const ang = Math.random() * Math.PI * 2;
+      const mag = 80 + Math.random() * 220;
+      particles.push({
+        x, y,
+        vx: Math.cos(ang) * mag,
+        vy: Math.sin(ang) * mag - 100,
+        life: 1.1 + Math.random() * 0.8,
+        maxLife: 1.9,
+        size: 2 + Math.random() * 2,
+        hue: Math.floor(Math.random() * 360),
+      });
+    }
   }
 
   function updateParticles(dt) {
@@ -1777,7 +1971,7 @@
       const p = particles[i];
       p.x += p.vx * dt;
       p.y += p.vy * dt;
-      p.vy += 340 * dt;      // gravity
+      p.vy += (p.heart ? -30 : 340) * dt;
       p.vx *= 0.985;
       p.life -= dt;
       if (p.life <= 0) particles.splice(i, 1);
@@ -1788,11 +1982,91 @@
     if (!particles.length) return;
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
-      const a = p.life / p.maxLife;
-      ctx.fillStyle = rgbaQ(a * 0.9);
+      const a = clamp(p.life / p.maxLife, 0, 1);
+      if (p.hue >= 0) {
+        ctx.fillStyle = `hsla(${p.hue},90%,65%,${a})`;
+      } else {
+        ctx.fillStyle = rgbaQ(a * 0.9);
+      }
+      if (p.heart) {
+        const s = p.size * (0.4 + a * 0.6);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y + s * 0.3);
+        ctx.bezierCurveTo(p.x, p.y - s * 0.4, p.x + s, p.y - s * 0.4, p.x + s, p.y + s * 0.2);
+        ctx.bezierCurveTo(p.x + s, p.y + s * 0.9, p.x, p.y + s * 1.1, p.x, p.y + s * 1.4);
+        ctx.bezierCurveTo(p.x, p.y + s * 1.1, p.x - s, p.y + s * 0.9, p.x - s, p.y + s * 0.2);
+        ctx.bezierCurveTo(p.x - s, p.y - s * 0.4, p.x, p.y - s * 0.4, p.x, p.y + s * 0.3);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * (0.4 + a * 0.6), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  function initSnow() {
+    ambientParticles.length = 0;
+    const n = 60;
+    for (let i = 0; i < n; i++) {
+      ambientParticles.push({
+        x: Math.random() * viewW,
+        y: Math.random() * viewH,
+        vy: 20 + Math.random() * 40,
+        vx: (Math.random() - 0.5) * 15,
+        size: 0.8 + Math.random() * 1.6,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  function updateSnow(dt) {
+    for (let i = 0; i < ambientParticles.length; i++) {
+      const p = ambientParticles[i];
+      p.phase += dt * 1.5;
+      p.x += (p.vx + Math.sin(p.phase) * 12) * dt;
+      p.y += p.vy * dt;
+      if (p.y > viewH + 4) { p.y = -4; p.x = Math.random() * viewW; }
+      if (p.x < -4) p.x = viewW + 4;
+      if (p.x > viewW + 4) p.x = -4;
+    }
+  }
+
+  function drawSnow() {
+    if (!ambientParticles.length) return;
+    ctx.fillStyle = 'rgba(230,235,240,0.55)';
+    for (let i = 0; i < ambientParticles.length; i++) {
+      const p = ambientParticles[i];
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * (0.4 + a * 0.6), 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.fill();
+    }
+  }
+
+  function emitGlitchBar() {
+    glitchBars.push({
+      y: Math.random() * viewH,
+      h: 4 + Math.random() * 14,
+      off: (Math.random() - 0.5) * 30,
+      t: performance.now(),
+      life: 90 + Math.random() * 120,
+    });
+    if (glitchBars.length > 18) glitchBars.shift();
+  }
+
+  function updateGlitchBars() {
+    const now = performance.now();
+    for (let i = glitchBars.length - 1; i >= 0; i--) {
+      if (now - glitchBars[i].t > glitchBars[i].life) glitchBars.splice(i, 1);
+    }
+  }
+
+  function drawGlitchBars() {
+    if (!glitchBars.length) return;
+    for (let i = 0; i < glitchBars.length; i++) {
+      const g = glitchBars[i];
+      ctx.fillStyle = rgbaQ(0.4);
+      ctx.fillRect(g.off, g.y, viewW, g.h);
     }
   }
 
@@ -1839,7 +2113,6 @@
       const filters = slot.filters;
       const smooth = slot.smooth;
       const pts = slot.pts;
-      const predicted = slot.predicted;
 
       if (!slot.initialized) {
         for (let j = 0; j < 21; j++) {
@@ -1854,15 +2127,12 @@
         const p = lm[j];
         const s = smooth[j];
         const fIdx = j * 3;
-
         const fx = filters[fIdx];
         const fy = filters[fIdx + 1];
         const fz = filters[fIdx + 2];
-
         fx.setParams(minCutoff, beta, D_CUTOFF);
         fy.setParams(minCutoff, beta, D_CUTOFF);
         fz.setParams(minCutoff, beta, D_CUTOFF);
-
         s.x = fx.filter(p.x, tSec);
         s.y = fy.filter(p.y, tSec);
         s.z = fz.filter(p.z || 0, tSec);
@@ -1872,22 +2142,16 @@
       for (let j = 0; j < 21; j++) {
         const s = smooth[j];
         const q = pts[j];
-        const pr = predicted[j];
         const fIdx = j * 3;
         const vx = filters[fIdx].velocity;
         const vy = filters[fIdx + 1].velocity;
         const vz = filters[fIdx + 2].velocity;
-
         const sx = s.x + vx * dxLead;
         const sy = s.y + vy * dxLead;
         const sz = s.z + vz * dxLead;
-
-        const px = projectX(sx);
-        const py = projectY(sy);
-        const pz = projectZ(sz);
-
-        q.x = px; q.y = py; q.z = pz;
-        pr.x = px; pr.y = py; pr.z = pz;
+        q.x = projectX(sx);
+        q.y = projectY(sy);
+        q.z = projectZ(sz);
       }
 
       const wrist = pts[0];
@@ -1933,7 +2197,12 @@
       const ddy = ccy - st.cy;
       const instSpeed = Math.sqrt(ddx * ddx + ddy * ddy) / dt;
       slot.speed = slot.speed * 0.7 + instSpeed * 0.3;
+
+      // For fxPredict: previous center before this frame
+      st.px0 = st.cx;
+      st.py0 = st.cy;
       st.cx = ccx; st.cy = ccy;
+      st.pulsePhase += dt;
 
       if (slot.speed > 900 && (now - st.lastPulse) > 420) {
         st.lastPulse = now;
@@ -1959,12 +2228,14 @@
         let tr = st.trail[tip];
         if (!tr) { tr = []; st.trail[tip] = tr; }
         tr.push({ x: p.x, y: p.y, t: now });
-        while (tr.length > 22) tr.shift();
+        const maxTrail = config.trailLength | 0;
+        while (tr.length > maxTrail) tr.shift();
         while (tr.length && now - tr[0].t > 700) tr.shift();
       }
 
       const fingerState = computeFingerState(pts, slot.scale);
       slot.fingerState = fingerState;
+      slot.prevPose = slot.pose;
       slot.pose = classifyPose(fingerState);
 
       const tt = pts[4], it = pts[8];
@@ -1975,18 +2246,20 @@
       slot.prevPinchActive = slot.pinchActive;
       slot.pinchActive = pinchStrength > 0.65;
       slot.pinchStrength = pinchStrength;
-      slot.pinchTipIdx = 8;
 
-      // ---- Fun: pinch ripple + particles ----
+      // Fun triggers
       if (config.fxRipple && slot.prevPinchActive && !slot.pinchActive) {
         st.ripples.push({ x: (tt.x + it.x) * 0.5, y: (tt.y + it.y) * 0.5, t: now });
       }
+      if (config.fxHearts && slot.prevPinchActive && !slot.pinchActive) {
+        const hx = (tt.x + it.x) * 0.5;
+        const hy = (tt.y + it.y) * 0.5;
+        for (let k = 0; k < 6; k++) emitHeart(hx + (Math.random() - 0.5) * 20, hy + (Math.random() - 0.5) * 20);
+      }
+      if (config.fxConfetti && slot.prevPose !== slot.pose && slot.pose !== '—') {
+        emitConfetti(ccx, ccy, 14);
+      }
       if (config.fxParticles) {
-        const speed = Math.sqrt(
-          ((tt.x - it.x) / 1000) * ((tt.x - it.x) / 1000) +
-          ((tt.y - it.y) / 1000) * ((tt.y - it.y) / 1000)
-        );
-        // Emit from fast-moving fingertips
         if ((slot.speed > 400 || pinchStrength > 0.7) && (now - st.lastParticle) > 45) {
           st.lastParticle = now;
           for (let ti = 0; ti < 5; ti++) {
@@ -2005,8 +2278,10 @@
           }
         }
       }
+      if (config.fxGlitch && slot.speed > 700 && Math.random() < 0.35) {
+        emitGlitchBar();
+      }
 
-      // Ripple aging
       let rw = 0;
       for (let ri = 0; ri < st.ripples.length; ri++) {
         if (now - st.ripples[ri].t < 900) st.ripples[rw++] = st.ripples[ri];
@@ -2027,11 +2302,8 @@
     for (const slot of [...handSlots.values()]) {
       if (usedSlotIds.has(slot.id)) continue;
       slot.lostFrames++;
-      if (slot.lostFrames > graceLimit) {
-        handSlots.delete(slot.id);
-      } else {
-        slot.active = false;
-      }
+      if (slot.lostFrames > graceLimit) handSlots.delete(slot.id);
+      else slot.active = false;
     }
 
     handData = out;
@@ -2057,7 +2329,7 @@
   }
 
   // ============================================================
-  //  DRAW — 3D MESH (multi-style)
+  //  DRAW — 3D MESH
   // ============================================================
   const LIGHT = { x: -0.42, y: -0.62, z: -0.66 };
   {
@@ -2090,18 +2362,15 @@
 
     const op = config.lowPolyOpacity;
     const edges = config.lowPolyEdges;
-    const style = config.meshStyle;
+    const mode = config.meshStyle;
     const ar = ACCENT_RGB.r, ag = ACCENT_RGB.g, ab = ACCENT_RGB.b;
+    const now = performance.now();
 
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.lineWidth = 0.8;
 
-    const isWire = style === 'wire';
-    const isXray = style === 'xray';
-    const isHolo = style === 'holo';
-    const isChrome = style === 'chrome';
-
+    const isHolo = mode === 'holo';
     if (isHolo) ctx.globalCompositeOperation = 'lighter';
 
     for (let oi = 0; oi < faceCount; oi++) {
@@ -2128,9 +2397,9 @@
       const absNZ = nZ < 0 ? -nZ : nZ;
       const rimB = 1 - (absNZ > 1 ? 1 : absNZ);
       const rim = rimB * rimB * rimB;
-
       let sh = 0.16 + diff * 0.80 + rim * 0.30;
       if (sh > 1.15) sh = 1.15;
+      const zAvg = (az + bz + cz) / 3;
 
       ctx.beginPath();
       ctx.moveTo(positions[i0], positions[i0 + 1]);
@@ -2140,318 +2409,120 @@
       }
       ctx.closePath();
 
-      if (isWire) {
-        ctx.strokeStyle = rgbaQ(op * (0.28 + diff * 0.72));
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        continue;
-      }
-
-      if (isXray) {
-        const r = (8 + (ar - 8) * sh) | 0;
-        const g = (10 + (ag - 10) * sh) | 0;
-        const b = (14 + (ab - 14) * sh) | 0;
-        ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.28})`;
-        ctx.fill();
-        ctx.strokeStyle = rgbaQ(op * (0.35 + diff * 0.65));
-        ctx.lineWidth = 0.9;
-        ctx.stroke();
-        continue;
-      }
-
-      if (isHolo) {
-        // Additive: brighter surfaces
-        const h = 0.35 + diff * 0.9 + rim * 0.5;
-        const r = Math.min(255, (ar * h) | 0);
-        const g = Math.min(255, (ag * h) | 0);
-        const b = Math.min(255, (ab * h) | 0);
-        ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.5})`;
-        ctx.fill();
-        if (edges) {
-          ctx.strokeStyle = rgbaQ(op * (0.55 + diff * 0.45));
+      switch (mode) {
+        case 'wire': {
+          ctx.strokeStyle = rgbaQ(op * (0.28 + diff * 0.72));
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          break;
+        }
+        case 'xray': {
+          const r = (8 + (ar - 8) * sh) | 0;
+          const g = (10 + (ag - 10) * sh) | 0;
+          const b = (14 + (ab - 14) * sh) | 0;
+          ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.28})`;
+          ctx.fill();
+          ctx.strokeStyle = rgbaQ(op * (0.35 + diff * 0.65));
           ctx.lineWidth = 0.9;
           ctx.stroke();
+          break;
         }
-        continue;
-      }
-
-      if (isChrome) {
-        // Metallic: darker base, sharper highlights
-        const shC = 0.06 + Math.pow(diff, 0.65) * 0.95 + rim * 0.4;
-        const r = (4 + (ar - 4) * shC) | 0;
-        const g = (6 + (ag - 6) * shC) | 0;
-        const b = (10 + (ab - 10) * shC) | 0;
-        ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
-        ctx.fill();
-        if (edges) {
-          ctx.strokeStyle = rgbaQ(op * (0.15 + diff * 0.85));
-          ctx.lineWidth = 0.8;
+        case 'holo': {
+          const h = 0.35 + diff * 0.9 + rim * 0.5;
+          const r = Math.min(255, (ar * h) | 0);
+          const g = Math.min(255, (ag * h) | 0);
+          const b = Math.min(255, (ab * h) | 0);
+          ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.5})`;
+          ctx.fill();
+          if (edges) {
+            ctx.strokeStyle = rgbaQ(op * (0.55 + diff * 0.45));
+            ctx.lineWidth = 0.9;
+            ctx.stroke();
+          }
+          break;
+        }
+        case 'chrome': {
+          const shC = 0.06 + Math.pow(diff, 0.65) * 0.95 + rim * 0.4;
+          const r = (4 + (ar - 4) * shC) | 0;
+          const g = (6 + (ag - 6) * shC) | 0;
+          const b = (10 + (ab - 10) * shC) | 0;
+          ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
+          ctx.fill();
+          if (edges) {
+            ctx.strokeStyle = rgbaQ(op * (0.15 + diff * 0.85));
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+          break;
+        }
+        case 'neon': {
+          ctx.fillStyle = `rgba(3,4,6,${op * 0.55})`;
+          ctx.fill();
+          ctx.strokeStyle = rgbaQ(op * (0.7 + diff * 0.3));
+          ctx.lineWidth = 1.2;
           ctx.stroke();
+          break;
         }
-        continue;
-      }
-
-      // Slab (default)
-      const r = (8 + (ar - 8) * sh) | 0;
-      const g = (10 + (ag - 10) * sh) | 0;
-      const b = (14 + (ab - 14) * sh) | 0;
-
-      ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
-      ctx.fill();
-
-      if (edges) {
-        ctx.strokeStyle = rgbaQ(op * 0.75 * (0.30 + diff * 0.70));
-        ctx.stroke();
+        case 'matrix': {
+          const t = clamp((zAvg + 200) / 400, 0, 1);
+          const r = (10 * (1 - t)) | 0;
+          const g = (90 + 160 * (1 - t)) | 0;
+          const b = (30 * (1 - t)) | 0;
+          ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.75})`;
+          ctx.fill();
+          if ((oi + ((now / 100) | 0)) % 7 === 0) {
+            ctx.strokeStyle = `rgba(120,255,140,${op * 0.9})`;
+            ctx.lineWidth = 0.9;
+            ctx.stroke();
+          }
+          break;
+        }
+        case 'glass': {
+          ctx.fillStyle = rgbaQ(op * 0.14);
+          ctx.fill();
+          ctx.strokeStyle = rgbaQ(op * (0.35 + diff * 0.55));
+          ctx.lineWidth = 0.9;
+          ctx.stroke();
+          break;
+        }
+        case 'thermal': {
+          const t = clamp((zAvg + 220) / 440, 0, 1);
+          const r = (60 + 195 * t) | 0;
+          const g = (60 + 120 * (1 - Math.abs(t - 0.5) * 2)) | 0;
+          const b = (200 * (1 - t) + 40) | 0;
+          ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
+          ctx.fill();
+          if (edges) {
+            ctx.strokeStyle = `rgba(${r},${g},${b},${op * 0.7})`;
+            ctx.lineWidth = 0.7;
+            ctx.stroke();
+          }
+          break;
+        }
+        case 'sketch': {
+          ctx.fillStyle = `rgba(220,220,220,${op * 0.12})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(240,240,240,${op * (0.4 + diff * 0.5)})`;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+          break;
+        }
+        default: {
+          // slab
+          const r = (8 + (ar - 8) * sh) | 0;
+          const g = (10 + (ag - 10) * sh) | 0;
+          const b = (14 + (ab - 14) * sh) | 0;
+          ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
+          ctx.fill();
+          if (edges) {
+            ctx.strokeStyle = rgbaQ(op * 0.75 * (0.30 + diff * 0.70));
+            ctx.stroke();
+          }
+        }
       }
     }
 
     if (isHolo) ctx.globalCompositeOperation = 'source-over';
-  }
-
-  // ============================================================
-  //  DRAW — ACCESSORIES (rings + bracelet)
-  // ============================================================
-  const RING_R = 20;    // segments per ring
-  const RING_TS = new Float32Array(RING_R + 1);
-  const RING_CS = new Float32Array(RING_R + 1);
-  for (let i = 0; i <= RING_R; i++) {
-    const a = (i / RING_R) * Math.PI * 2;
-    RING_TS[i] = Math.sin(a);
-    RING_CS[i] = Math.cos(a);
-  }
-
-  // Draw a circular ring around the axis defined by segment A→B, in screen 3D space.
-  // t: 0..1 position along the segment. radiusScale: fraction of hand.scale.
-  function drawRingGeometry(A, B, t, radius, style, width, fillOpacity) {
-    const mx = A.x + (B.x - A.x) * t;
-    const my = A.y + (B.y - A.y) * t;
-    const mz = A.z + (B.z - A.z) * t;
-
-    let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
-    const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-    dx /= dl; dy /= dl; dz /= dl;
-
-    // Perpendicular basis (u, v) around axis d
-    let hx, hy, hz;
-    if (Math.abs(dy) > 0.9) { hx = 1; hy = 0; hz = 0; }
-    else { hx = 0; hy = 1; hz = 0; }
-
-    let ux = dy * hz - dz * hy;
-    let uy = dz * hx - dx * hz;
-    let uz = dx * hy - dy * hx;
-    const ul = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-    ux /= ul; uy /= ul; uz /= ul;
-
-    const vx = dy * uz - dz * uy;
-    const vy = dz * ux - dx * uz;
-    const vz = dx * uy - dy * ux;
-
-    // Outer ring (full ellipse)
-    const rOuter = radius;
-    ctx.beginPath();
-    for (let i = 0; i <= RING_R; i++) {
-      const ca = RING_CS[i], sa = RING_TS[i];
-      const px = mx + rOuter * (ca * ux + sa * vx);
-      const py = my + rOuter * (ca * uy + sa * vy);
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-
-    if (fillOpacity > 0) {
-      ctx.fillStyle = rgbaQ(fillOpacity);
-      ctx.fill();
-    }
-    ctx.strokeStyle = rgbaQ(0.95);
-    ctx.lineWidth = width;
-    ctx.stroke();
-
-    // Band thickness: second ring offset along axis, connected by silhouettes
-    const half = (width * 1.6);
-    ctx.beginPath();
-    for (let i = 0; i <= RING_R; i++) {
-      const ca = RING_CS[i], sa = RING_TS[i];
-      const px = mx + rOuter * (ca * ux + sa * vx) - dx * half;
-      const py = my + rOuter * (ca * uy + sa * vy) - dy * half;
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    }
-    ctx.strokeStyle = rgbaQ(0.6);
-    ctx.lineWidth = width * 0.8;
-    ctx.stroke();
-
-    // ----- Per-style decorations -----
-    if (style === 'gem') {
-      // Find topmost point of the ring (min screen y)
-      let bestI = 0, bestY = Infinity;
-      for (let i = 0; i < RING_R; i++) {
-        const ca = RING_CS[i], sa = RING_TS[i];
-        const py = my + rOuter * (ca * uy + sa * vy);
-        if (py < bestY) { bestY = py; bestI = i; }
-      }
-      const ca = RING_CS[bestI], sa = RING_TS[bestI];
-      const gx = mx + rOuter * (ca * ux + sa * vx);
-      const gy = my + rOuter * (ca * uy + sa * vy);
-      const gs = Math.max(2.5, radius * 0.35);
-      // Diamond
-      ctx.beginPath();
-      ctx.moveTo(gx, gy - gs);
-      ctx.lineTo(gx + gs * 0.7, gy);
-      ctx.lineTo(gx, gy + gs);
-      ctx.lineTo(gx - gs * 0.7, gy);
-      ctx.closePath();
-      ctx.fillStyle = rgbaQ(1);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-    } else if (style === 'signet') {
-      let bestI = 0, bestY = Infinity;
-      for (let i = 0; i < RING_R; i++) {
-        const ca = RING_CS[i], sa = RING_TS[i];
-        const py = my + rOuter * (ca * uy + sa * vy);
-        if (py < bestY) { bestY = py; bestI = i; }
-      }
-      const ca = RING_CS[bestI], sa = RING_TS[bestI];
-      const gx = mx + rOuter * (ca * ux + sa * vx);
-      const gy = my + rOuter * (ca * uy + sa * vy);
-      const s = Math.max(3, radius * 0.5);
-      ctx.fillStyle = rgbaQ(0.9);
-      ctx.fillRect(gx - s, gy - s * 0.9, s * 2, s * 1.8);
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-      ctx.lineWidth = 0.7;
-      ctx.strokeRect(gx - s, gy - s * 0.9, s * 2, s * 1.8);
-    } else if (style === 'tech') {
-      // Small tick marks around the ring
-      ctx.strokeStyle = rgbaQ(0.85);
-      ctx.lineWidth = Math.max(0.8, width * 0.6);
-      const ticks = 8;
-      for (let k = 0; k < ticks; k++) {
-        const ang = (k / ticks) * Math.PI * 2;
-        const ca = Math.cos(ang), sa = Math.sin(ang);
-        const px0 = mx + rOuter * (ca * ux + sa * vx);
-        const py0 = my + rOuter * (ca * uy + sa * vy);
-        const px1 = mx + (rOuter + radius * 0.2) * (ca * ux + sa * vx);
-        const py1 = my + (rOuter + radius * 0.2) * (ca * uy + sa * vy);
-        ctx.beginPath();
-        ctx.moveTo(px0, py0);
-        ctx.lineTo(px1, py1);
-        ctx.stroke();
-      }
-    }
-  }
-
-  function drawAccessories(hand) {
-    const pts = hand.pts;
-
-    if (config.showRings) {
-      const fingers = config.ringFingers;
-      const sizeMul = config.ringSize;
-      const style = config.ringStyle;
-      const baseR = hand.scale * 0.155 * sizeMul;    // ≈ finger radius
-      const strokeW = Math.max(1.2, hand.scale * 0.03);
-
-      for (let f = 0; f < 5; f++) {
-        if (!fingers[f]) continue;
-        const ch = FINGER_CHAINS[f];
-        const A = pts[ch[0]];
-        const B = pts[ch[1]];
-        // Slightly closer to the PIP joint
-        drawRingGeometry(A, B, 0.62, baseR * (f === 0 ? 1.15 : 1), style, strokeW, 0.12);
-      }
-    }
-
-    if (config.showBracelet) {
-      const style = config.braceletStyle;
-      const sizeMul = config.braceletSize;
-      const width = config.braceletWidth;
-      const A = pts[0];          // wrist
-      const B = pts[9];          // middle MCP (defines palm axis)
-      const radius = hand.scale * 0.95 * sizeMul;
-      const strokeW = Math.max(1.4, hand.scale * width * 0.5);
-      const t = 0.08;            // slightly out of the palm, past the wrist
-
-      if (style === 'beads') {
-        // Beads: many small spheres along the ring path
-        const ch = FINGER_CHAINS[4]; // unused
-        // Compute basis just like the ring function, then place beads
-        const mx = A.x + (B.x - A.x) * t;
-        const my = A.y + (B.y - A.y) * t;
-        const mz = A.z + (B.z - A.z) * t;
-        let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
-        const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-        dx /= dl; dy /= dl; dz /= dl;
-        let hx, hy, hz;
-        if (Math.abs(dy) > 0.9) { hx = 1; hy = 0; hz = 0; }
-        else { hx = 0; hy = 1; hz = 0; }
-        let ux = dy * hz - dz * hy;
-        let uy = dz * hx - dx * hz;
-        let uz = dx * hy - dy * hx;
-        const ul = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-        ux /= ul; uy /= ul; uz /= ul;
-        const vx = dy * uz - dz * uy;
-        const vy = dz * ux - dx * uz;
-        const vz = dx * uy - dy * ux;
-        const N = 18;
-        const beadR = Math.max(1.6, radius * 0.14);
-        ctx.fillStyle = rgbaQ(0.95);
-        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-        ctx.lineWidth = 0.6;
-        for (let i = 0; i < N; i++) {
-          const ang = (i / N) * Math.PI * 2;
-          const ca = Math.cos(ang), sa = Math.sin(ang);
-          const px = mx + radius * (ca * ux + sa * vx);
-          const py = my + radius * (ca * uy + sa * vy);
-          ctx.beginPath();
-          ctx.arc(px, py, beadR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-        }
-      } else if (style === 'chain') {
-        // Chain: alternating links along the path
-        const mx = A.x + (B.x - A.x) * t;
-        const my = A.y + (B.y - A.y) * t;
-        const mz = A.z + (B.z - A.z) * t;
-        let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
-        const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-        dx /= dl; dy /= dl; dz /= dl;
-        let hx, hy, hz;
-        if (Math.abs(dy) > 0.9) { hx = 1; hy = 0; hz = 0; }
-        else { hx = 0; hy = 1; hz = 0; }
-        let ux = dy * hz - dz * hy;
-        let uy = dz * hx - dx * hz;
-        let uz = dx * hy - dy * hx;
-        const ul = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
-        ux /= ul; uy /= ul; uz /= ul;
-        const vx = dy * uz - dz * uy;
-        const vy = dz * ux - dx * uz;
-        const vz = dx * uy - dy * ux;
-        const N = 20;
-        ctx.strokeStyle = rgbaQ(0.9);
-        ctx.lineWidth = Math.max(1, strokeW);
-        for (let i = 0; i < N; i++) {
-          const ang = (i / N) * Math.PI * 2;
-          const ca = Math.cos(ang), sa = Math.sin(ang);
-          const px = mx + radius * (ca * ux + sa * vx);
-          const py = my + radius * (ca * uy + sa * vy);
-          const s = Math.max(1.4, radius * 0.09);
-          ctx.beginPath();
-          if (i % 2 === 0) {
-            ctx.ellipse(px, py, s, s * 0.55, ang, 0, Math.PI * 2);
-          } else {
-            ctx.ellipse(px, py, s * 0.55, s, ang, 0, Math.PI * 2);
-          }
-          ctx.stroke();
-        }
-      } else if (style === 'tech') {
-        // Tech band: solid thick ring with inner line
-        drawRingGeometry(A, B, t, radius, 'band', strokeW * 1.6, 0.22);
-        // Inner second ring
-        const t2 = t + 0.06;
-        drawRingGeometry(A, B, t2, radius * 0.94, 'band', strokeW * 0.9, 0.1);
-      } else {
-        // Cuff
-        drawRingGeometry(A, B, t, radius, 'band', strokeW, 0.18);
-      }
-    }
   }
 
   // ============================================================
@@ -2466,16 +2537,82 @@
 
     ctx.strokeStyle = color;
     ctx.lineCap = 'butt';
-
     for (let i = 0; i < segs; i++) {
       const t0 = (i + gap * 0.5) / segs;
       const t1 = (i + 1 - gap * 0.5) / segs;
       const w = width * (1 - taper * (segs > 1 ? i / (segs - 1) : 0));
-
       ctx.beginPath();
       ctx.moveTo(p0.x + dx * t0, p0.y + dy * t0);
       ctx.lineTo(p0.x + dx * t1, p0.y + dy * t1);
       ctx.lineWidth = Math.max(0.35, w);
+      ctx.stroke();
+    }
+  }
+
+  function drawBoneStyled(p0, p1, width, color, mode) {
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    if (mode === 'dashed') {
+      ctx.setLineDash([Math.max(4, width * 4), Math.max(2, width * 2)]);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'butt';
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (mode === 'dotted') {
+      ctx.setLineDash([0.1, Math.max(3, width * 3)]);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(1.2, width * 1.3);
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (mode === 'neon') {
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = rgbaQ(0.22);
+      ctx.lineWidth = width * 3.2;
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.stroke();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.stroke();
+    } else if (mode === 'rope') {
+      const N = Math.max(6, Math.floor(len / 6));
+      const amp = Math.max(1.5, width * 1.4);
+      const nx = -dy / len;
+      const ny = dx / len;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(0.8, width * 0.7);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
+        const px = p0.x + dx * t;
+        const py = p0.y + dy * t;
+        const off = (i % 2 === 0 ? 1 : -1) * amp;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px + nx * off, py + ny * off);
+      }
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
       ctx.stroke();
     }
   }
@@ -2507,13 +2644,16 @@
     const bw = config.boneWidth;
     let glow = config.glowOpacity;
     if (config.fxSpeedGlow) {
-      glow = Math.min(0.5, glow + clamp(hand.speed / 5000, 0, 0.25));
+      glow = Math.min(0.7, glow + clamp(hand.speed / 5000, 0, 0.3));
     }
+
+    const mode = config.skeletonMode;
+    const boneMode = config.boneColorMode;
 
     if (glow > 0) {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = rgbaQ(glow);
+      ctx.strokeStyle = glowQ(glow);
       ctx.lineWidth = bw * 4.5;
       ctx.beginPath();
       for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
@@ -2524,9 +2664,19 @@
       ctx.stroke();
     }
 
+    let zMin = Infinity, zMax = -Infinity;
+    if (config.fxZfog) {
+      for (let i = 0; i < 21; i++) {
+        const z = pts[i].z;
+        if (z < zMin) zMin = z;
+        if (z > zMax) zMax = z;
+      }
+      if (zMax - zMin < 1) { zMin = 0; zMax = 1; }
+    }
+
     const segs = Math.round(config.segCount);
 
-    if (segs <= 1) {
+    if (segs <= 1 && mode === 'solid' && boneMode === 'accent' && !config.fxZfog) {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.strokeStyle = rgbaQ(0.94);
@@ -2540,10 +2690,17 @@
       ctx.stroke();
     } else {
       ctx.lineJoin = 'round';
-      const boneColor = rgbaQ(0.94);
       for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
         const c = HAND_CONNECTIONS[i];
-        drawSegmentedBone(pts[c[0]], pts[c[1]], bw, boneColor);
+        let color = colorForBone(i, pts);
+        if (config.fxZfog) {
+          const zMid = (pts[c[0]].z + pts[c[1]].z) * 0.5;
+          const t = clamp((zMid - zMin) / (zMax - zMin), 0, 1);
+          const alpha = 0.25 + (1 - t) * 0.75;
+          color = rgbaQ(0.94 * alpha);
+        }
+        if (segs <= 1) drawBoneStyled(pts[c[0]], pts[c[1]], bw, color, mode);
+        else drawSegmentedBone(pts[c[0]], pts[c[1]], bw, color);
       }
     }
 
@@ -2603,7 +2760,7 @@
       const pulse = 1 + Math.sin(now / 420) * 0.08;
       const r = Math.max(24, hand.scale * 1.1) * pulse;
       const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r);
-      grad.addColorStop(0, rgbaQ(0.18));
+      grad.addColorStop(0, rgbaQ(0.20));
       grad.addColorStop(0.55, rgbaQ(0.07));
       grad.addColorStop(1, rgbaQ(0));
       ctx.fillStyle = grad;
@@ -2647,7 +2804,22 @@
       ctx.stroke();
     }
 
-    if (config.fxBounding || config.fxBounds) {
+    if (config.fxPulse) {
+      const w = pts[0];
+      const phase = (st.pulsePhase % 1.2) / 1.2;
+      for (let k = 0; k < 3; k++) {
+        const t = (phase + k / 3) % 1;
+        const r = 6 + t * hand.scale * 1.3;
+        const a = (1 - t) * 0.5;
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, r, 0, Math.PI * 2);
+        ctx.strokeStyle = rgbaQ(a);
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+    }
+
+    if (config.fxBounds) {
       let minX = Infinity, minY = Infinity, minZ = Infinity;
       let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
       for (let i = 0; i < 21; i++) {
@@ -2810,6 +2982,75 @@
       }
     }
 
+    if (config.fxComet) {
+      ctx.lineCap = 'round';
+      for (let ti = 0; ti < 5; ti++) {
+        const tr = st.trail[FINGERTIPS[ti]];
+        if (!tr || tr.length < 2) continue;
+        for (let i = 1; i < tr.length; i++) {
+          const t0 = tr[i - 1], t1 = tr[i];
+          const age = (now - t1.t) / 700;
+          if (age >= 1) continue;
+          const a = (1 - age) * 0.85;
+          const w = 4.5 * (1 - age) + 0.5;
+          ctx.beginPath();
+          ctx.moveTo(t0.x, t0.y);
+          ctx.lineTo(t1.x, t1.y);
+          ctx.strokeStyle = glowQ(a);
+          ctx.lineWidth = w;
+          ctx.stroke();
+        }
+        const tip = pts[FINGERTIPS[ti]];
+        ctx.fillStyle = glowQ(1);
+        ctx.beginPath();
+        ctx.arc(tip.x, tip.y, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    if (config.fxSparkle) {
+      for (let i = 0; i < 5; i++) {
+        const p = pts[FINGERTIPS[i]];
+        const phase = (now * 0.003 + i * 1.3) % 1;
+        const r = 3 + Math.sin(phase * Math.PI) * 7;
+        const a = Math.sin(phase * Math.PI) * 0.9;
+        ctx.strokeStyle = rgbaQ(a);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(p.x - r, p.y); ctx.lineTo(p.x + r, p.y);
+        ctx.moveTo(p.x, p.y - r); ctx.lineTo(p.x, p.y + r);
+        ctx.moveTo(p.x - r * 0.6, p.y - r * 0.6); ctx.lineTo(p.x + r * 0.6, p.y + r * 0.6);
+        ctx.moveTo(p.x - r * 0.6, p.y + r * 0.6); ctx.lineTo(p.x + r * 0.6, p.y - r * 0.6);
+        ctx.stroke();
+      }
+    }
+
+    if (config.fxConstellation) {
+      const maxD = hand.scale * 1.3;
+      ctx.strokeStyle = rgbaQ(0.4);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        for (let j = i + 1; j < 5; j++) {
+          const a = pts[FINGERTIPS[i]], b = pts[FINGERTIPS[j]];
+          const ddx = a.x - b.x, ddy = a.y - b.y;
+          const d = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (d < maxD) {
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+          }
+        }
+      }
+      ctx.stroke();
+      ctx.fillStyle = rgbaQ(0.95);
+      for (let i = 0; i < 5; i++) {
+        const p = pts[FINGERTIPS[i]];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
     if (config.fxReticle) {
       const rBase = Math.max(9, hand.scale * 0.11);
       const L = rBase * 0.5;
@@ -2842,6 +3083,49 @@
       ctx.stroke();
     }
 
+    if (config.fxLabels) {
+      ctx.font = FONT_MONO_8;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = rgbaQ(0.85);
+      const names = ['T','I','M','R','P'];
+      for (let i = 0; i < 5; i++) {
+        const p = pts[FINGERTIPS[i]];
+        ctx.fillText(names[i], p.x, p.y - 12);
+      }
+    }
+
+    if (config.fxGrid) {
+      // Palm lattice: interpolate two orthogonal families across the palm quad.
+      const w  = pts[0];   // wrist
+      const iM = pts[5];   // index MCP
+      const mM = pts[9];   // middle MCP
+      const pM = pts[17];  // pinky MCP
+      ctx.strokeStyle = rgbaQ(0.35);
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      const rows = 4, cols = 4;
+      for (let i = 1; i < cols; i++) {
+        const t = i / cols;
+        const ax = iM.x + (pM.x - iM.x) * t;
+        const ay = iM.y + (pM.y - iM.y) * t;
+        const bx = w.x + (mM.x - w.x) * t;
+        const by = w.y + (mM.y - w.y) * t;
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+      }
+      for (let i = 1; i < rows; i++) {
+        const t = i / rows;
+        const ax = w.x + (mM.x - w.x) * t;
+        const ay = w.y + (mM.y - w.y) * t;
+        const bx = iM.x + (pM.x - iM.x) * t;
+        const by = iM.y + (pM.y - iM.y) * t;
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+      }
+      ctx.stroke();
+    }
+
     if (config.fxScan) {
       let minY = Infinity, maxY = -Infinity, minX = Infinity, maxX = -Infinity;
       for (let i = 0; i < 21; i++) {
@@ -2870,8 +3154,8 @@
 
     if (config.fxPredict) {
       const c = hand.center;
-      const leadX = st.cx + (st.cx - st.px0 || 0);
-      const leadY = st.cy + (st.cy - st.py0 || 0);
+      const leadX = st.cx + (st.cx - st.px0);
+      const leadY = st.cy + (st.cy - st.py0);
 
       ctx.strokeStyle = rgbaQ(0.55);
       ctx.lineWidth = 1;
@@ -2919,7 +3203,6 @@
       }
     }
 
-    // ---- Fun: pinch ripples ----
     if (config.fxRipple && st.ripples.length) {
       for (let i = 0; i < st.ripples.length; i++) {
         const rp = st.ripples[i];
@@ -3059,6 +3342,40 @@
   }
 
   // ============================================================
+  //  GESTURE SHORTCUTS
+  // ============================================================
+  const shortcutState = { pose: '', since: 0, fired: '' };
+
+  function checkGestureShortcuts() {
+    if (!config.gestureShortcuts || !handData.length) {
+      shortcutState.pose = '';
+      shortcutState.fired = '';
+      return;
+    }
+    const pose = handData[0].pose;
+    const now = performance.now();
+    if (pose !== shortcutState.pose) {
+      shortcutState.pose = pose;
+      shortcutState.since = now;
+      shortcutState.fired = '';
+      return;
+    }
+    if (shortcutState.fired === pose) return;
+    if (now - shortcutState.since < 700) return;
+
+    if (pose === 'OPEN') {
+      shortcutState.fired = pose;
+      if (!active) { activate(); showToast('ACTIVATE'); }
+    } else if (pose === 'FIST') {
+      shortcutState.fired = pose;
+      if (active) { deactivate(); showToast('STANDBY'); }
+    } else if (pose === 'PEACE') {
+      shortcutState.fired = pose;
+      if (!settingsPanel.classList.contains('open')) { openPanel(); showToast('SETTINGS'); }
+    }
+  }
+
+  // ============================================================
   //  RENDER LOOP
   // ============================================================
   let lastRenderTime = 0;
@@ -3073,23 +3390,49 @@
     if (!cover.valid) updateCover();
 
     ctx.clearRect(0, 0, viewW, viewH);
-    if (!active) return;
+    if (!active) {
+      // Draw ambient overlays when idle so the app doesn't feel dead
+      if (config.fxSnow) { updateSnow(dt); drawSnow(); }
+      return;
+    }
 
     updateParticles(dt);
+    if (config.fxSnow) updateSnow(dt);
+    updateGlitchBars();
+
+    if (config.gestureShortcuts) checkGestureShortcuts();
+
+    // Screen shake via CSS transform on canvas
+    if (config.fxShake && handData.length) {
+      let maxSpeed = 0;
+      for (let i = 0; i < handData.length; i++) {
+        if (handData[i].speed > maxSpeed) maxSpeed = handData[i].speed;
+      }
+      if (maxSpeed > 500) {
+        const amt = Math.min(6, (maxSpeed - 500) / 300);
+        const sx = (Math.random() - 0.5) * amt;
+        const sy = (Math.random() - 0.5) * amt;
+        canvas.style.transform = `translate(${sx}px, ${sy}px)`;
+      } else if (canvas.style.transform) {
+        canvas.style.transform = '';
+      }
+    } else if (canvas.style.transform) {
+      canvas.style.transform = '';
+    }
 
     const showLP = config.showLowPoly;
     const showSk = config.showHand;
-    const showAcc = config.showRings || config.showBracelet;
 
     for (let i = 0; i < handData.length; i++) {
       const hand = handData[i];
       if (showLP) drawMesh(hand);
-      if (showAcc) drawAccessories(hand);
       if (showSk) drawSkeleton(hand);
       drawFX(hand);
     }
 
     if (config.fxParticles) drawParticles();
+    if (config.fxSnow) drawSnow();
+    if (config.fxGlitch && glitchBars.length) drawGlitchBars();
   }
 
   function renderLoop() {
@@ -3098,23 +3441,19 @@
   }
 
   // ============================================================
-  //  MEDIAPIPE HANDS
+  //  MEDIAPIPE HANDS (lazy)
   // ============================================================
-  const hands = new Hands({
-    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
-  });
-
-  function applyHandsOptions() {
-    hands.setOptions({
-      maxNumHands: config.maxHands,
-      modelComplexity: config.modelComplexity,
-      minDetectionConfidence: config.minDetection,
-      minTrackingConfidence: config.minTracking,
-      selfieMode: false,
+  function ensureHands() {
+    if (hands) return hands;
+    if (typeof Hands === 'undefined') return null;
+    hands = new Hands({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
     });
+    hands.onResults(onHandsResults);
+    return hands;
   }
 
-  hands.onResults(r => {
+  function onHandsResults(r) {
     if (config.enableHands) {
       buildHandData(r);
     } else {
@@ -3128,7 +3467,19 @@
       tSpeed.classList.add('idle');
       tSpeedBar.style.width = '0%';
     }
-  });
+  }
+
+  function applyHandsOptions() {
+    const h = ensureHands();
+    if (!h) return;
+    h.setOptions({
+      maxNumHands: config.maxHands,
+      modelComplexity: config.modelComplexity,
+      minDetectionConfidence: config.minDetection,
+      minTrackingConfidence: config.minTracking,
+      selfieMode: false,
+    });
+  }
 
   // ============================================================
   //  CAMERA
@@ -3162,14 +3513,14 @@
     try {
       stopCamera();
       await startCamera();
-    } catch (e) {
-      console.warn('camera restart failed', e);
-    }
+    } catch (e) { console.warn('camera restart failed', e); }
   }
 
   // ============================================================
   //  INFERENCE LOOP
   // ============================================================
+  let sendErrorLogged = false;
+
   async function frameLoop() {
     if (!active) return;
     rafInfer = requestAnimationFrame(frameLoop);
@@ -3179,21 +3530,34 @@
     const minInterval = 1000 / config.fpsCap;
     const dt = now - inferLast;
     if (dt < minInterval) return;
-
     inferLast = now;
 
     const fps = 1000 / Math.max(1, dt);
     fpsSmooth = fpsSmooth ? fpsSmooth * 0.9 + fps * 0.1 : fps;
-    tFps.textContent = String(Math.min(999, Math.round(fpsSmooth)));
-    tFps.classList.remove('idle');
+    if (config.showFps) {
+      tFps.textContent = String(Math.min(999, Math.round(fpsSmooth)));
+      tFps.classList.remove('idle');
+    } else if (tFps.textContent !== '—') {
+      tFps.textContent = '—';
+      tFps.classList.add('idle');
+    }
 
     if (video.readyState < 2 || video.videoWidth === 0) return;
     if (!config.enableHands) return;
 
+    const h = ensureHands();
+    if (!h) return;
+
     inferenceInFlight = true;
     try {
-      await hands.send({ image: video });
-    } catch (e) {}
+      await h.send({ image: video });
+      sendErrorLogged = false;
+    } catch (e) {
+      if (!sendErrorLogged) {
+        console.warn('[SENTINEL] hands.send error', e);
+        sendErrorLogged = true;
+      }
+    }
     inferenceInFlight = false;
   }
 
@@ -3202,6 +3566,16 @@
   // ============================================================
   async function activate() {
     if (active) return;
+
+    // Try to bring the tracking library up before we ask for the camera
+    if (!ensureHands()) {
+      activateBtn.disabled = false;
+      activateBtn.textContent = 'ACTIVATE';
+      bootEl.classList.remove('hidden');
+      bootEl.classList.add('error');
+      bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
+      return;
+    }
 
     applyHandsOptions();
 
@@ -3248,6 +3622,8 @@
     handData = [];
     inferenceInFlight = false;
     particles.length = 0;
+    glitchBars.length = 0;
+    canvas.style.transform = '';
 
     activateBtn.textContent = 'ACTIVATE';
     activateBtn.classList.remove('on');
@@ -3302,6 +3678,8 @@
       hudEl.classList.toggle('hidden');
     } else if (k === 'f') {
       toggleFullscreen();
+    } else if (k === 'p') {
+      saveFrame();
     }
   });
 
@@ -3325,15 +3703,17 @@
     segTaper:        v => v.toFixed(2),
     boneWidth:       v => v.toFixed(1),
     jointRadius:     v => v.toFixed(1),
-    ringSize:        v => v.toFixed(2),
-    braceletSize:    v => v.toFixed(2),
-    braceletWidth:   v => v.toFixed(2),
+    videoBrightness: v => v.toFixed(2),
+    videoContrast:   v => v.toFixed(2),
+    videoSaturate:   v => v.toFixed(2),
     segCount:        v => String(v | 0),
     graceFrames:     v => String(v | 0),
     fpsCap:          v => String(v | 0),
     maxHands:        v => String(v | 0),
     modelComplexity: v => String(v | 0),
     lowPolyDensity:  v => String(v | 0),
+    trailLength:     v => String(v | 0),
+    particleCap:     v => String(v | 0),
   };
 
   const labelEls = {};
@@ -3358,13 +3738,16 @@
     input.style.setProperty('--fill', pct.toFixed(2) + '%');
   }
 
+  function updateSliderFillAll() {
+    document.querySelectorAll('input[type="range"][data-key]').forEach(updateSliderFill);
+  }
+
   function wireInputs() {
     document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
       const key = input.dataset.key;
       input.value = config[key];
       syncSliderLabel(key, input.value);
       updateSliderFill(input);
-
       input.addEventListener('input', () => {
         const val = parseFloat(input.value);
         config[key] = val;
@@ -3408,43 +3791,61 @@
         };
         config.accentName = nameMap[hex] || 'CUSTOM';
         if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
-        // Disable rainbow when picking a static accent
         if (config.fxRainbow) {
           config.fxRainbow = false;
           document.querySelectorAll('.toggle[data-key="fxRainbow"]').forEach(x => x.classList.remove('on'));
         }
+        accentCustom.value = hex;
         updateAccentRGB();
         saveConfig();
       });
     });
 
-    // ---- Ring finger chips ----
-    const chipRow = document.getElementById('ringFingers');
-    if (chipRow) {
-      const chips = chipRow.querySelectorAll('.chip');
-      const refresh = () => {
-        chips.forEach((c, i) => c.classList.toggle('on', !!config.ringFingers[i]));
-      };
-      chips.forEach(c => {
-        c.addEventListener('click', () => {
-          const i = parseInt(c.dataset.finger, 10);
-          config.ringFingers[i] = !config.ringFingers[i];
-          refresh();
-          saveConfig();
-        });
-      });
-      refresh();
-    }
+    accentCustom.addEventListener('input', () => {
+      config.accent = accentCustom.value;
+      config.accentName = 'CUSTOM';
+      if (labelEls.accentName) labelEls.accentName.textContent = 'CUSTOM';
+      document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+      updateAccentRGB();
+      saveConfig();
+    });
+    accentCustom.addEventListener('change', () => {
+      config.accent = accentCustom.value;
+      saveConfig();
+    });
+
+    glowCustom.addEventListener('input', () => {
+      config.glowColor = glowCustom.value;
+      updateGlowRGB();
+      saveConfig();
+    });
+    glowCustom.addEventListener('change', () => {
+      config.glowColor = glowCustom.value;
+      saveConfig();
+    });
+
+    presetSelect.addEventListener('change', () => {
+      const v = presetSelect.value;
+      if (v) {
+        applyPreset(v);
+        presetSelect.value = '';
+      }
+    });
   }
 
   function onConfigChange(key, val) {
     if (key === 'showTelemetry') telemetryEl.style.display = val ? '' : 'none';
     if (key === 'showClock') clockEl.style.display = val ? '' : 'none';
-    if (key === 'videoGrayscale' || key === 'videoMirror') applyVideoFilter();
-
-    if (key === 'fxRainbow') {
-      if (!val) updateAccentRGB();
+    if (key === 'showFps' && !val) {
+      tFps.textContent = '—';
+      tFps.classList.add('idle');
     }
+    if (key === 'videoGrayscale' || key === 'videoMirror' ||
+        key === 'videoBrightness' || key === 'videoContrast' || key === 'videoSaturate') {
+      applyVideoFilter();
+    }
+    if (key === 'fxRainbow' && !val) updateAccentRGB();
+    if (key === 'glowColor') updateGlowRGB();
 
     if (['maxHands', 'modelComplexity', 'minDetection', 'minTracking', 'enableHands'].includes(key)) {
       applyHandsOptions();
@@ -3468,8 +3869,10 @@
   }
 
   function applyVideoFilter() {
-    const sat = config.videoGrayscale ? 'saturate(0.55)' : 'saturate(1)';
-    video.style.filter = `${sat} brightness(0.92) contrast(1.1)`;
+    const b = config.videoBrightness;
+    const c = config.videoContrast;
+    const s = config.videoGrayscale ? 0.15 : config.videoSaturate;
+    video.style.filter = `contrast(${c}) brightness(${b}) saturate(${s})`;
     video.style.transform = config.videoMirror ? 'scaleX(-1)' : 'none';
   }
 
@@ -3490,13 +3893,8 @@
       x.classList.toggle('active', x.dataset.accent === config.accent);
     });
     if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
-
-    const chipRow = document.getElementById('ringFingers');
-    if (chipRow) {
-      chipRow.querySelectorAll('.chip').forEach((c, i) => {
-        c.classList.toggle('on', !!config.ringFingers[i]);
-      });
-    }
+    accentCustom.value = config.accent;
+    glowCustom.value = config.glowColor;
   }
 
   // ============================================================
@@ -3504,18 +3902,20 @@
   // ============================================================
   document.getElementById('resetDefaults').addEventListener('click', () => {
     Object.assign(config, DEFAULTS);
-    config.ringFingers = DEFAULTS.ringFingers.slice();
     updateAccentRGB();
+    updateGlowRGB();
     applyVideoFilter();
     syncAllInputs();
     Object.keys(config).forEach(k => onConfigChange(k, config[k]));
     saveConfig();
+    showToast('Defaults restored');
   });
 
   document.getElementById('exportConfig').addEventListener('click', async () => {
     const data = JSON.stringify(config, null, 2);
     try {
       await navigator.clipboard.writeText(data);
+      showToast('Config copied');
     } catch (e) {
       window.prompt('Config JSON:', data);
     }
@@ -3527,26 +3927,74 @@
     try {
       const parsed = JSON.parse(data);
       Object.assign(config, DEFAULTS, parsed);
-      if (!Array.isArray(config.ringFingers) || config.ringFingers.length !== 5) {
-        config.ringFingers = DEFAULTS.ringFingers.slice();
-      }
       updateAccentRGB();
+      updateGlowRGB();
       applyVideoFilter();
       syncAllInputs();
       Object.keys(config).forEach(k => onConfigChange(k, config[k]));
       saveConfig();
-    } catch (e) {}
+      showToast('Config loaded');
+    } catch (e) {
+      showToast('Invalid config');
+    }
   });
 
   function toggleFullscreen() {
     const el = document.getElementById('stage');
-    if (!document.fullscreenElement) {
-      el.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.();
-    }
+    if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => {});
+    else document.exitFullscreen?.();
   }
   document.getElementById('toggleFullscreen').addEventListener('click', toggleFullscreen);
+
+  function saveFrame() {
+    try {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const outW = Math.round(viewW * dpr);
+      const outH = Math.round(viewH * dpr);
+      const tmp = document.createElement('canvas');
+      tmp.width = outW;
+      tmp.height = outH;
+      const tc = tmp.getContext('2d');
+
+      // Composite the video with the same filter/mirror the user sees.
+      if (cover.valid && video.videoWidth) {
+        tc.save();
+        const s = config.videoGrayscale ? 0.15 : config.videoSaturate;
+        if ('filter' in tc) {
+          tc.filter = `contrast(${config.videoContrast}) brightness(${config.videoBrightness}) saturate(${s})`;
+        }
+        if (config.videoMirror) {
+          tc.translate(outW, 0);
+          tc.scale(-1, 1);
+          tc.drawImage(
+            video,
+            cover.offsetX * dpr, cover.offsetY * dpr,
+            cover.drawW * dpr, cover.drawH * dpr
+          );
+        } else {
+          tc.drawImage(
+            video,
+            cover.offsetX * dpr, cover.offsetY * dpr,
+            cover.drawW * dpr, cover.drawH * dpr
+          );
+        }
+        tc.restore();
+      }
+      // Overlay canvas is already at (viewW*dpr, viewH*dpr) — 1:1 blit
+      tc.drawImage(canvas, 0, 0, outW, outH);
+
+      const url = tmp.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sentinel_${Date.now()}.png`;
+      a.click();
+      showToast('Frame saved');
+    } catch (e) {
+      console.warn('save failed', e);
+      showToast('Save failed');
+    }
+  }
+  document.getElementById('screenshotBtn').addEventListener('click', saveFrame);
 
   // ============================================================
   //  VISIBILITY
@@ -3573,26 +4021,28 @@
     loadConfig();
     cacheLabelEls();
     updateAccentRGB();
+    updateGlowRGB();
     applyVideoFilter();
     wireInputs();
     syncAllInputs();
+    initSnow();
 
     onConfigChange('showTelemetry', config.showTelemetry);
     onConfigChange('showClock', config.showClock);
-
-    applyHandsOptions();
 
     renderLoop();
   }
 
   setTimeout(() => {
-    if (typeof Hands === 'undefined') {
-      bootEl.classList.add('error');
-      bootMsg.textContent = 'LIBRARY LOAD FAILED';
-      return;
-    }
     init();
-    bootEl.classList.add('hidden');
+    if (typeof Hands === 'undefined') {
+      // The UI still works — activating will show a dedicated error.
+      bootEl.classList.add('error');
+      bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
+      setTimeout(() => bootEl.classList.add('hidden'), 2200);
+    } else {
+      bootEl.classList.add('hidden');
+    }
   }, 300);
 
 })();
