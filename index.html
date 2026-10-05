@@ -155,7 +155,7 @@
       transform: translateY(-50%);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 13px;
       color: var(--muted);
       font-size: 9px;
       letter-spacing: 0.16em;
@@ -170,7 +170,7 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
-      min-width: 64px;
+      min-width: 84px;
     }
 
     .telemetry .val {
@@ -184,6 +184,24 @@
 
     .telemetry .val.idle {
       color: rgba(255, 255, 255, 0.32);
+    }
+
+    .speed-bar {
+      display: block;
+      height: 2px;
+      margin-top: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .speed-bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--accent-hex);
+      transition: width .1s linear;
+      will-change: width;
     }
 
     .bottombar {
@@ -535,11 +553,6 @@
       outline-offset: 1px;
     }
 
-    .btn-row button.primary {
-      border-color: var(--accent-hex);
-      color: var(--accent-hex);
-    }
-
     .color-row {
       display: flex;
       gap: 8px;
@@ -724,8 +737,13 @@
           <div class="val idle" id="tHands">0</div>
         </div>
         <div class="row">
-          <div>FACES</div>
-          <div class="val idle" id="tFaces">0</div>
+          <div>POSE</div>
+          <div class="val idle" id="tPose">—</div>
+        </div>
+        <div class="row">
+          <div>SPEED</div>
+          <div class="val idle" id="tSpeed">—</div>
+          <span class="speed-bar"><i id="tSpeedBar"></i></span>
         </div>
       </div>
 
@@ -769,15 +787,9 @@
           <div class="section-head"><span>Detection</span><span class="chev">▼</span></div>
           <div class="section-content">
             <label class="toggle" data-key="enableHands"><span>Hand Tracking</span><span class="switch"></span></label>
-            <label class="toggle" data-key="enableFace"><span>Face Detection</span><span class="switch"></span></label>
-            <label class="toggle" data-key="showFace"><span>Render Face Mesh</span><span class="switch"></span></label>
             <div class="field">
               <div class="label"><span>Max Hands</span><span class="value" data-value="maxHands">2</span></div>
               <input type="range" min="1" max="4" step="1" data-key="maxHands">
-            </div>
-            <div class="field">
-              <div class="label"><span>Max Faces</span><span class="value" data-value="maxFaces">1</span></div>
-              <input type="range" min="1" max="4" step="1" data-key="maxFaces">
             </div>
             <div class="field">
               <div class="label"><span>Model Complexity</span><span class="value" data-value="modelComplexity">1</span>
@@ -786,21 +798,42 @@
             </div>
             <div class="field">
               <div class="label">
-                <span>Detection Confidence</span><span class="value" data-value="minDetection">0.60</span>
-              </div>
+                <span>Detection Confidence</span><span class="value" data-value="minDetection">0.60</span></div>
               <input type="range" min="0.1" max="0.95" step="0.05" data-key="minDetection">
             </div>
             <div class="field">
               <div class="label">
-                <span>Tracking Confidence</span><span class="value" data-value="minTracking">0.60</span>
-              </div>
+                <span>Tracking Confidence</span><span class="value" data-value="minTracking">0.60</span></div>
               <input type="range" min="0.1" max="0.95" step="0.05" data-key="minTracking">
             </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="tracking">
+          <div class="section-head"><span>Tracking</span><span class="chev">▼</span></div>
+          <div class="section-content">
             <div class="field">
-              <div class="label"><span>Signal Smoothing</span><span class="value" data-value="smoothing">0.35</span>
+              <div class="label"><span>Stabilization</span><span class="value" data-value="stabilization">0.55</span>
               </div>
-              <input type="range" min="0" max="0.9" step="0.05" data-key="smoothing">
+              <input type="range" min="0" max="0.95" step="0.05" data-key="stabilization">
             </div>
+            <div class="field">
+              <div class="label"><span>Responsiveness</span><span class="value" data-value="responsiveness">0.50</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" data-key="responsiveness">
+            </div>
+            <div class="field">
+              <div class="label"><span>Prediction Lead</span><span class="value" data-value="prediction">1.0</span>
+              </div>
+              <input type="range" min="0" max="2" step="0.1" data-key="prediction">
+            </div>
+            <div class="field">
+              <div class="label"><span>Hand Grace Frames</span><span class="value" data-value="graceFrames">6</span>
+              </div>
+              <input type="range" min="0" max="20" step="1" data-key="graceFrames">
+            </div>
+            <div class="hint">Adaptive one-euro filter. Higher stabilization suppresses jitter; higher responsiveness
+              reduces motion lag. Prediction leads the drawn position to compensate for filter latency.</div>
           </div>
         </div>
 
@@ -882,6 +915,10 @@
             <label class="toggle" data-key="fxRings"><span>Range Rings</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxScan"><span>Scan Sweep</span><span class="switch"></span></label>
             <label class="toggle" data-key="fxTag"><span>Hand Data Tag</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPose"><span>Pose &amp; Finger Bars</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPinch"><span>Pinch Indicator</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPoint"><span>Pointing Ray</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPredict"><span>Predictive Lead</span><span class="switch"></span></label>
             <div class="hint">Overlays stack on top of the mesh. Combine with the orientation gizmo for a full tracking
               readout.</div>
           </div>
@@ -945,8 +982,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous">
-  </script>
 
   <script>
     (() => {
@@ -957,7 +992,7 @@
   // ============================================================
   const video       = document.getElementById('video');
   const canvas      = document.getElementById('overlay');
-  const ctx         = canvas.getContext('2d');
+  const ctx         = canvas.getContext('2d', { alpha: true, desynchronized: true });
   const bootEl      = document.getElementById('boot');
   const bootMsg     = document.getElementById('bootMsg');
   const activateBtn = document.getElementById('activateBtn');
@@ -965,9 +1000,11 @@
   const hudEl       = document.getElementById('hud');
   const telemetryEl = document.getElementById('telemetry');
 
-  const tFps   = document.getElementById('tFps');
-  const tHands = document.getElementById('tHands');
-  const tFaces = document.getElementById('tFaces');
+  const tFps      = document.getElementById('tFps');
+  const tHands    = document.getElementById('tHands');
+  const tPose     = document.getElementById('tPose');
+  const tSpeed    = document.getElementById('tSpeed');
+  const tSpeedBar = document.getElementById('tSpeedBar');
 
   const settingsPanel  = document.getElementById('settingsPanel');
   const settingsToggle = document.getElementById('settingsToggle');
@@ -978,29 +1015,70 @@
   //  CONFIG
   // ============================================================
   const DEFAULTS = {
-    enableHands: true, enableFace: false, showFace: true,
-    maxHands: 2, maxFaces: 1, modelComplexity: 1,
-    minDetection: 0.6, minTracking: 0.6, smoothing: 0.35,
+    // detection
+    enableHands: true,
+    maxHands: 2,
+    modelComplexity: 1,
+    minDetection: 0.6,
+    minTracking: 0.6,
 
-    showHand: true, boneWidth: 1.0,
-    segCount: 1, segGap: 0.18, segTaper: 0.15,
-    jointStyle: 'dot', jointRadius: 1.8, glowOpacity: 0.10,
+    // tracking / stability
+    stabilization: 0.55,
+    responsiveness: 0.5,
+    prediction: 1.0,
+    graceFrames: 6,
 
-    showLowPoly: false, lowPolyOpacity: 0.72, lowPolyDensity: 1,
-    depthScale: 1.0, lowPolyShade: true, lowPolyEdges: true,
+    // skeleton
+    showHand: true,
+    boneWidth: 1.0,
+    segCount: 1,
+    segGap: 0.18,
+    segTaper: 0.15,
+    jointStyle: 'dot',
+    jointRadius: 1.8,
+    glowOpacity: 0.10,
 
-    fxReticle: false, fxAngles: false, fxAxis: false, fxTrail: false,
-    fxBounds: false, fxVector: false, fxRings: false, fxScan: false, fxTag: false,
+    // volumetric
+    showLowPoly: false,
+    lowPolyOpacity: 0.72,
+    lowPolyDensity: 1,
+    depthScale: 1.0,
+    lowPolyShade: true,
+    lowPolyEdges: true,
 
-    accent: '#ffffff', accentName: 'WHITE',
-    videoGrayscale: true, videoMirror: true,
+    // fx
+    fxReticle: false,
+    fxAngles: false,
+    fxAxis: false,
+    fxTrail: false,
+    fxBounds: false,
+    fxVector: false,
+    fxRings: false,
+    fxScan: false,
+    fxTag: false,
+    fxPose: false,
+    fxPinch: false,
+    fxPoint: false,
+    fxPredict: false,
 
-    facingMode: 'user', resolution: '1280x720', pauseOnHide: true,
+    // appearance
+    accent: '#ffffff',
+    accentName: 'WHITE',
+    videoGrayscale: true,
+    videoMirror: true,
 
-    showTelemetry: true, showClock: true, fpsCap: 60,
+    // source
+    facingMode: 'user',
+    resolution: '1280x720',
+    pauseOnHide: true,
+
+    // interface
+    showTelemetry: true,
+    showClock: true,
+    fpsCap: 60,
   };
 
-  const STORAGE_KEY = 'sentinel.config.v2';
+  const STORAGE_KEY = 'sentinel.config.v3';
   const config = { ...DEFAULTS };
 
   function loadConfig() {
@@ -1017,22 +1095,119 @@
   //  MATH
   // ============================================================
   const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
-  const hypot3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
+  function dist3(x, y, z) { return Math.sqrt(x * x + y * y + z * z); }
 
   // ============================================================
-  //  ACCENT CACHE
+  //  ACCENT / RGBA LUT
   // ============================================================
   const ACCENT_RGB = { r: 255, g: 255, b: 255 };
+
+  // 33 discrete alpha levels — used to pre-build rgba strings.
+  // Invalidated whenever the accent changes.
+  const RGBA_LUT = new Array(33);
+
   function updateAccentRGB() {
     const h = config.accent.replace('#', '');
     ACCENT_RGB.r = parseInt(h.substring(0, 2), 16);
     ACCENT_RGB.g = parseInt(h.substring(2, 4), 16);
     ACCENT_RGB.b = parseInt(h.substring(4, 6), 16);
     document.documentElement.style.setProperty('--accent-hex', config.accent);
+    RGBA_LUT.fill(undefined);
   }
   function rgbaA(a) {
     return `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${a})`;
   }
+  function rgbaQ(a) {
+    if (a <= 0) return 'rgba(0,0,0,0)';
+    if (a >= 1) a = 1;
+    let idx = (a * 32 + 0.5) | 0;
+    if (idx < 0) idx = 0; else if (idx > 32) idx = 32;
+    let s = RGBA_LUT[idx];
+    if (s === undefined) {
+      s = `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${idx / 32})`;
+      RGBA_LUT[idx] = s;
+    }
+    return s;
+  }
+
+  // ============================================================
+  //  ONE-EURO FILTER (adaptive low-pass)
+  // ============================================================
+  class LowPass {
+    constructor() { this.y = 0; this.initialized = false; }
+    filter(x, alpha) {
+      if (!this.initialized) { this.y = x; this.initialized = true; }
+      else this.y = alpha * x + (1 - alpha) * this.y;
+      return this.y;
+    }
+    reset() { this.initialized = false; this.y = 0; }
+  }
+
+  class OneEuroFilter {
+    constructor(minCutoff, beta, dCutoff) {
+      this.minCutoff = minCutoff;
+      this.beta = beta;
+      this.dCutoff = dCutoff;
+      this.xFilt = new LowPass();
+      this.dxFilt = new LowPass();
+      this.prevX = null;
+      this.prevT = null;
+      this.value = 0;
+      this.velocity = 0;
+    }
+    setParams(minCutoff, beta, dCutoff) {
+      this.minCutoff = minCutoff;
+      this.beta = beta;
+      this.dCutoff = dCutoff;
+    }
+    alpha(cutoff, dt) {
+      const tau = 1 / (2 * Math.PI * cutoff);
+      return 1 / (1 + tau / dt);
+    }
+    filter(x, tSec) {
+      if (this.prevT === null) {
+        this.prevT = tSec;
+        this.prevX = x;
+        this.value = this.xFilt.filter(x, 1);
+        this.velocity = 0;
+        return this.value;
+      }
+      const dt = tSec - this.prevT;
+      if (dt <= 0) return this.value;
+      const dx = (x - this.prevX) / dt;
+      this.prevX = x;
+      this.prevT = tSec;
+
+      const aD = this.alpha(this.dCutoff, dt);
+      const dxHat = this.dxFilt.filter(dx, aD);
+
+      const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+      const a = this.alpha(cutoff, dt);
+      this.value = this.xFilt.filter(x, a);
+      this.velocity = dxHat;
+      return this.value;
+    }
+    reset() {
+      this.xFilt.reset();
+      this.dxFilt.reset();
+      this.prevX = null;
+      this.prevT = null;
+      this.value = 0;
+      this.velocity = 0;
+    }
+  }
+
+  // Map config sliders to filter parameters
+  function minCutoffFromStabilization(s) {
+    // s = 0 → 12 Hz (almost no filtering), s = 0.95 → 0.45 Hz (heavy)
+    return 12 * Math.pow(0.038, s);
+  }
+  function betaFromResponsiveness(r) {
+    // r = 0 → 0.003, r = 1 → 0.12
+    return 0.003 + r * 0.117;
+  }
+
+  const D_CUTOFF = 1.0;
 
   // ============================================================
   //  STATE
@@ -1043,9 +1218,8 @@
   let rafRender = null;
   let inferLast = 0;
   let fpsSmooth = 0;
+  let inferenceInFlight = false;
 
-  let handResults = null;
-  let faceResults = null;
   let handData = [];
 
   // ============================================================
@@ -1107,18 +1281,7 @@
   ];
   const FINGERTIPS = [4, 8, 12, 16, 20];
   const IS_TIP = new Uint8Array(21);
-  for (const t of FINGERTIPS) IS_TIP[t] = 1;
-
-  const FACE_OVAL   = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
-                       397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
-                       172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
-  const LEFT_EYE    = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
-  const RIGHT_EYE   = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
-  const LIPS_OUTER  = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185];
-  const LIPS_INNER  = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191];
-  const LEFT_BROW   = [70, 63, 105, 66, 107];
-  const RIGHT_BROW  = [300, 293, 334, 296, 336];
-  const NOSE_RIDGE  = [168, 6, 197, 195, 5, 4, 1, 2];
+  for (let i = 0; i < 5; i++) IS_TIP[FINGERTIPS[i]] = 1;
 
   // ============================================================
   //  CLOCK
@@ -1132,7 +1295,7 @@
   tickClock();
 
   // ============================================================
-  //  MESH TOPOLOGY (cached per density — built once)
+  //  MESH TOPOLOGY (built once per density)
   // ============================================================
   const meshTopologyCache = new Map();
 
@@ -1146,15 +1309,13 @@
     const recipes = new Array(vertCount);
 
     const palmLm = [0, 1, 5, 9, 13, 17];
-    for (let i = 0; i < 6; i++) recipes[i] = { k: 0, lm: palmLm[i] };          // lm
-    for (let i = 0; i < 6; i++) recipes[6 + i] = { k: 1, lm: palmLm[i] };      // palmF
-    for (let i = 0; i < 6; i++) recipes[12 + i] = { k: 2, lm: palmLm[i] };     // palmB
+    for (let i = 0; i < 6; i++) recipes[i]      = { k: 0, lm: palmLm[i] };
+    for (let i = 0; i < 6; i++) recipes[6 + i]  = { k: 1, lm: palmLm[i] };
+    for (let i = 0; i < 6; i++) recipes[12 + i] = { k: 2, lm: palmLm[i] };
 
-    // Front cap, back cap (back reversed to face away)
     faces.push([6, 7, 8, 9, 10, 11]);
     faces.push([12, 13, 14, 15, 16, 17]);
 
-    // Bevel bands
     for (let i = 0; i < 6; i++) {
       const j = (i + 1) % 6;
       faces.push([6 + i, 6 + j, j, i]);
@@ -1181,12 +1342,10 @@
       const r2 = base + 2 * sides;
       const apex = base + 3 * sides;
 
-      // Base cap — original order (matches MediaPipe winding convention)
       const cap = [];
       for (let s = 0; s < sides; s++) cap.push(r0 + s);
       faces.push(cap);
 
-      // Tube
       for (let k = 0; k < 2; k++) {
         const a = base + k * sides;
         const b = base + (k + 1) * sides;
@@ -1196,7 +1355,6 @@
         }
       }
 
-      // Tip
       for (let s = 0; s < sides; s++) {
         const s2 = (s + 1) % sides;
         faces.push([r2 + s, r2 + s2, apex]);
@@ -1214,9 +1372,6 @@
     return t;
   }
 
-  // ============================================================
-  //  MESH RENDERER BUFFERS (per density — reused every frame)
-  // ============================================================
   const meshRenderers = new Map();
 
   function getMeshRenderer(density) {
@@ -1237,27 +1392,26 @@
   function _cmpFaceZ(a, b) { return _cmpFaceZ_arr[b] - _cmpFaceZ_arr[a]; }
 
   // ============================================================
-  //  MESH EVALUATION (fills positions in place)
+  //  MESH EVALUATION — fully inlined, no allocations
   // ============================================================
   function evaluateMesh(topo, pts, positions) {
     const { vertCount, recipes, fingerLm, fingerRad, taper } = topo;
 
     const p0 = pts[0], p5 = pts[5], p9 = pts[9], p17 = pts[17];
 
-    // Palm normal
     const e1x = p5.x - p0.x, e1y = p5.y - p0.y, e1z = p5.z - p0.z;
     const e2x = p17.x - p0.x, e2y = p17.y - p0.y, e2z = p17.z - p0.z;
     let nx = e1y * e2z - e1z * e2y;
     let ny = e1z * e2x - e1x * e2z;
     let nz = e1x * e2y - e1y * e2x;
-    let nl = hypot3(nx, ny, nz) || 1;
+    let nl = dist3(nx, ny, nz) || 1;
     nx /= nl; ny /= nl; nz /= nl;
 
-    const scale = hypot3(p9.x - p0.x, p9.y - p0.y, p9.z - p0.z) || 1;
+    const scale = dist3(p9.x - p0.x, p9.y - p0.y, p9.z - p0.z) || 1;
     const thick = scale * 0.17;
-    const shrinkK = 0.16; // 1 - 0.84
+    const halfT = thick * 0.5;
+    const shrinkK = 0.16;
 
-    // Palm centroid
     const palmLm = [0, 1, 5, 9, 13, 17];
     let ccx = 0, ccy = 0, ccz = 0;
     for (let i = 0; i < 6; i++) {
@@ -1266,42 +1420,42 @@
     }
     ccx /= 6; ccy /= 6; ccz /= 6;
 
-    const halfT = thick * 0.5;
-
     for (let i = 0; i < vertCount; i++) {
       const r = recipes[i];
       let x, y, z;
 
       switch (r.k) {
-        case 0: { // landmark
+        case 0: {
           const p = pts[r.lm];
           x = p.x; y = p.y; z = p.z;
           break;
         }
-        case 1: { // palm front
+        case 1: {
           const p = pts[r.lm];
-          x = p.x + (ccx - p.x) * shrinkK + nx * halfT;
-          y = p.y + (ccy - p.y) * shrinkK + ny * halfT;
-          z = p.z + (ccz - p.z) * shrinkK + nz * halfT;
+          const ax = ccx - p.x, ay = ccy - p.y, az = ccz - p.z;
+          x = p.x + ax * shrinkK + nx * halfT;
+          y = p.y + ay * shrinkK + ny * halfT;
+          z = p.z + az * shrinkK + nz * halfT;
           break;
         }
-        case 2: { // palm back
+        case 2: {
           const p = pts[r.lm];
-          x = p.x + (ccx - p.x) * shrinkK - nx * halfT;
-          y = p.y + (ccy - p.y) * shrinkK - ny * halfT;
-          z = p.z + (ccz - p.z) * shrinkK - nz * halfT;
+          const ax = ccx - p.x, ay = ccy - p.y, az = ccz - p.z;
+          x = p.x + ax * shrinkK - nx * halfT;
+          y = p.y + ay * shrinkK - ny * halfT;
+          z = p.z + az * shrinkK - nz * halfT;
           break;
         }
-        case 3: { // finger ring
+        case 3: {
           const chain = fingerLm[r.f];
           const a = pts[chain[r.seg]];
           const b = pts[chain[r.seg + 1]];
           let dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
-          const dl = hypot3(dx, dy, dz) || 1;
+          const dl = dist3(dx, dy, dz) || 1;
           dx /= dl; dy /= dl; dz /= dl;
           const dn = nx * dx + ny * dy + nz * dz;
           let ux = nx - dn * dx, uy = ny - dn * dy, uz = nz - dn * dz;
-          const ul = hypot3(ux, uy, uz);
+          const ul = dist3(ux, uy, uz);
           if (ul < 1e-5) { ux = 0; uy = 1; uz = 0; }
           else { ux /= ul; uy /= ul; uz /= ul; }
           const rx = dy * uz - dz * uy;
@@ -1315,20 +1469,18 @@
           z = a.z + (rz * ca + uz * sa) * rad;
           break;
         }
-        case 4: { // fingertip apex
+        default: {
           const chain = fingerLm[r.f];
           const b = pts[chain[2]];
           const t = pts[chain[3]];
           let dx = t.x - b.x, dy = t.y - b.y, dz = t.z - b.z;
-          const dl = hypot3(dx, dy, dz) || 1;
+          const dl = dist3(dx, dy, dz) || 1;
           dx /= dl; dy /= dl; dz /= dl;
           const rad = fingerRad[r.f] * scale * 0.95;
           x = t.x + dx * rad;
           y = t.y + dy * rad;
           z = t.z + dz * rad;
-          break;
         }
-        default: x = 0; y = 0; z = 0;
       }
       const o = i * 3;
       positions[o] = x;
@@ -1338,22 +1490,37 @@
   }
 
   // ============================================================
-  //  HAND SLOTS (persistent per-hand state, no per-frame alloc)
+  //  HAND SLOTS — persistent per-hand state with proximity matching
   // ============================================================
+  let nextSlotId = 1;
   const handSlots = new Map();
 
-  function makeSlot(key, label, now) {
-    return {
-      key, label, score: 0,
+  function makeSlot(id, label, now) {
+    const slot = {
+      id, label, score: 0,
       initialized: false,
       smooth: new Array(21),
       pts: new Array(21),
+      predicted: new Array(21),
+      filters: new Array(63),
       center: { x: 0, y: 0, z: 0 },
       palmNormal: { x: 0, y: 0, z: 0 },
       along: { x: 0, y: 0, z: 0 },
       across: { x: 0, y: 0, z: 0 },
       scale: 1,
       speed: 0,
+      fingerState: [false, false, false, false, false],
+      pose: '—',
+      pinchActive: false,
+      pinchStrength: 0,
+      pinchTipIdx: 8,
+
+      // identity match / grace
+      lastWrist: null,
+      lastActive: now,
+      active: false,
+      lostFrames: 0,
+
       st: {
         tips: {},
         trail: {},
@@ -1363,103 +1530,231 @@
         lastPulse: 0,
       },
     };
+    for (let j = 0; j < 21; j++) {
+      slot.smooth[j] = { x: 0, y: 0, z: 0 };
+      slot.pts[j] = { x: 0, y: 0, z: 0 };
+      slot.predicted[j] = { x: 0, y: 0, z: 0 };
+    }
+    for (let i = 0; i < 63; i++) {
+      slot.filters[i] = new OneEuroFilter(1.0, 0.02, D_CUTOFF);
+    }
+    return slot;
   }
 
+  // Match detections to slots by wrist proximity
+  function matchDetections(dets) {
+    const MAX_DIST2 = 0.05;
+    const assigned = new Array(dets.length).fill(null);
+    const slotUsed = new Set();
+
+    const pairs = [];
+    for (let i = 0; i < dets.length; i++) {
+      const w = dets[i].lm[0];
+      for (const slot of handSlots.values()) {
+        if (slotUsed.has(slot.id)) continue;
+        const pw = slot.lastWrist;
+        if (!pw) continue;
+        if (slot.label !== dets[i].label) continue;
+        const dx = w.x - pw.x;
+        const dy = w.y - pw.y;
+        const dz = (w.z || 0) - (pw.z || 0);
+        const d2 = dx * dx + dy * dy + dz * dz * 0.25;
+        if (d2 < MAX_DIST2) pairs.push({ i, slot, d2 });
+      }
+    }
+
+    pairs.sort((a, b) => a.d2 - b.d2);
+
+    for (let p = 0; p < pairs.length; p++) {
+      const pair = pairs[p];
+      if (assigned[pair.i] !== null) continue;
+      if (slotUsed.has(pair.slot.id)) continue;
+      assigned[pair.i] = pair.slot;
+      slotUsed.add(pair.slot.id);
+    }
+
+    return assigned;
+  }
+
+  // ============================================================
+  //  GESTURE ANALYSIS
+  // ============================================================
+  function computeFingerState(pts, palmScale) {
+    const state = [false, false, false, false, false];
+
+    // Thumb: extended if tip is far from pinky MCP
+    const tt = pts[4], pmcp = pts[17];
+    const dTx = tt.x - pmcp.x, dTy = tt.y - pmcp.y;
+    state[0] = Math.sqrt(dTx * dTx + dTy * dTy) > palmScale * 1.05;
+
+    // Others: PIP and DIP joints both nearly straight
+    for (let f = 1; f < 5; f++) {
+      const ch = FINGER_CHAINS[f];
+      const a = pts[ch[0]], b = pts[ch[1]], c = pts[ch[2]], d = pts[ch[3]];
+
+      const v1x = a.x - b.x, v1y = a.y - b.y;
+      const v2x = c.x - b.x, v2y = c.y - b.y;
+      const v3x = d.x - c.x, v3y = d.y - c.y;
+
+      const l1 = Math.sqrt(v1x * v1x + v1y * v1y) || 1;
+      const l2 = Math.sqrt(v2x * v2x + v2y * v2y) || 1;
+      const l3 = Math.sqrt(v3x * v3x + v3y * v3y) || 1;
+
+      const cos1 = (v1x * v2x + v1y * v2y) / (l1 * l2);
+      const cos2 = (v2x * v3x + v2y * v3y) / (l2 * l3);
+
+      // -0.4 ≈ 113°: extension threshold
+      state[f] = cos1 < -0.4 && cos2 < -0.4;
+    }
+
+    return state;
+  }
+
+  function classifyPose(state) {
+    const [t, i, m, r, p] = state;
+    const count = (t?1:0) + (i?1:0) + (m?1:0) + (r?1:0) + (p?1:0);
+    if (count === 5) return 'OPEN';
+    if (count === 0) return 'FIST';
+    if (t && i && !m && !r && !p) return 'GUN';
+    if (!t && i && !m && !r && !p) return 'POINT';
+    if (!t && i && m && !r && !p) return 'PEACE';
+    if (t && !i && !m && !r && !p) return 'THUMB';
+    if (!t && i && m && r && !p) return 'THREE';
+    if (t && i && m && !r && !p) return 'THREE';
+    if (!t && i && m && r && p) return 'FOUR';
+    return count + '/5';
+  }
+
+  // ============================================================
+  //  BUILD HAND DATA
+  // ============================================================
   function buildHandData(r) {
     const list = r.multiHandLandmarks || [];
     const meta = r.multiHandedness || [];
     const now = performance.now();
-    const out = [];
-    const seen = new Set();
+    const tSec = now / 1000;
+    const predictS = config.prediction * 0.03;
 
+    const minCutoff = minCutoffFromStabilization(config.stabilization);
+    const beta = betaFromResponsiveness(config.responsiveness);
+
+    // ---- Build detection list ----
+    const dets = [];
     for (let i = 0; i < list.length; i++) {
       const lm = list[i];
       const rawLabel = (meta[i] && meta[i].label) || 'Hand';
       const label = rawLabel === 'Left' ? 'Right' : (rawLabel === 'Right' ? 'Left' : 'Hand');
       const score = (meta[i] && meta[i].score) || 0;
-      const key = label + '_' + i;
-      seen.add(key);
+      dets.push({ lm, label, score });
+    }
 
-      let slot = handSlots.get(key);
-      if (!slot) {
-        slot = makeSlot(key, label, now);
-        for (let j = 0; j < 21; j++) {
-          slot.smooth[j] = { x: 0, y: 0, z: 0 };
-          slot.pts[j] = { x: 0, y: 0, z: 0 };
-        }
-        handSlots.set(key, slot);
-      }
+    // ---- Match to existing slots ----
+    const assigned = matchDetections(dets);
 
-      // ---- Smoothing ----
-      const amount = config.smoothing;
+    // ---- New slots for unmatched detections ----
+    for (let i = 0; i < dets.length; i++) {
+      if (assigned[i]) continue;
+      const slot = makeSlot(nextSlotId++, dets[i].label, now);
+      handSlots.set(slot.id, slot);
+      assigned[i] = slot;
+    }
+
+    // ---- Process each detection ----
+    const out = [];
+    const usedSlotIds = new Set();
+
+    for (let i = 0; i < dets.length; i++) {
+      const slot = assigned[i];
+      const det = dets[i];
+      const lm = det.lm;
+      usedSlotIds.add(slot.id);
+
+      // ---- Per-landmark One-Euro + projection ----
+      const filters = slot.filters;
+      const smooth = slot.smooth;
+      const pts = slot.pts;
+      const predicted = slot.predicted;
+
       if (!slot.initialized) {
         for (let j = 0; j < 21; j++) {
           const p = lm[j];
-          slot.smooth[j].x = p.x;
-          slot.smooth[j].y = p.y;
-          slot.smooth[j].z = p.z || 0;
+          const s = smooth[j];
+          s.x = p.x; s.y = p.y; s.z = p.z || 0;
         }
         slot.initialized = true;
-      } else if (amount > 0) {
-        const a = 1 - clamp(amount, 0, 0.95);
-        for (let j = 0; j < 21; j++) {
-          const q = slot.smooth[j];
-          const p = lm[j];
-          q.x += (p.x - q.x) * a;
-          q.y += (p.y - q.y) * a;
-          q.z += ((p.z || 0) - q.z) * a;
-        }
-      } else {
-        for (let j = 0; j < 21; j++) {
-          const p = lm[j];
-          slot.smooth[j].x = p.x;
-          slot.smooth[j].y = p.y;
-          slot.smooth[j].z = p.z || 0;
-        }
       }
 
-      // ---- Projection ----
       for (let j = 0; j < 21; j++) {
-        const p = slot.smooth[j];
-        const q = slot.pts[j];
-        q.x = projectX(p.x);
-        q.y = projectY(p.y);
-        q.z = projectZ(p.z);
+        const p = lm[j];
+        const s = smooth[j];
+        const fIdx = j * 3;
+
+        const fx = filters[fIdx];
+        const fy = filters[fIdx + 1];
+        const fz = filters[fIdx + 2];
+
+        fx.setParams(minCutoff, beta, D_CUTOFF);
+        fy.setParams(minCutoff, beta, D_CUTOFF);
+        fz.setParams(minCutoff, beta, D_CUTOFF);
+
+        s.x = fx.filter(p.x, tSec);
+        s.y = fy.filter(p.y, tSec);
+        s.z = fz.filter(p.z || 0, tSec);
       }
 
-      // ---- Derived data ----
-      const pts = slot.pts;
+      // ---- Project + predict ----
+      const dxLead = predictS;
+      for (let j = 0; j < 21; j++) {
+        const s = smooth[j];
+        const q = pts[j];
+        const pr = predicted[j];
+        const fIdx = j * 3;
+        const vx = filters[fIdx].velocity;
+        const vy = filters[fIdx + 1].velocity;
+        const vz = filters[fIdx + 2].velocity;
+
+        const sx = s.x + vx * dxLead;
+        const sy = s.y + vy * dxLead;
+        const sz = s.z + vz * dxLead;
+
+        q.x = projectX(sx);
+        q.y = projectY(sy);
+        q.z = projectZ(sz);
+
+        pr.x = projectX(sx);
+        pr.y = projectY(sy);
+        pr.z = projectZ(sz);
+      }
+
+      // ---- Derived geometry ----
       const wrist = pts[0];
       const iMCP = pts[5];
       const pMCP = pts[17];
       const mMCP = pts[9];
 
-      // palm normal = normalize(cross(iMCP - wrist, pMCP - wrist))
       const e1x = iMCP.x - wrist.x, e1y = iMCP.y - wrist.y, e1z = iMCP.z - wrist.z;
       const e2x = pMCP.x - wrist.x, e2y = pMCP.y - wrist.y, e2z = pMCP.z - wrist.z;
       let nx = e1y * e2z - e1z * e2y;
       let ny = e1z * e2x - e1x * e2z;
       let nz = e1x * e2y - e1y * e2x;
-      const nl = hypot3(nx, ny, nz) || 1;
+      const nl = dist3(nx, ny, nz) || 1;
       nx /= nl; ny /= nl; nz /= nl;
       slot.palmNormal.x = nx; slot.palmNormal.y = ny; slot.palmNormal.z = nz;
 
-      // along = normalize(mMCP - wrist)
       let ax = mMCP.x - wrist.x, ay = mMCP.y - wrist.y, az = mMCP.z - wrist.z;
-      const al = hypot3(ax, ay, az) || 1;
+      const al = dist3(ax, ay, az) || 1;
       ax /= al; ay /= al; az /= al;
       slot.along.x = ax; slot.along.y = ay; slot.along.z = az;
       slot.scale = al;
 
-      // across = normalize(cross(palmNormal, along))
       let cx = ny * az - nz * ay;
       let cy = nz * ax - nx * az;
       let cz = nx * ay - ny * ax;
-      const cl = hypot3(cx, cy, cz) || 1;
+      const cl = dist3(cx, cy, cz) || 1;
       cx /= cl; cy /= cl; cz /= cl;
       slot.across.x = cx; slot.across.y = cy; slot.across.z = cz;
 
-      // Centre
+      // ---- Centre & velocity ----
       let ccx = 0, ccy = 0, ccz = 0;
       const centerIdx = [0, 1, 5, 9, 13, 17];
       for (let k = 0; k < 6; k++) {
@@ -1469,7 +1764,6 @@
       ccx /= 6; ccy /= 6; ccz /= 6;
       slot.center.x = ccx; slot.center.y = ccy; slot.center.z = ccz;
 
-      // Velocity / trails / pulses
       const st = slot.st;
       const dt = Math.max(0.001, (now - st.t) / 1000);
       st.t = now;
@@ -1483,7 +1777,6 @@
         st.lastPulse = now;
         st.pulses.push({ x: ccx, y: ccy, t: now });
       }
-      // In-place compaction
       let w = 0;
       for (let p = 0; p < st.pulses.length; p++) {
         if (now - st.pulses[p].t < 1100) st.pulses[w++] = st.pulses[p];
@@ -1501,7 +1794,6 @@
         } else {
           st.tips[tip] = { x: p.x, y: p.y, vx: 0, vy: 0 };
         }
-
         let tr = st.trail[tip];
         if (!tr) { tr = []; st.trail[tip] = tr; }
         tr.push({ x: p.x, y: p.y, t: now });
@@ -1509,31 +1801,84 @@
         while (tr.length && now - tr[0].t > 700) tr.shift();
       }
 
-      slot.label = label;
-      slot.score = score;
+      // ---- Gesture analysis ----
+      const fingerState = computeFingerState(pts, slot.scale);
+      slot.fingerState = fingerState;
+      slot.pose = classifyPose(fingerState);
+
+      // Pinch: thumb tip (4) to index tip (8)
+      const tt = pts[4], it = pts[8];
+      const pdx = tt.x - it.x, pdy = tt.y - it.y;
+      const pinchDist = Math.sqrt(pdx * pdx + pdy * pdy);
+      const pinchMax = slot.scale * 0.55;
+      const pinchStrength = clamp(1 - pinchDist / pinchMax, 0, 1);
+      slot.pinchActive = pinchStrength > 0.65;
+      slot.pinchStrength = pinchStrength;
+      slot.pinchTipIdx = 8;
+
+      // ---- Slot bookkeeping ----
+      slot.label = det.label;
+      slot.score = det.score;
+      slot.active = true;
+      slot.lastActive = now;
+      slot.lostFrames = 0;
+      slot.lastWrist = { x: lm[0].x, y: lm[0].y, z: lm[0].z || 0 };
+
       out.push(slot);
     }
 
-    for (const k of handSlots.keys()) if (!seen.has(k)) handSlots.delete(k);
+    // ---- Grace period / cleanup ----
+    const graceLimit = config.graceFrames | 0;
+    for (const slot of [...handSlots.values()]) {
+      if (usedSlotIds.has(slot.id)) continue;
+      slot.lostFrames++;
+      if (slot.lostFrames > graceLimit) {
+        handSlots.delete(slot.id);
+      } else {
+        slot.active = false;
+      }
+    }
 
     handData = out;
+
     const n = out.length;
     tHands.textContent = n;
     tHands.classList.toggle('idle', n === 0);
+
+    // HUD pose + speed from primary hand
+    if (n > 0) {
+      tPose.textContent = out[0].pose;
+      tPose.classList.remove('idle');
+      const sp = Math.round(out[0].speed);
+      tSpeed.textContent = String(Math.min(9999, sp));
+      tSpeed.classList.remove('idle');
+      tSpeedBar.style.width = clamp(out[0].speed / 30, 0, 100) + '%';
+    } else {
+      tPose.textContent = '—';
+      tPose.classList.add('idle');
+      tSpeed.textContent = '—';
+      tSpeed.classList.add('idle');
+      tSpeedBar.style.width = '0%';
+    }
   }
 
   // ============================================================
   //  DRAW — 3D MESH
   // ============================================================
   const LIGHT = { x: -0.42, y: -0.62, z: -0.66 };
-  const LIGHT_LEN = Math.hypot(LIGHT.x, LIGHT.y, LIGHT.z);
-  LIGHT.x /= LIGHT_LEN; LIGHT.y /= LIGHT_LEN; LIGHT.z /= LIGHT_LEN;
+  {
+    const L = Math.sqrt(LIGHT.x * LIGHT.x + LIGHT.y * LIGHT.y + LIGHT.z * LIGHT.z);
+    LIGHT.x /= L; LIGHT.y /= L; LIGHT.z /= L;
+  }
 
   function drawMesh(hand) {
     const density = config.lowPolyDensity;
     const renderer = getMeshRenderer(density);
-    const { topo, positions, faceZ, faceOrder } = renderer;
-    const { faces, vertCount } = topo;
+    const topo = renderer.topo;
+    const positions = renderer.positions;
+    const faceZ = renderer.faceZ;
+    const faceOrder = renderer.faceOrder;
+    const faces = topo.faces;
 
     evaluateMesh(topo, hand.pts, positions);
 
@@ -1541,8 +1886,9 @@
     for (let i = 0; i < faceCount; i++) {
       const f = faces[i];
       let z = 0;
-      for (let j = 0; j < f.length; j++) z += positions[f[j] * 3 + 2];
-      faceZ[i] = z / f.length;
+      const fn = f.length;
+      for (let j = 0; j < fn; j++) z += positions[f[j] * 3 + 2];
+      faceZ[i] = z / fn;
     }
 
     _cmpFaceZ_arr = faceZ;
@@ -1551,6 +1897,7 @@
     const op = config.lowPolyOpacity;
     const edges = config.lowPolyEdges;
     const ar = ACCENT_RGB.r, ag = ACCENT_RGB.g, ab = ACCENT_RGB.b;
+    const edgeOpScale = op * 0.75;
 
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
@@ -1560,7 +1907,6 @@
       const fi = faceOrder[oi];
       const f = faces[fi];
 
-      // Normal from first three verts
       const i0 = f[0] * 3, i1 = f[1] * 3, i2 = f[2] * 3;
       const ax = positions[i0], ay = positions[i0 + 1], az = positions[i0 + 2];
       const bx = positions[i1], by = positions[i1 + 1], bz = positions[i1 + 2];
@@ -1570,7 +1916,7 @@
       let nX = e1y * e2z - e1z * e2y;
       let nY = e1z * e2x - e1x * e2z;
       let nZ = e1x * e2y - e1y * e2x;
-      const nL = hypot3(nX, nY, nZ);
+      const nL = dist3(nX, nY, nZ);
       if (nL < 1e-6) { nX = 0; nY = 0; nZ = -1; }
       else {
         nX /= nL; nY /= nL; nZ /= nL;
@@ -1579,8 +1925,8 @@
 
       const diff = Math.max(0, nX * LIGHT.x + nY * LIGHT.y + nZ * LIGHT.z);
       const absNZ = nZ < 0 ? -nZ : nZ;
-      const rimBase = 1 - (absNZ > 1 ? 1 : absNZ);
-      const rim = rimBase * rimBase * rimBase;
+      const rimB = 1 - (absNZ > 1 ? 1 : absNZ);
+      const rim = rimB * rimB * rimB;
       let sh = 0.16 + diff * 0.80 + rim * 0.30;
       if (sh > 1.15) sh = 1.15;
 
@@ -1600,7 +1946,7 @@
       ctx.fill();
 
       if (edges) {
-        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${op * (0.20 + diff * 0.55)})`;
+        ctx.strokeStyle = rgbaQ(edgeOpScale * (0.30 + diff * 0.70));
         ctx.stroke();
       }
     }
@@ -1635,22 +1981,21 @@
   function drawJoint(p, r, style) {
     if (style === 'none' || r <= 0) return;
     ctx.lineWidth = 1;
-
     if (style === 'ring') {
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.strokeStyle = rgbaA(0.92);
+      ctx.strokeStyle = rgbaQ(0.92);
       ctx.stroke();
     } else if (style === 'cross') {
       const s = r * 1.5;
-      ctx.strokeStyle = rgbaA(0.92);
+      ctx.strokeStyle = rgbaQ(0.92);
       ctx.beginPath();
       ctx.moveTo(p.x - s, p.y); ctx.lineTo(p.x + s, p.y);
       ctx.moveTo(p.x, p.y - s); ctx.lineTo(p.x, p.y + s);
       ctx.stroke();
     } else if (style === 'square') {
       const s = r;
-      ctx.strokeStyle = rgbaA(0.92);
+      ctx.strokeStyle = rgbaQ(0.92);
       ctx.strokeRect(p.x - s, p.y - s, s * 2, s * 2);
     }
   }
@@ -1660,11 +2005,10 @@
     const bw = config.boneWidth;
     const glow = config.glowOpacity;
 
-    // Glow pass (single path)
     if (glow > 0) {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = rgbaA(glow);
+      ctx.strokeStyle = rgbaQ(glow);
       ctx.lineWidth = bw * 4.5;
       ctx.beginPath();
       for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
@@ -1678,10 +2022,9 @@
     const segs = Math.round(config.segCount);
 
     if (segs <= 1) {
-      // Single-segment fast path — one path for all 21 bones
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = rgbaA(0.94);
+      ctx.strokeStyle = rgbaQ(0.94);
       ctx.lineWidth = bw;
       ctx.beginPath();
       for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
@@ -1692,14 +2035,13 @@
       ctx.stroke();
     } else {
       ctx.lineJoin = 'round';
-      const boneColor = rgbaA(0.94);
+      const boneColor = rgbaQ(0.94);
       for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
         const c = HAND_CONNECTIONS[i];
         drawSegmentedBone(pts[c[0]], pts[c[1]], bw, boneColor);
       }
     }
 
-    // Joints
     const jr = config.jointRadius;
     const style = config.jointStyle;
 
@@ -1712,7 +2054,7 @@
         ctx.moveTo(p.x + r, p.y);
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       }
-      ctx.fillStyle = rgbaA(0.96);
+      ctx.fillStyle = rgbaQ(0.96);
       ctx.fill();
     } else if (style !== 'none') {
       for (let i = 0; i < 21; i++) {
@@ -1720,8 +2062,7 @@
       }
     }
 
-    // Wrist bracket
-    ctx.strokeStyle = rgbaA(0.85);
+    ctx.strokeStyle = rgbaQ(0.85);
     ctx.lineWidth = 1;
     const wp = pts[0];
     ctx.beginPath();
@@ -1730,74 +2071,6 @@
     ctx.moveTo(wp.x - 6, wp.y + 3); ctx.lineTo(wp.x - 3, wp.y + 6);
     ctx.moveTo(wp.x + 6, wp.y + 3); ctx.lineTo(wp.x + 3, wp.y + 6);
     ctx.stroke();
-  }
-
-  // ============================================================
-  //  DRAW — FACE
-  // ============================================================
-  function drawFace(landmarks) {
-    const n = landmarks.length;
-    const xs = new Float32Array(n);
-    const ys = new Float32Array(n);
-    for (let i = 0; i < n; i++) {
-      const p = landmarks[i];
-      xs[i] = projectX(p.x);
-      ys[i] = projectY(p.y);
-    }
-
-    const traceSub = (indices, close) => {
-      let started = false;
-      const len = indices.length;
-      for (let i = 0; i < len; i++) {
-        const idx = indices[i];
-        if (idx >= n) continue;
-        if (!started) { ctx.moveTo(xs[idx], ys[idx]); started = true; }
-        else ctx.lineTo(xs[idx], ys[idx]);
-      }
-      if (close && started) ctx.closePath();
-    };
-
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    const glow = config.glowOpacity;
-
-    if (glow > 0) {
-      ctx.strokeStyle = rgbaA(glow * 0.6);
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      traceSub(FACE_OVAL, true);
-      traceSub(LEFT_EYE, true);
-      traceSub(RIGHT_EYE, true);
-      traceSub(LIPS_OUTER, true);
-      ctx.stroke();
-    }
-
-    ctx.strokeStyle = rgbaA(0.78);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    traceSub(FACE_OVAL, true);
-    traceSub(LEFT_EYE, true);
-    traceSub(RIGHT_EYE, true);
-    traceSub(LIPS_OUTER, true);
-    traceSub(LIPS_INNER, true);
-    traceSub(LEFT_BROW, false);
-    traceSub(RIGHT_BROW, false);
-    traceSub(NOSE_RIDGE, false);
-    ctx.stroke();
-
-    if (config.jointStyle !== 'none') {
-      ctx.fillStyle = rgbaA(0.88);
-      ctx.beginPath();
-      const fp = [1, 4, 6, 168, 197, 33, 133, 362, 263, 61, 291, 13, 14, 152, 10];
-      for (let k = 0; k < fp.length; k++) {
-        const idx = fp[k];
-        if (idx >= n) continue;
-        ctx.moveTo(xs[idx] + 1.6, ys[idx]);
-        ctx.arc(xs[idx], ys[idx], 1.6, 0, Math.PI * 2);
-      }
-      ctx.fill();
-    }
   }
 
   // ============================================================
@@ -1820,7 +2093,6 @@
     const st = hand.st;
     const now = performance.now();
 
-    // ---- RANGE RINGS ----
     if (config.fxRings) {
       const base = Math.max(24, hand.scale * 0.45);
       const cX = hand.center.x, cY = hand.center.y;
@@ -1829,7 +2101,7 @@
       for (let i = 0; i < 3; i++) {
         ctx.beginPath();
         ctx.arc(cX, cY, base * (1 + i * 0.55), 0, Math.PI * 2);
-        ctx.strokeStyle = rgbaA(0.14 - i * 0.03);
+        ctx.strokeStyle = rgbaQ(0.14 - i * 0.03);
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -1839,7 +2111,7 @@
       ctx.beginPath();
       ctx.moveTo(cX, cY);
       ctx.lineTo(cX + Math.cos(a) * base * 2.1, cY + Math.sin(a) * base * 2.1);
-      ctx.strokeStyle = rgbaA(0.35);
+      ctx.strokeStyle = rgbaQ(0.35);
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -1851,12 +2123,11 @@
         ctx.moveTo(pl.x + r, pl.y);
         ctx.arc(pl.x, pl.y, r, 0, Math.PI * 2);
       }
-      ctx.strokeStyle = rgbaA(0.4);
+      ctx.strokeStyle = rgbaQ(0.4);
       ctx.lineWidth = 1.4;
       ctx.stroke();
     }
 
-    // ---- 3D BOUNDING VOLUME ----
     if (config.fxBounds) {
       let minX = Infinity, minY = Infinity, minZ = Infinity;
       let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
@@ -1870,16 +2141,16 @@
       minX -= pad; maxX += pad; minY -= pad; maxY += pad;
       const dz = clamp((maxZ - minZ) * 0.14, 0, 26);
 
-      ctx.strokeStyle = rgbaA(0.28);
+      ctx.strokeStyle = rgbaQ(0.28);
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 4]);
       ctx.strokeRect(minX - dz, minY - dz, maxX - minX, maxY - minY);
       ctx.setLineDash([]);
 
-      ctx.strokeStyle = rgbaA(0.6);
+      ctx.strokeStyle = rgbaQ(0.6);
       ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
-      ctx.strokeStyle = rgbaA(0.22);
+      ctx.strokeStyle = rgbaQ(0.22);
       ctx.beginPath();
       const csx = [minX, maxX, maxX, minX];
       const csy = [minY, minY, maxY, maxY];
@@ -1889,22 +2160,18 @@
       }
       ctx.stroke();
 
-      // Corner brackets
-      ctx.strokeStyle = rgbaA(0.95);
+      ctx.strokeStyle = rgbaQ(0.95);
       ctx.lineWidth = 1.4;
       ctx.beginPath();
       const corners = [[minX, minY], [maxX, maxY]];
       for (let ci = 0; ci < 2; ci++) {
-        const [x, y] = corners[ci];
+        const cx0 = corners[ci][0], cy0 = corners[ci][1];
         const r = 8, L = 4;
-        const sxArr = [-1, 1];
-        const syArr = [-1, 1];
-        for (let ai = 0; ai < 2; ai++) {
-          for (let bi = 0; bi < 2; bi++) {
-            const sx = sxArr[ai], sy = syArr[bi];
-            ctx.moveTo(x + sx * r - sx * L, y + sy * r);
-            ctx.lineTo(x + sx * r, y + sy * r);
-            ctx.lineTo(x + sx * r, y + sy * r - sy * L);
+        for (let sx = -1; sx <= 1; sx += 2) {
+          for (let sy = -1; sy <= 1; sy += 2) {
+            ctx.moveTo(cx0 + sx * r - sx * L, cy0 + sy * r);
+            ctx.lineTo(cx0 + sx * r, cy0 + sy * r);
+            ctx.lineTo(cx0 + sx * r, cy0 + sy * r - sy * L);
           }
         }
       }
@@ -1913,27 +2180,26 @@
       ctx.font = '9px ui-monospace, Menlo, monospace';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
-      ctx.fillStyle = rgbaA(0.8);
+      ctx.fillStyle = rgbaQ(0.8);
       ctx.fillText(
         `${(maxX - minX).toFixed(0)}×${(maxY - minY).toFixed(0)}·D${(maxZ - minZ).toFixed(0)}`,
         minX, minY - 5
       );
     }
 
-    // ---- PALM ORIENTATION GIZMO ----
     if (config.fxAxis) {
       const c = hand.center;
       const L = Math.max(30, hand.scale * 0.85);
       const pn = hand.palmNormal, al = hand.along, ac = hand.across;
 
-      ctx.strokeStyle = rgbaA(0.6);
+      ctx.strokeStyle = rgbaQ(0.6);
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       fxArrowInto(c.x, c.y, c.x + al.x * L, c.y + al.y * L, 4.8);
       fxArrowInto(c.x, c.y, c.x + ac.x * L, c.y + ac.y * L, 4.8);
       ctx.stroke();
 
-      ctx.strokeStyle = rgbaA(0.95);
+      ctx.strokeStyle = rgbaQ(0.95);
       ctx.beginPath();
       fxArrowInto(c.x, c.y, c.x + pn.x * L, c.y + pn.y * L, 4.8);
       ctx.stroke();
@@ -1941,26 +2207,25 @@
       ctx.font = '9px ui-monospace, Menlo, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = rgbaA(0.95);
+      ctx.fillStyle = rgbaQ(0.95);
       ctx.fillText('N', c.x + pn.x * (L + 9), c.y + pn.y * (L + 9));
-      ctx.fillStyle = rgbaA(0.6);
+      ctx.fillStyle = rgbaQ(0.6);
       ctx.fillText('Y', c.x + al.x * (L + 9), c.y + al.y * (L + 9));
       ctx.fillText('X', c.x + ac.x * (L + 9), c.y + ac.y * (L + 9));
 
       ctx.beginPath();
       ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
-      ctx.fillStyle = rgbaA(0.9);
+      ctx.fillStyle = rgbaQ(0.9);
       ctx.fill();
     }
 
-    // ---- JOINT ANGLE READOUT ----
     if (config.fxAngles) {
       ctx.font = '9px ui-monospace, Menlo, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.strokeStyle = rgbaA(0.55);
+      ctx.strokeStyle = rgbaQ(0.55);
       ctx.lineWidth = 1;
-      ctx.fillStyle = rgbaA(0.9);
+      ctx.fillStyle = rgbaQ(0.9);
 
       for (let fi = 0; fi < 5; fi++) {
         const ch = FINGER_CHAINS[fi];
@@ -1989,9 +2254,8 @@
       }
     }
 
-    // ---- VELOCITY VECTORS ----
     if (config.fxVector) {
-      ctx.strokeStyle = rgbaA(0.75);
+      ctx.strokeStyle = rgbaQ(0.75);
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       for (let i = 0; i < 5; i++) {
@@ -2008,7 +2272,6 @@
       ctx.stroke();
     }
 
-    // ---- MOTION TRAILS ----
     if (config.fxTrail) {
       for (let ti = 0; ti < 5; ti++) {
         const tr = st.trail[FINGERTIPS[ti]];
@@ -2021,24 +2284,22 @@
           ctx.beginPath();
           ctx.moveTo(t0.x, t0.y);
           ctx.lineTo(t1.x, t1.y);
-          ctx.strokeStyle = rgbaA(a);
+          ctx.strokeStyle = rgbaQ(a);
           ctx.lineWidth = 1.4 * (1 - age) + 0.4;
           ctx.stroke();
         }
       }
     }
 
-    // ---- FINGERTIP RETICLES ----
     if (config.fxReticle) {
       const rBase = Math.max(9, hand.scale * 0.11);
       const L = rBase * 0.5;
 
-      ctx.strokeStyle = rgbaA(0.85);
+      ctx.strokeStyle = rgbaQ(0.85);
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       for (let i = 0; i < 5; i++) {
         const p = pts[FINGERTIPS[i]];
-        // 4 corner brackets
         for (let sx = -1; sx <= 1; sx += 2) {
           for (let sy = -1; sy <= 1; sy += 2) {
             ctx.moveTo(p.x + sx * rBase - sx * L, p.y + sy * rBase);
@@ -2049,7 +2310,7 @@
       }
       ctx.stroke();
 
-      ctx.strokeStyle = rgbaA(0.5);
+      ctx.strokeStyle = rgbaQ(0.5);
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let i = 0; i < 5; i++) {
@@ -2062,7 +2323,6 @@
       ctx.stroke();
     }
 
-    // ---- SCAN SWEEP ----
     if (config.fxScan) {
       let minY = Infinity, maxY = -Infinity, minX = Infinity, maxX = -Infinity;
       for (let i = 0; i < 21; i++) {
@@ -2077,9 +2337,9 @@
       const y = minY + phase * span;
 
       const grad = ctx.createLinearGradient(minX, y, maxX, y);
-      grad.addColorStop(0, rgbaA(0));
-      grad.addColorStop(0.5, rgbaA(0.7));
-      grad.addColorStop(1, rgbaA(0));
+      grad.addColorStop(0, rgbaQ(0));
+      grad.addColorStop(0.5, rgbaQ(0.7));
+      grad.addColorStop(1, rgbaQ(0));
 
       ctx.beginPath();
       ctx.moveTo(minX - 20, y);
@@ -2089,7 +2349,124 @@
       ctx.stroke();
     }
 
-    // ---- HAND DATA TAG ----
+    if (config.fxPredict) {
+      const c = hand.center;
+      const leadX = st.cx + (st.cx - st.px0 || 0);
+      const leadY = st.cy + (st.cy - st.py0 || 0);
+
+      ctx.strokeStyle = rgbaQ(0.55);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y);
+      ctx.lineTo(leadX, leadY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(leadX, leadY, 4, 0, Math.PI * 2);
+      ctx.strokeStyle = rgbaQ(0.7);
+      ctx.stroke();
+    }
+
+    if (config.fxPinch) {
+      const tt = pts[4], it = pts[8];
+      const strength = hand.pinchStrength;
+      if (strength > 0.15) {
+        ctx.strokeStyle = rgbaQ(0.3 + strength * 0.65);
+        ctx.lineWidth = 1 + strength * 1.8;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(tt.x, tt.y);
+        ctx.lineTo(it.x, it.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const mx = (tt.x + it.x) * 0.5;
+        const my = (tt.y + it.y) * 0.5;
+        const r = 4 + strength * 6;
+        ctx.beginPath();
+        ctx.arc(mx, my, r, 0, Math.PI * 2);
+        ctx.strokeStyle = rgbaQ(0.5 + strength * 0.5);
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+
+        if (hand.pinchActive) {
+          ctx.beginPath();
+          ctx.arc(mx, my, 1.6, 0, Math.PI * 2);
+          ctx.fillStyle = rgbaQ(0.95);
+          ctx.fill();
+        }
+      }
+    }
+
+    if (config.fxPoint) {
+      const tip = pts[8];
+      const pip = pts[6];
+      let dx = tip.x - pip.x, dy = tip.y - pip.y;
+      const dl = Math.sqrt(dx * dx + dy * dy) || 1;
+      dx /= dl; dy /= dl;
+      const len = 180;
+      const ex = tip.x + dx * len;
+      const ey = tip.y + dy * len;
+
+      ctx.strokeStyle = rgbaQ(0.6);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      fxArrowInto(tip.x, tip.y, ex, ey, 8);
+      ctx.stroke();
+
+      ctx.setLineDash([3, 4]);
+      ctx.strokeStyle = rgbaQ(0.25);
+      ctx.beginPath();
+      ctx.moveTo(tip.x + dx * 20, tip.y + dy * 20);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = rgbaQ(0.9);
+      ctx.fill();
+    }
+
+    if (config.fxPose) {
+      const wp = pts[0];
+      const bx = wp.x - 110;
+      const by = wp.y + 26;
+      const bw = 84;
+      const bh = 66;
+
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeStyle = rgbaQ(0.55);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, by, bw, bh);
+
+      ctx.font = '9px ui-monospace, Menlo, monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = rgbaQ(0.5);
+      ctx.fillText('POSE', bx + 7, by + 6);
+      ctx.fillStyle = rgbaQ(0.95);
+      ctx.font = 'bold 11px ui-monospace, Menlo, monospace';
+      ctx.fillText(hand.pose, bx + 7, by + 18);
+
+      // Finger bars
+      const fNames = ['T', 'I', 'M', 'R', 'P'];
+      ctx.font = '8px ui-monospace, Menlo, monospace';
+      for (let i = 0; i < 5; i++) {
+        const fx = bx + 7 + i * 14;
+        const fy = by + 44;
+        const extended = hand.fingerState[i];
+        const fh = extended ? 12 : 4;
+        ctx.fillStyle = extended ? rgbaQ(0.95) : rgbaQ(0.2);
+        ctx.fillRect(fx, fy + (12 - fh), 8, fh);
+        ctx.fillStyle = rgbaQ(0.55);
+        ctx.fillText(fNames[i], fx + 1, fy + 14);
+      }
+    }
+
     if (config.fxTag) {
       const wp = pts[0];
       const bx = wp.x + 26;
@@ -2101,12 +2478,12 @@
 
       const l0 = `${hand.label === 'Left' ? 'L' : hand.label === 'Right' ? 'R' : '?'}-${String(Math.round(hand.scale)).padStart(3, '0')}`;
       const l1 = `TRK ${(hand.score * 100).toFixed(0)}%`;
-      const l2 = `SPD ${Math.min(999, Math.round(hand.speed)).toString().padStart(3, '0')}`;
+      const l2 = `SPD ${Math.min(9999, Math.round(hand.speed)).toString().padStart(4, '0')}`;
       const wMax = Math.max(ctx.measureText(l0).width, ctx.measureText(l1).width, ctx.measureText(l2).width);
       const bw = wMax + 14;
       const bh = 44;
 
-      ctx.strokeStyle = rgbaA(0.5);
+      ctx.strokeStyle = rgbaQ(0.5);
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(wp.x, wp.y);
@@ -2116,10 +2493,10 @@
 
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(bx, by, bw, bh);
-      ctx.strokeStyle = rgbaA(0.55);
+      ctx.strokeStyle = rgbaQ(0.55);
       ctx.strokeRect(bx, by, bw, bh);
 
-      ctx.fillStyle = rgbaA(0.92);
+      ctx.fillStyle = rgbaQ(0.92);
       ctx.fillText(l0, bx + 7, by + 5);
       ctx.fillText(l1, bx + 7, by + 17);
       ctx.fillText(l2, bx + 7, by + 29);
@@ -2134,11 +2511,6 @@
 
     ctx.clearRect(0, 0, viewW, viewH);
     if (!active) return;
-
-    if (config.enableFace && config.showFace && faceResults && faceResults.multiFaceLandmarks) {
-      const fl = faceResults.multiFaceLandmarks;
-      for (let i = 0; i < fl.length; i++) drawFace(fl[i]);
-    }
 
     const showLP = config.showLowPoly;
     const showSk = config.showHand;
@@ -2157,7 +2529,7 @@
   }
 
   // ============================================================
-  //  MEDIAPIPE
+  //  MEDIAPIPE HANDS
   // ============================================================
   const hands = new Hands({
     locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
@@ -2174,35 +2546,19 @@
   }
 
   hands.onResults(r => {
-    handResults = r;
-    if (config.enableHands) buildHandData(r);
-    else {
+    if (config.enableHands) {
+      buildHandData(r);
+    } else {
       handData = [];
       handSlots.clear();
       tHands.textContent = '0';
       tHands.classList.add('idle');
+      tPose.textContent = '—';
+      tPose.classList.add('idle');
+      tSpeed.textContent = '—';
+      tSpeed.classList.add('idle');
+      tSpeedBar.style.width = '0%';
     }
-  });
-
-  const faceMesh = new FaceMesh({
-    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
-  });
-
-  function applyFaceOptions() {
-    faceMesh.setOptions({
-      maxNumFaces: config.maxFaces,
-      refineLandmarks: false,
-      minDetectionConfidence: config.minDetection,
-      minTrackingConfidence: config.minTracking,
-      selfieMode: false,
-    });
-  }
-
-  faceMesh.onResults(r => {
-    faceResults = r;
-    const n = (r.multiFaceLandmarks || []).length;
-    tFaces.textContent = config.enableFace ? n : 0;
-    tFaces.classList.toggle('idle', !config.enableFace || n === 0);
   });
 
   // ============================================================
@@ -2243,11 +2599,12 @@
   }
 
   // ============================================================
-  //  INFERENCE LOOP — parallel hands + face
+  //  INFERENCE LOOP — with in-flight guard
   // ============================================================
   async function frameLoop() {
     if (!active) return;
     rafInfer = requestAnimationFrame(frameLoop);
+    if (inferenceInFlight) return;
 
     const now = performance.now();
     const minInterval = 1000 / config.fpsCap;
@@ -2262,20 +2619,13 @@
     tFps.classList.remove('idle');
 
     if (video.readyState < 2 || video.videoWidth === 0) return;
+    if (!config.enableHands) return;
 
-    // Fire both inferences in parallel — their WASM work overlaps.
-    if (config.enableHands && config.enableFace) {
-      try {
-        await Promise.all([
-          hands.send({ image: video }),
-          faceMesh.send({ image: video }),
-        ]);
-      } catch (e) {}
-    } else if (config.enableHands) {
-      try { await hands.send({ image: video }); } catch (e) {}
-    } else if (config.enableFace) {
-      try { await faceMesh.send({ image: video }); } catch (e) {}
-    }
+    inferenceInFlight = true;
+    try {
+      await hands.send({ image: video });
+    } catch (e) {}
+    inferenceInFlight = false;
   }
 
   // ============================================================
@@ -2285,7 +2635,6 @@
     if (active) return;
 
     applyHandsOptions();
-    applyFaceOptions();
 
     activateBtn.disabled = true;
     activateBtn.textContent = 'STARTING';
@@ -2328,16 +2677,18 @@
     stopCamera();
     handSlots.clear();
     handData = [];
-    handResults = null;
-    faceResults = null;
+    inferenceInFlight = false;
 
     activateBtn.textContent = 'ACTIVATE';
     activateBtn.classList.remove('on');
 
     tHands.textContent = '0';
-    tFaces.textContent = '0';
+    tPose.textContent = '—';
+    tSpeed.textContent = '—';
     tHands.classList.add('idle');
-    tFaces.classList.add('idle');
+    tPose.classList.add('idle');
+    tSpeed.classList.add('idle');
+    tSpeedBar.style.width = '0%';
     tFps.textContent = '—';
     tFps.classList.add('idle');
 
@@ -2392,22 +2743,24 @@
   //  UI WIRING
   // ============================================================
   const FMT = {
-    minDetection: v => v.toFixed(2),
-    minTracking: v => v.toFixed(2),
-    smoothing: v => v.toFixed(2),
-    glowOpacity: v => v.toFixed(2),
-    lowPolyOpacity: v => v.toFixed(2),
-    depthScale: v => v.toFixed(2),
-    segGap: v => v.toFixed(2),
-    segTaper: v => v.toFixed(2),
-    boneWidth: v => v.toFixed(1),
-    jointRadius: v => v.toFixed(1),
-    segCount: v => String(v | 0),
-    fpsCap: v => String(v | 0),
-    maxHands: v => String(v | 0),
-    maxFaces: v => String(v | 0),
+    minDetection:    v => v.toFixed(2),
+    minTracking:     v => v.toFixed(2),
+    stabilization:   v => v.toFixed(2),
+    responsiveness:  v => v.toFixed(2),
+    prediction:      v => v.toFixed(1),
+    glowOpacity:     v => v.toFixed(2),
+    lowPolyOpacity:  v => v.toFixed(2),
+    depthScale:      v => v.toFixed(2),
+    segGap:          v => v.toFixed(2),
+    segTaper:        v => v.toFixed(2),
+    boneWidth:       v => v.toFixed(1),
+    jointRadius:     v => v.toFixed(1),
+    segCount:        v => String(v | 0),
+    graceFrames:     v => String(v | 0),
+    fpsCap:          v => String(v | 0),
+    maxHands:        v => String(v | 0),
     modelComplexity: v => String(v | 0),
-    lowPolyDensity: v => String(v | 0),
+    lowPolyDensity:  v => String(v | 0),
   };
 
   const labelEls = {};
@@ -2500,14 +2853,11 @@
         handData = [];
         tHands.textContent = '0';
         tHands.classList.add('idle');
-      }
-    }
-    if (['maxFaces', 'minDetection', 'minTracking', 'enableFace'].includes(key)) {
-      applyFaceOptions();
-      if (key === 'enableFace' && !val) {
-        faceResults = null;
-        tFaces.textContent = '0';
-        tFaces.classList.add('idle');
+        tPose.textContent = '—';
+        tPose.classList.add('idle');
+        tSpeed.textContent = '—';
+        tSpeed.classList.add('idle');
+        tSpeedBar.style.width = '0%';
       }
     }
     if ((key === 'facingMode' || key === 'resolution') && active) {
@@ -2620,16 +2970,12 @@
     onConfigChange('showClock', config.showClock);
 
     applyHandsOptions();
-    applyFaceOptions();
-
-    tFaces.textContent = '0';
-    tFaces.classList.add('idle');
 
     renderLoop();
   }
 
   setTimeout(() => {
-    if (typeof Hands === 'undefined' || typeof FaceMesh === 'undefined') {
+    if (typeof Hands === 'undefined') {
       bootEl.classList.add('error');
       bootMsg.textContent = 'LIBRARY LOAD FAILED';
       return;
