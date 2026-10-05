@@ -553,6 +553,39 @@
       outline-offset: 1px;
     }
 
+    /* Multi-select pill row for finger rings */
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      flex: 1;
+      min-width: 56px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.55);
+      font-family: inherit;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      padding: 7px 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+
+    .chip:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      color: #fff;
+    }
+
+    .chip.on {
+      border-color: var(--accent-hex);
+      color: #000;
+      background: var(--accent-hex);
+    }
+
     .color-row {
       display: flex;
       gap: 8px;
@@ -798,12 +831,14 @@
             </div>
             <div class="field">
               <div class="label">
-                <span>Detection Confidence</span><span class="value" data-value="minDetection">0.60</span></div>
+                <span>Detection Confidence</span><span class="value" data-value="minDetection">0.60</span>
+              </div>
               <input type="range" min="0.1" max="0.95" step="0.05" data-key="minDetection">
             </div>
             <div class="field">
               <div class="label">
-                <span>Tracking Confidence</span><span class="value" data-value="minTracking">0.60</span></div>
+                <span>Tracking Confidence</span><span class="value" data-value="minTracking">0.60</span>
+              </div>
               <input type="range" min="0.1" max="0.95" step="0.05" data-key="minTracking">
             </div>
           </div>
@@ -884,6 +919,16 @@
           <div class="section-content">
             <label class="toggle" data-key="showLowPoly"><span>3D Hand Mesh</span><span class="switch"></span></label>
             <div class="field">
+              <div class="label"><span>Mesh Style</span></div>
+              <select class="select" data-key="meshStyle">
+              <option value="slab">Slab Solid</option>
+              <option value="wire">Wireframe</option>
+              <option value="xray">X-Ray</option>
+              <option value="holo">Holographic</option>
+              <option value="chrome">Chrome</option>
+            </select>
+            </div>
+            <div class="field">
               <div class="label"><span>Mesh Opacity</span><span class="value" data-value="lowPolyOpacity">0.72</span>
               </div>
               <input type="range" min="0.05" max="1" step="0.05" data-key="lowPolyOpacity">
@@ -898,8 +943,60 @@
             </div>
             <label class="toggle" data-key="lowPolyShade"><span>Surface Shading</span><span class="switch"></span></label>
             <label class="toggle" data-key="lowPolyEdges"><span>Panel Edges</span><span class="switch"></span></label>
-            <div class="hint">Closed volume mesh — extruded palm slab + tapered prism fingers, lit by a fixed key light
-              and sorted per face.</div>
+            <div class="hint">Closed volume mesh — extruded palm slab + tapered prism fingers. Renderer is re-skinned
+              per style without touching topology.</div>
+          </div>
+        </div>
+
+        <div class="section" data-section="accessories">
+          <div class="section-head"><span>Accessories</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="showRings"><span>Finger Rings</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Ring Style</span></div>
+              <select class="select" data-key="ringStyle">
+                <option value="band">Plain Band</option>
+                <option value="gem">Gem Set</option>
+                <option value="signet">Signet</option>
+                <option value="tech">Tech Ring</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Ring Size</span><span class="value" data-value="ringSize">1.00</span></div>
+              <input type="range" min="0.5" max="1.8" step="0.05" data-key="ringSize">
+            </div>
+            <div class="field">
+              <div class="label"><span>Ring Fingers</span></div>
+              <div class="chip-row" id="ringFingers">
+                <button type="button" class="chip" data-finger="0">T</button>
+                <button type="button" class="chip" data-finger="1">I</button>
+                <button type="button" class="chip" data-finger="2">M</button>
+                <button type="button" class="chip" data-finger="3">R</button>
+                <button type="button" class="chip" data-finger="4">P</button>
+              </div>
+            </div>
+            <label class="toggle" data-key="showBracelet"><span>Bracelet</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Bracelet Style</span></div>
+              <select class="select" data-key="braceletStyle">
+                <option value="cuff">Cuff</option>
+                <option value="chain">Chain</option>
+                <option value="beads">Beads</option>
+                <option value="tech">Tech Band</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Bracelet Size</span><span class="value" data-value="braceletSize">1.00</span>
+              </div>
+              <input type="range" min="0.5" max="2" step="0.05" data-key="braceletSize">
+            </div>
+            <div class="field">
+              <div class="label"><span>Bracelet Width</span><span class="value" data-value="braceletWidth">0.28</span>
+              </div>
+              <input type="range" min="0.05" max="0.7" step="0.01" data-key="braceletWidth">
+            </div>
+            <div class="hint">Accessories are projected in 3D from the smoothed landmarks — they track the finger and
+              wrist geometry in real time.</div>
           </div>
         </div>
 
@@ -921,6 +1018,19 @@
             <label class="toggle" data-key="fxPredict"><span>Predictive Lead</span><span class="switch"></span></label>
             <div class="hint">Overlays stack on top of the mesh. Combine with the orientation gizmo for a full tracking
               readout.</div>
+          </div>
+        </div>
+
+        <div class="section" data-section="fun">
+          <div class="section-head"><span>Fun</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="fxParticles"><span>Gesture Particles</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxSpeedGlow"><span>Speed Glow</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxRipple"><span>Pinch Ripple</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxAura"><span>Hand Aura</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxRainbow"><span>Rainbow Accent</span><span class="switch"></span></label>
+            <div class="hint">Playful overlays. Particles spawn on fast movements and pinch; rainbow cycles the accent
+              hue.</div>
           </div>
         </div>
 
@@ -1040,11 +1150,22 @@
 
     // volumetric
     showLowPoly: false,
+    meshStyle: 'slab',
     lowPolyOpacity: 0.72,
     lowPolyDensity: 1,
     depthScale: 1.0,
     lowPolyShade: true,
     lowPolyEdges: true,
+
+    // accessories
+    showRings: false,
+    ringStyle: 'band',
+    ringSize: 1.0,
+    ringFingers: [false, true, false, true, false], // T,I,M,R,P
+    showBracelet: false,
+    braceletStyle: 'cuff',
+    braceletSize: 1.0,
+    braceletWidth: 0.28,
 
     // fx
     fxReticle: false,
@@ -1060,6 +1181,13 @@
     fxPinch: false,
     fxPoint: false,
     fxPredict: false,
+
+    // fun
+    fxParticles: false,
+    fxSpeedGlow: false,
+    fxRipple: false,
+    fxAura: false,
+    fxRainbow: false,
 
     // appearance
     accent: '#ffffff',
@@ -1078,13 +1206,21 @@
     fpsCap: 60,
   };
 
-  const STORAGE_KEY = 'sentinel.config.v3';
+  const STORAGE_KEY = 'sentinel.config.v4';
   const config = { ...DEFAULTS };
+  // Defensive copy for array defaults
+  config.ringFingers = DEFAULTS.ringFingers.slice();
 
   function loadConfig() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) Object.assign(config, DEFAULTS, JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        Object.assign(config, DEFAULTS, parsed);
+        if (!Array.isArray(config.ringFingers) || config.ringFingers.length !== 5) {
+          config.ringFingers = DEFAULTS.ringFingers.slice();
+        }
+      }
     } catch (e) {}
   }
   function saveConfig() {
@@ -1101,9 +1237,6 @@
   //  ACCENT / RGBA LUT
   // ============================================================
   const ACCENT_RGB = { r: 255, g: 255, b: 255 };
-
-  // 33 discrete alpha levels — used to pre-build rgba strings.
-  // Invalidated whenever the accent changes.
   const RGBA_LUT = new Array(33);
 
   function updateAccentRGB() {
@@ -1113,9 +1246,6 @@
     ACCENT_RGB.b = parseInt(h.substring(4, 6), 16);
     document.documentElement.style.setProperty('--accent-hex', config.accent);
     RGBA_LUT.fill(undefined);
-  }
-  function rgbaA(a) {
-    return `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${a})`;
   }
   function rgbaQ(a) {
     if (a <= 0) return 'rgba(0,0,0,0)';
@@ -1131,7 +1261,7 @@
   }
 
   // ============================================================
-  //  ONE-EURO FILTER (adaptive low-pass)
+  //  ONE-EURO FILTER
   // ============================================================
   class LowPass {
     constructor() { this.y = 0; this.initialized = false; }
@@ -1197,13 +1327,10 @@
     }
   }
 
-  // Map config sliders to filter parameters
   function minCutoffFromStabilization(s) {
-    // s = 0 → 12 Hz (almost no filtering), s = 0.95 → 0.45 Hz (heavy)
     return 12 * Math.pow(0.038, s);
   }
   function betaFromResponsiveness(r) {
-    // r = 0 → 0.003, r = 1 → 0.12
     return 0.003 + r * 0.117;
   }
 
@@ -1293,6 +1420,13 @@
   }
   setInterval(tickClock, 1000);
   tickClock();
+
+  // ============================================================
+  //  CACHED FONT STRINGS (perf: ctx.font assignment is expensive)
+  // ============================================================
+  const FONT_MONO_9   = '9px ui-monospace, Menlo, monospace';
+  const FONT_MONO_8   = '8px ui-monospace, Menlo, monospace';
+  const FONT_MONO_11B = 'bold 11px ui-monospace, Menlo, monospace';
 
   // ============================================================
   //  MESH TOPOLOGY (built once per density)
@@ -1392,7 +1526,7 @@
   function _cmpFaceZ(a, b) { return _cmpFaceZ_arr[b] - _cmpFaceZ_arr[a]; }
 
   // ============================================================
-  //  MESH EVALUATION — fully inlined, no allocations
+  //  MESH EVALUATION
   // ============================================================
   function evaluateMesh(topo, pts, positions) {
     const { vertCount, recipes, fingerLm, fingerRad, taper } = topo;
@@ -1490,7 +1624,7 @@
   }
 
   // ============================================================
-  //  HAND SLOTS — persistent per-hand state with proximity matching
+  //  HAND SLOTS
   // ============================================================
   let nextSlotId = 1;
   const handSlots = new Map();
@@ -1514,6 +1648,7 @@
       pinchActive: false,
       pinchStrength: 0,
       pinchTipIdx: 8,
+      prevPinchActive: false,
 
       // identity match / grace
       lastWrist: null,
@@ -1525,9 +1660,11 @@
         tips: {},
         trail: {},
         pulses: [],
+        ripples: [],
         cx: 0, cy: 0,
         t: now,
         lastPulse: 0,
+        lastParticle: 0,
       },
     };
     for (let j = 0; j < 21; j++) {
@@ -1541,13 +1678,15 @@
     return slot;
   }
 
-  // Match detections to slots by wrist proximity
+  // Perf: preallocated buffers for pairing
+  const _pairs = [];
+
   function matchDetections(dets) {
     const MAX_DIST2 = 0.05;
     const assigned = new Array(dets.length).fill(null);
     const slotUsed = new Set();
 
-    const pairs = [];
+    _pairs.length = 0;
     for (let i = 0; i < dets.length; i++) {
       const w = dets[i].lm[0];
       for (const slot of handSlots.values()) {
@@ -1559,14 +1698,14 @@
         const dy = w.y - pw.y;
         const dz = (w.z || 0) - (pw.z || 0);
         const d2 = dx * dx + dy * dy + dz * dz * 0.25;
-        if (d2 < MAX_DIST2) pairs.push({ i, slot, d2 });
+        if (d2 < MAX_DIST2) _pairs.push({ i, slot, d2 });
       }
     }
 
-    pairs.sort((a, b) => a.d2 - b.d2);
+    _pairs.sort((a, b) => a.d2 - b.d2);
 
-    for (let p = 0; p < pairs.length; p++) {
-      const pair = pairs[p];
+    for (let p = 0; p < _pairs.length; p++) {
+      const pair = _pairs[p];
       if (assigned[pair.i] !== null) continue;
       if (slotUsed.has(pair.slot.id)) continue;
       assigned[pair.i] = pair.slot;
@@ -1582,12 +1721,10 @@
   function computeFingerState(pts, palmScale) {
     const state = [false, false, false, false, false];
 
-    // Thumb: extended if tip is far from pinky MCP
     const tt = pts[4], pmcp = pts[17];
     const dTx = tt.x - pmcp.x, dTy = tt.y - pmcp.y;
     state[0] = Math.sqrt(dTx * dTx + dTy * dTy) > palmScale * 1.05;
 
-    // Others: PIP and DIP joints both nearly straight
     for (let f = 1; f < 5; f++) {
       const ch = FINGER_CHAINS[f];
       const a = pts[ch[0]], b = pts[ch[1]], c = pts[ch[2]], d = pts[ch[3]];
@@ -1603,7 +1740,6 @@
       const cos1 = (v1x * v2x + v1y * v2y) / (l1 * l2);
       const cos2 = (v2x * v3x + v2y * v3y) / (l2 * l3);
 
-      // -0.4 ≈ 113°: extension threshold
       state[f] = cos1 < -0.4 && cos2 < -0.4;
     }
 
@@ -1626,6 +1762,41 @@
   }
 
   // ============================================================
+  //  PARTICLE SYSTEM (global, shared across hands)
+  // ============================================================
+  const particles = [];
+  const MAX_PARTICLES = 240;
+
+  function emitParticle(x, y, vx, vy, life, size) {
+    if (particles.length >= MAX_PARTICLES) particles.shift();
+    particles.push({ x, y, vx, vy, life, maxLife: life, size });
+  }
+
+  function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 340 * dt;      // gravity
+      p.vx *= 0.985;
+      p.life -= dt;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function drawParticles() {
+    if (!particles.length) return;
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const a = p.life / p.maxLife;
+      ctx.fillStyle = rgbaQ(a * 0.9);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * (0.4 + a * 0.6), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ============================================================
   //  BUILD HAND DATA
   // ============================================================
   function buildHandData(r) {
@@ -1638,7 +1809,6 @@
     const minCutoff = minCutoffFromStabilization(config.stabilization);
     const beta = betaFromResponsiveness(config.responsiveness);
 
-    // ---- Build detection list ----
     const dets = [];
     for (let i = 0; i < list.length; i++) {
       const lm = list[i];
@@ -1648,10 +1818,8 @@
       dets.push({ lm, label, score });
     }
 
-    // ---- Match to existing slots ----
     const assigned = matchDetections(dets);
 
-    // ---- New slots for unmatched detections ----
     for (let i = 0; i < dets.length; i++) {
       if (assigned[i]) continue;
       const slot = makeSlot(nextSlotId++, dets[i].label, now);
@@ -1659,7 +1827,6 @@
       assigned[i] = slot;
     }
 
-    // ---- Process each detection ----
     const out = [];
     const usedSlotIds = new Set();
 
@@ -1669,7 +1836,6 @@
       const lm = det.lm;
       usedSlotIds.add(slot.id);
 
-      // ---- Per-landmark One-Euro + projection ----
       const filters = slot.filters;
       const smooth = slot.smooth;
       const pts = slot.pts;
@@ -1702,7 +1868,6 @@
         s.z = fz.filter(p.z || 0, tSec);
       }
 
-      // ---- Project + predict ----
       const dxLead = predictS;
       for (let j = 0; j < 21; j++) {
         const s = smooth[j];
@@ -1717,16 +1882,14 @@
         const sy = s.y + vy * dxLead;
         const sz = s.z + vz * dxLead;
 
-        q.x = projectX(sx);
-        q.y = projectY(sy);
-        q.z = projectZ(sz);
+        const px = projectX(sx);
+        const py = projectY(sy);
+        const pz = projectZ(sz);
 
-        pr.x = projectX(sx);
-        pr.y = projectY(sy);
-        pr.z = projectZ(sz);
+        q.x = px; q.y = py; q.z = pz;
+        pr.x = px; pr.y = py; pr.z = pz;
       }
 
-      // ---- Derived geometry ----
       const wrist = pts[0];
       const iMCP = pts[5];
       const pMCP = pts[17];
@@ -1754,7 +1917,6 @@
       cx /= cl; cy /= cl; cz /= cl;
       slot.across.x = cx; slot.across.y = cy; slot.across.z = cz;
 
-      // ---- Centre & velocity ----
       let ccx = 0, ccy = 0, ccz = 0;
       const centerIdx = [0, 1, 5, 9, 13, 17];
       for (let k = 0; k < 6; k++) {
@@ -1801,22 +1963,56 @@
         while (tr.length && now - tr[0].t > 700) tr.shift();
       }
 
-      // ---- Gesture analysis ----
       const fingerState = computeFingerState(pts, slot.scale);
       slot.fingerState = fingerState;
       slot.pose = classifyPose(fingerState);
 
-      // Pinch: thumb tip (4) to index tip (8)
       const tt = pts[4], it = pts[8];
       const pdx = tt.x - it.x, pdy = tt.y - it.y;
       const pinchDist = Math.sqrt(pdx * pdx + pdy * pdy);
       const pinchMax = slot.scale * 0.55;
       const pinchStrength = clamp(1 - pinchDist / pinchMax, 0, 1);
+      slot.prevPinchActive = slot.pinchActive;
       slot.pinchActive = pinchStrength > 0.65;
       slot.pinchStrength = pinchStrength;
       slot.pinchTipIdx = 8;
 
-      // ---- Slot bookkeeping ----
+      // ---- Fun: pinch ripple + particles ----
+      if (config.fxRipple && slot.prevPinchActive && !slot.pinchActive) {
+        st.ripples.push({ x: (tt.x + it.x) * 0.5, y: (tt.y + it.y) * 0.5, t: now });
+      }
+      if (config.fxParticles) {
+        const speed = Math.sqrt(
+          ((tt.x - it.x) / 1000) * ((tt.x - it.x) / 1000) +
+          ((tt.y - it.y) / 1000) * ((tt.y - it.y) / 1000)
+        );
+        // Emit from fast-moving fingertips
+        if ((slot.speed > 400 || pinchStrength > 0.7) && (now - st.lastParticle) > 45) {
+          st.lastParticle = now;
+          for (let ti = 0; ti < 5; ti++) {
+            const tp = st.tips[FINGERTIPS[ti]];
+            if (!tp) continue;
+            const tSpeed = Math.sqrt(tp.vx * tp.vx + tp.vy * tp.vy);
+            if (tSpeed < 120) continue;
+            const ang = Math.random() * Math.PI * 2;
+            const mag = 40 + Math.random() * 90;
+            emitParticle(
+              pts[FINGERTIPS[ti]].x, pts[FINGERTIPS[ti]].y,
+              Math.cos(ang) * mag, Math.sin(ang) * mag - 60,
+              0.55 + Math.random() * 0.55,
+              1.2 + Math.random() * 1.6
+            );
+          }
+        }
+      }
+
+      // Ripple aging
+      let rw = 0;
+      for (let ri = 0; ri < st.ripples.length; ri++) {
+        if (now - st.ripples[ri].t < 900) st.ripples[rw++] = st.ripples[ri];
+      }
+      st.ripples.length = rw;
+
       slot.label = det.label;
       slot.score = det.score;
       slot.active = true;
@@ -1827,7 +2023,6 @@
       out.push(slot);
     }
 
-    // ---- Grace period / cleanup ----
     const graceLimit = config.graceFrames | 0;
     for (const slot of [...handSlots.values()]) {
       if (usedSlotIds.has(slot.id)) continue;
@@ -1845,7 +2040,6 @@
     tHands.textContent = n;
     tHands.classList.toggle('idle', n === 0);
 
-    // HUD pose + speed from primary hand
     if (n > 0) {
       tPose.textContent = out[0].pose;
       tPose.classList.remove('idle');
@@ -1863,7 +2057,7 @@
   }
 
   // ============================================================
-  //  DRAW — 3D MESH
+  //  DRAW — 3D MESH (multi-style)
   // ============================================================
   const LIGHT = { x: -0.42, y: -0.62, z: -0.66 };
   {
@@ -1896,12 +2090,19 @@
 
     const op = config.lowPolyOpacity;
     const edges = config.lowPolyEdges;
+    const style = config.meshStyle;
     const ar = ACCENT_RGB.r, ag = ACCENT_RGB.g, ab = ACCENT_RGB.b;
-    const edgeOpScale = op * 0.75;
 
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.lineWidth = 0.8;
+
+    const isWire = style === 'wire';
+    const isXray = style === 'xray';
+    const isHolo = style === 'holo';
+    const isChrome = style === 'chrome';
+
+    if (isHolo) ctx.globalCompositeOperation = 'lighter';
 
     for (let oi = 0; oi < faceCount; oi++) {
       const fi = faceOrder[oi];
@@ -1927,12 +2128,9 @@
       const absNZ = nZ < 0 ? -nZ : nZ;
       const rimB = 1 - (absNZ > 1 ? 1 : absNZ);
       const rim = rimB * rimB * rimB;
+
       let sh = 0.16 + diff * 0.80 + rim * 0.30;
       if (sh > 1.15) sh = 1.15;
-
-      const r = (8 + (ar - 8) * sh) | 0;
-      const g = (10 + (ag - 10) * sh) | 0;
-      const b = (14 + (ab - 14) * sh) | 0;
 
       ctx.beginPath();
       ctx.moveTo(positions[i0], positions[i0 + 1]);
@@ -1942,12 +2140,316 @@
       }
       ctx.closePath();
 
+      if (isWire) {
+        ctx.strokeStyle = rgbaQ(op * (0.28 + diff * 0.72));
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        continue;
+      }
+
+      if (isXray) {
+        const r = (8 + (ar - 8) * sh) | 0;
+        const g = (10 + (ag - 10) * sh) | 0;
+        const b = (14 + (ab - 14) * sh) | 0;
+        ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.28})`;
+        ctx.fill();
+        ctx.strokeStyle = rgbaQ(op * (0.35 + diff * 0.65));
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
+        continue;
+      }
+
+      if (isHolo) {
+        // Additive: brighter surfaces
+        const h = 0.35 + diff * 0.9 + rim * 0.5;
+        const r = Math.min(255, (ar * h) | 0);
+        const g = Math.min(255, (ag * h) | 0);
+        const b = Math.min(255, (ab * h) | 0);
+        ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.5})`;
+        ctx.fill();
+        if (edges) {
+          ctx.strokeStyle = rgbaQ(op * (0.55 + diff * 0.45));
+          ctx.lineWidth = 0.9;
+          ctx.stroke();
+        }
+        continue;
+      }
+
+      if (isChrome) {
+        // Metallic: darker base, sharper highlights
+        const shC = 0.06 + Math.pow(diff, 0.65) * 0.95 + rim * 0.4;
+        const r = (4 + (ar - 4) * shC) | 0;
+        const g = (6 + (ag - 6) * shC) | 0;
+        const b = (10 + (ab - 10) * shC) | 0;
+        ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
+        ctx.fill();
+        if (edges) {
+          ctx.strokeStyle = rgbaQ(op * (0.15 + diff * 0.85));
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+        continue;
+      }
+
+      // Slab (default)
+      const r = (8 + (ar - 8) * sh) | 0;
+      const g = (10 + (ag - 10) * sh) | 0;
+      const b = (14 + (ab - 14) * sh) | 0;
+
       ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
       ctx.fill();
 
       if (edges) {
-        ctx.strokeStyle = rgbaQ(edgeOpScale * (0.30 + diff * 0.70));
+        ctx.strokeStyle = rgbaQ(op * 0.75 * (0.30 + diff * 0.70));
         ctx.stroke();
+      }
+    }
+
+    if (isHolo) ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // ============================================================
+  //  DRAW — ACCESSORIES (rings + bracelet)
+  // ============================================================
+  const RING_R = 20;    // segments per ring
+  const RING_TS = new Float32Array(RING_R + 1);
+  const RING_CS = new Float32Array(RING_R + 1);
+  for (let i = 0; i <= RING_R; i++) {
+    const a = (i / RING_R) * Math.PI * 2;
+    RING_TS[i] = Math.sin(a);
+    RING_CS[i] = Math.cos(a);
+  }
+
+  // Draw a circular ring around the axis defined by segment A→B, in screen 3D space.
+  // t: 0..1 position along the segment. radiusScale: fraction of hand.scale.
+  function drawRingGeometry(A, B, t, radius, style, width, fillOpacity) {
+    const mx = A.x + (B.x - A.x) * t;
+    const my = A.y + (B.y - A.y) * t;
+    const mz = A.z + (B.z - A.z) * t;
+
+    let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
+    const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+    dx /= dl; dy /= dl; dz /= dl;
+
+    // Perpendicular basis (u, v) around axis d
+    let hx, hy, hz;
+    if (Math.abs(dy) > 0.9) { hx = 1; hy = 0; hz = 0; }
+    else { hx = 0; hy = 1; hz = 0; }
+
+    let ux = dy * hz - dz * hy;
+    let uy = dz * hx - dx * hz;
+    let uz = dx * hy - dy * hx;
+    const ul = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+    ux /= ul; uy /= ul; uz /= ul;
+
+    const vx = dy * uz - dz * uy;
+    const vy = dz * ux - dx * uz;
+    const vz = dx * uy - dy * ux;
+
+    // Outer ring (full ellipse)
+    const rOuter = radius;
+    ctx.beginPath();
+    for (let i = 0; i <= RING_R; i++) {
+      const ca = RING_CS[i], sa = RING_TS[i];
+      const px = mx + rOuter * (ca * ux + sa * vx);
+      const py = my + rOuter * (ca * uy + sa * vy);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+
+    if (fillOpacity > 0) {
+      ctx.fillStyle = rgbaQ(fillOpacity);
+      ctx.fill();
+    }
+    ctx.strokeStyle = rgbaQ(0.95);
+    ctx.lineWidth = width;
+    ctx.stroke();
+
+    // Band thickness: second ring offset along axis, connected by silhouettes
+    const half = (width * 1.6);
+    ctx.beginPath();
+    for (let i = 0; i <= RING_R; i++) {
+      const ca = RING_CS[i], sa = RING_TS[i];
+      const px = mx + rOuter * (ca * ux + sa * vx) - dx * half;
+      const py = my + rOuter * (ca * uy + sa * vy) - dy * half;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = rgbaQ(0.6);
+    ctx.lineWidth = width * 0.8;
+    ctx.stroke();
+
+    // ----- Per-style decorations -----
+    if (style === 'gem') {
+      // Find topmost point of the ring (min screen y)
+      let bestI = 0, bestY = Infinity;
+      for (let i = 0; i < RING_R; i++) {
+        const ca = RING_CS[i], sa = RING_TS[i];
+        const py = my + rOuter * (ca * uy + sa * vy);
+        if (py < bestY) { bestY = py; bestI = i; }
+      }
+      const ca = RING_CS[bestI], sa = RING_TS[bestI];
+      const gx = mx + rOuter * (ca * ux + sa * vx);
+      const gy = my + rOuter * (ca * uy + sa * vy);
+      const gs = Math.max(2.5, radius * 0.35);
+      // Diamond
+      ctx.beginPath();
+      ctx.moveTo(gx, gy - gs);
+      ctx.lineTo(gx + gs * 0.7, gy);
+      ctx.lineTo(gx, gy + gs);
+      ctx.lineTo(gx - gs * 0.7, gy);
+      ctx.closePath();
+      ctx.fillStyle = rgbaQ(1);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    } else if (style === 'signet') {
+      let bestI = 0, bestY = Infinity;
+      for (let i = 0; i < RING_R; i++) {
+        const ca = RING_CS[i], sa = RING_TS[i];
+        const py = my + rOuter * (ca * uy + sa * vy);
+        if (py < bestY) { bestY = py; bestI = i; }
+      }
+      const ca = RING_CS[bestI], sa = RING_TS[bestI];
+      const gx = mx + rOuter * (ca * ux + sa * vx);
+      const gy = my + rOuter * (ca * uy + sa * vy);
+      const s = Math.max(3, radius * 0.5);
+      ctx.fillStyle = rgbaQ(0.9);
+      ctx.fillRect(gx - s, gy - s * 0.9, s * 2, s * 1.8);
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.lineWidth = 0.7;
+      ctx.strokeRect(gx - s, gy - s * 0.9, s * 2, s * 1.8);
+    } else if (style === 'tech') {
+      // Small tick marks around the ring
+      ctx.strokeStyle = rgbaQ(0.85);
+      ctx.lineWidth = Math.max(0.8, width * 0.6);
+      const ticks = 8;
+      for (let k = 0; k < ticks; k++) {
+        const ang = (k / ticks) * Math.PI * 2;
+        const ca = Math.cos(ang), sa = Math.sin(ang);
+        const px0 = mx + rOuter * (ca * ux + sa * vx);
+        const py0 = my + rOuter * (ca * uy + sa * vy);
+        const px1 = mx + (rOuter + radius * 0.2) * (ca * ux + sa * vx);
+        const py1 = my + (rOuter + radius * 0.2) * (ca * uy + sa * vy);
+        ctx.beginPath();
+        ctx.moveTo(px0, py0);
+        ctx.lineTo(px1, py1);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawAccessories(hand) {
+    const pts = hand.pts;
+
+    if (config.showRings) {
+      const fingers = config.ringFingers;
+      const sizeMul = config.ringSize;
+      const style = config.ringStyle;
+      const baseR = hand.scale * 0.155 * sizeMul;    // ≈ finger radius
+      const strokeW = Math.max(1.2, hand.scale * 0.03);
+
+      for (let f = 0; f < 5; f++) {
+        if (!fingers[f]) continue;
+        const ch = FINGER_CHAINS[f];
+        const A = pts[ch[0]];
+        const B = pts[ch[1]];
+        // Slightly closer to the PIP joint
+        drawRingGeometry(A, B, 0.62, baseR * (f === 0 ? 1.15 : 1), style, strokeW, 0.12);
+      }
+    }
+
+    if (config.showBracelet) {
+      const style = config.braceletStyle;
+      const sizeMul = config.braceletSize;
+      const width = config.braceletWidth;
+      const A = pts[0];          // wrist
+      const B = pts[9];          // middle MCP (defines palm axis)
+      const radius = hand.scale * 0.95 * sizeMul;
+      const strokeW = Math.max(1.4, hand.scale * width * 0.5);
+      const t = 0.08;            // slightly out of the palm, past the wrist
+
+      if (style === 'beads') {
+        // Beads: many small spheres along the ring path
+        const ch = FINGER_CHAINS[4]; // unused
+        // Compute basis just like the ring function, then place beads
+        const mx = A.x + (B.x - A.x) * t;
+        const my = A.y + (B.y - A.y) * t;
+        const mz = A.z + (B.z - A.z) * t;
+        let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
+        const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        dx /= dl; dy /= dl; dz /= dl;
+        let hx, hy, hz;
+        if (Math.abs(dy) > 0.9) { hx = 1; hy = 0; hz = 0; }
+        else { hx = 0; hy = 1; hz = 0; }
+        let ux = dy * hz - dz * hy;
+        let uy = dz * hx - dx * hz;
+        let uz = dx * hy - dy * hx;
+        const ul = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+        ux /= ul; uy /= ul; uz /= ul;
+        const vx = dy * uz - dz * uy;
+        const vy = dz * ux - dx * uz;
+        const vz = dx * uy - dy * ux;
+        const N = 18;
+        const beadR = Math.max(1.6, radius * 0.14);
+        ctx.fillStyle = rgbaQ(0.95);
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 0.6;
+        for (let i = 0; i < N; i++) {
+          const ang = (i / N) * Math.PI * 2;
+          const ca = Math.cos(ang), sa = Math.sin(ang);
+          const px = mx + radius * (ca * ux + sa * vx);
+          const py = my + radius * (ca * uy + sa * vy);
+          ctx.beginPath();
+          ctx.arc(px, py, beadR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      } else if (style === 'chain') {
+        // Chain: alternating links along the path
+        const mx = A.x + (B.x - A.x) * t;
+        const my = A.y + (B.y - A.y) * t;
+        const mz = A.z + (B.z - A.z) * t;
+        let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z;
+        const dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        dx /= dl; dy /= dl; dz /= dl;
+        let hx, hy, hz;
+        if (Math.abs(dy) > 0.9) { hx = 1; hy = 0; hz = 0; }
+        else { hx = 0; hy = 1; hz = 0; }
+        let ux = dy * hz - dz * hy;
+        let uy = dz * hx - dx * hz;
+        let uz = dx * hy - dy * hx;
+        const ul = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+        ux /= ul; uy /= ul; uz /= ul;
+        const vx = dy * uz - dz * uy;
+        const vy = dz * ux - dx * uz;
+        const vz = dx * uy - dy * ux;
+        const N = 20;
+        ctx.strokeStyle = rgbaQ(0.9);
+        ctx.lineWidth = Math.max(1, strokeW);
+        for (let i = 0; i < N; i++) {
+          const ang = (i / N) * Math.PI * 2;
+          const ca = Math.cos(ang), sa = Math.sin(ang);
+          const px = mx + radius * (ca * ux + sa * vx);
+          const py = my + radius * (ca * uy + sa * vy);
+          const s = Math.max(1.4, radius * 0.09);
+          ctx.beginPath();
+          if (i % 2 === 0) {
+            ctx.ellipse(px, py, s, s * 0.55, ang, 0, Math.PI * 2);
+          } else {
+            ctx.ellipse(px, py, s * 0.55, s, ang, 0, Math.PI * 2);
+          }
+          ctx.stroke();
+        }
+      } else if (style === 'tech') {
+        // Tech band: solid thick ring with inner line
+        drawRingGeometry(A, B, t, radius, 'band', strokeW * 1.6, 0.22);
+        // Inner second ring
+        const t2 = t + 0.06;
+        drawRingGeometry(A, B, t2, radius * 0.94, 'band', strokeW * 0.9, 0.1);
+      } else {
+        // Cuff
+        drawRingGeometry(A, B, t, radius, 'band', strokeW, 0.18);
       }
     }
   }
@@ -2003,7 +2505,10 @@
   function drawSkeleton(hand) {
     const pts = hand.pts;
     const bw = config.boneWidth;
-    const glow = config.glowOpacity;
+    let glow = config.glowOpacity;
+    if (config.fxSpeedGlow) {
+      glow = Math.min(0.5, glow + clamp(hand.speed / 5000, 0, 0.25));
+    }
 
     if (glow > 0) {
       ctx.lineCap = 'round';
@@ -2093,6 +2598,20 @@
     const st = hand.st;
     const now = performance.now();
 
+    if (config.fxAura) {
+      const c = hand.center;
+      const pulse = 1 + Math.sin(now / 420) * 0.08;
+      const r = Math.max(24, hand.scale * 1.1) * pulse;
+      const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r);
+      grad.addColorStop(0, rgbaQ(0.18));
+      grad.addColorStop(0.55, rgbaQ(0.07));
+      grad.addColorStop(1, rgbaQ(0));
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     if (config.fxRings) {
       const base = Math.max(24, hand.scale * 0.45);
       const cX = hand.center.x, cY = hand.center.y;
@@ -2128,7 +2647,7 @@
       ctx.stroke();
     }
 
-    if (config.fxBounds) {
+    if (config.fxBounding || config.fxBounds) {
       let minX = Infinity, minY = Infinity, minZ = Infinity;
       let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
       for (let i = 0; i < 21; i++) {
@@ -2177,7 +2696,7 @@
       }
       ctx.stroke();
 
-      ctx.font = '9px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_9;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = rgbaQ(0.8);
@@ -2204,7 +2723,7 @@
       fxArrowInto(c.x, c.y, c.x + pn.x * L, c.y + pn.y * L, 4.8);
       ctx.stroke();
 
-      ctx.font = '9px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_9;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = rgbaQ(0.95);
@@ -2220,7 +2739,7 @@
     }
 
     if (config.fxAngles) {
-      ctx.font = '9px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_9;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.strokeStyle = rgbaQ(0.55);
@@ -2400,6 +2919,21 @@
       }
     }
 
+    // ---- Fun: pinch ripples ----
+    if (config.fxRipple && st.ripples.length) {
+      for (let i = 0; i < st.ripples.length; i++) {
+        const rp = st.ripples[i];
+        const age = (now - rp.t) / 900;
+        const r = 4 + age * 60;
+        const a = (1 - age) * 0.7;
+        ctx.beginPath();
+        ctx.arc(rp.x, rp.y, r, 0, Math.PI * 2);
+        ctx.strokeStyle = rgbaQ(a);
+        ctx.lineWidth = 1.6 * (1 - age) + 0.4;
+        ctx.stroke();
+      }
+    }
+
     if (config.fxPoint) {
       const tip = pts[8];
       const pip = pts[6];
@@ -2443,18 +2977,17 @@
       ctx.lineWidth = 1;
       ctx.strokeRect(bx, by, bw, bh);
 
-      ctx.font = '9px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_9;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillStyle = rgbaQ(0.5);
       ctx.fillText('POSE', bx + 7, by + 6);
       ctx.fillStyle = rgbaQ(0.95);
-      ctx.font = 'bold 11px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_11B;
       ctx.fillText(hand.pose, bx + 7, by + 18);
 
-      // Finger bars
       const fNames = ['T', 'I', 'M', 'R', 'P'];
-      ctx.font = '8px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_8;
       for (let i = 0; i < 5; i++) {
         const fx = bx + 7 + i * 14;
         const fy = by + 44;
@@ -2472,7 +3005,7 @@
       const bx = wp.x + 26;
       const by = wp.y + 26;
 
-      ctx.font = '9px ui-monospace, Menlo, monospace';
+      ctx.font = FONT_MONO_9;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
 
@@ -2504,23 +3037,59 @@
   }
 
   // ============================================================
+  //  RAINBOW ACCENT
+  // ============================================================
+  let rainbowHue = 0;
+  function updateRainbow(dt) {
+    rainbowHue = (rainbowHue + dt * 60) % 360;
+    const h = rainbowHue / 60;
+    const c = 1, x = c * (1 - Math.abs(h % 2 - 1));
+    let r, g, b;
+    if (h < 1) { r = c; g = x; b = 0; }
+    else if (h < 2) { r = x; g = c; b = 0; }
+    else if (h < 3) { r = 0; g = c; b = x; }
+    else if (h < 4) { r = 0; g = x; b = c; }
+    else if (h < 5) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+    const nr = (r * 255) | 0, ng = (g * 255) | 0, nb = (b * 255) | 0;
+    if (nr !== ACCENT_RGB.r || ng !== ACCENT_RGB.g || nb !== ACCENT_RGB.b) {
+      ACCENT_RGB.r = nr; ACCENT_RGB.g = ng; ACCENT_RGB.b = nb;
+      RGBA_LUT.fill(undefined);
+    }
+  }
+
+  // ============================================================
   //  RENDER LOOP
   // ============================================================
+  let lastRenderTime = 0;
+
   function render() {
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - lastRenderTime) / 1000) || 0.016;
+    lastRenderTime = now;
+
+    if (config.fxRainbow) updateRainbow(dt);
+
     if (!cover.valid) updateCover();
 
     ctx.clearRect(0, 0, viewW, viewH);
     if (!active) return;
 
+    updateParticles(dt);
+
     const showLP = config.showLowPoly;
     const showSk = config.showHand;
+    const showAcc = config.showRings || config.showBracelet;
 
     for (let i = 0; i < handData.length; i++) {
       const hand = handData[i];
       if (showLP) drawMesh(hand);
+      if (showAcc) drawAccessories(hand);
       if (showSk) drawSkeleton(hand);
       drawFX(hand);
     }
+
+    if (config.fxParticles) drawParticles();
   }
 
   function renderLoop() {
@@ -2599,7 +3168,7 @@
   }
 
   // ============================================================
-  //  INFERENCE LOOP — with in-flight guard
+  //  INFERENCE LOOP
   // ============================================================
   async function frameLoop() {
     if (!active) return;
@@ -2678,6 +3247,7 @@
     handSlots.clear();
     handData = [];
     inferenceInFlight = false;
+    particles.length = 0;
 
     activateBtn.textContent = 'ACTIVATE';
     activateBtn.classList.remove('on');
@@ -2755,6 +3325,9 @@
     segTaper:        v => v.toFixed(2),
     boneWidth:       v => v.toFixed(1),
     jointRadius:     v => v.toFixed(1),
+    ringSize:        v => v.toFixed(2),
+    braceletSize:    v => v.toFixed(2),
+    braceletWidth:   v => v.toFixed(2),
     segCount:        v => String(v | 0),
     graceFrames:     v => String(v | 0),
     fpsCap:          v => String(v | 0),
@@ -2835,16 +3408,43 @@
         };
         config.accentName = nameMap[hex] || 'CUSTOM';
         if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
+        // Disable rainbow when picking a static accent
+        if (config.fxRainbow) {
+          config.fxRainbow = false;
+          document.querySelectorAll('.toggle[data-key="fxRainbow"]').forEach(x => x.classList.remove('on'));
+        }
         updateAccentRGB();
         saveConfig();
       });
     });
+
+    // ---- Ring finger chips ----
+    const chipRow = document.getElementById('ringFingers');
+    if (chipRow) {
+      const chips = chipRow.querySelectorAll('.chip');
+      const refresh = () => {
+        chips.forEach((c, i) => c.classList.toggle('on', !!config.ringFingers[i]));
+      };
+      chips.forEach(c => {
+        c.addEventListener('click', () => {
+          const i = parseInt(c.dataset.finger, 10);
+          config.ringFingers[i] = !config.ringFingers[i];
+          refresh();
+          saveConfig();
+        });
+      });
+      refresh();
+    }
   }
 
   function onConfigChange(key, val) {
     if (key === 'showTelemetry') telemetryEl.style.display = val ? '' : 'none';
     if (key === 'showClock') clockEl.style.display = val ? '' : 'none';
     if (key === 'videoGrayscale' || key === 'videoMirror') applyVideoFilter();
+
+    if (key === 'fxRainbow') {
+      if (!val) updateAccentRGB();
+    }
 
     if (['maxHands', 'modelComplexity', 'minDetection', 'minTracking', 'enableHands'].includes(key)) {
       applyHandsOptions();
@@ -2890,6 +3490,13 @@
       x.classList.toggle('active', x.dataset.accent === config.accent);
     });
     if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
+
+    const chipRow = document.getElementById('ringFingers');
+    if (chipRow) {
+      chipRow.querySelectorAll('.chip').forEach((c, i) => {
+        c.classList.toggle('on', !!config.ringFingers[i]);
+      });
+    }
   }
 
   // ============================================================
@@ -2897,6 +3504,7 @@
   // ============================================================
   document.getElementById('resetDefaults').addEventListener('click', () => {
     Object.assign(config, DEFAULTS);
+    config.ringFingers = DEFAULTS.ringFingers.slice();
     updateAccentRGB();
     applyVideoFilter();
     syncAllInputs();
@@ -2919,6 +3527,9 @@
     try {
       const parsed = JSON.parse(data);
       Object.assign(config, DEFAULTS, parsed);
+      if (!Array.isArray(config.ringFingers) || config.ringFingers.length !== 5) {
+        config.ringFingers = DEFAULTS.ringFingers.slice();
+      }
       updateAccentRGB();
       applyVideoFilter();
       syncAllInputs();
