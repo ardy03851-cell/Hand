@@ -29,6 +29,8 @@
 
     :root {
       --accent-hex: #ffffff;
+      --glow-hex: #ffffff;
+      --panel-bg: rgba(7, 8, 10, 0.94);
       --hairline: rgba(255, 255, 255, 0.08);
       --hairline-soft: rgba(255, 255, 255, 0.05);
       --muted: rgba(255, 255, 255, 0.42);
@@ -61,7 +63,6 @@
     #video {
       object-fit: cover;
       filter: contrast(1.10) brightness(0.92) saturate(0.55);
-      transform: scaleX(-1);
       will-change: transform, filter;
     }
 
@@ -71,6 +72,7 @@
       will-change: transform;
     }
 
+    /* ---------------- TOP BAR ---------------- */
     .topbar {
       position: absolute;
       top: 0;
@@ -88,8 +90,57 @@
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       pointer-events: auto;
+    }
+
+    .sys-id {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 9px;
+      letter-spacing: 0.30em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.42);
+      padding: 6px 0;
+    }
+
+    .sys-mark {
+      width: 5px;
+      height: 5px;
+      background: var(--accent-hex);
+      box-shadow: 0 0 7px var(--glow-hex);
+      flex-shrink: 0;
+      animation: sysPulse 2.6s ease-in-out infinite;
+    }
+
+    @keyframes sysPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.35;
+      }
+    }
+
+    .sys-name {
+      color: rgba(255, 255, 255, 0.92);
+      font-weight: 600;
+      letter-spacing: 0.42em;
+    }
+
+    .sys-sep {
+      color: rgba(255, 255, 255, 0.16);
+      letter-spacing: 0;
+    }
+
+    .sys-sub {
+      color: rgba(255, 255, 255, 0.30);
+      font-size: 8.5px;
+      letter-spacing: 0.22em;
     }
 
     .clock {
@@ -133,6 +184,7 @@
       height: 12px;
     }
 
+    /* ---------------- HUD ---------------- */
     .hud {
       position: absolute;
       inset: 0;
@@ -155,27 +207,27 @@
       transform: translateY(-50%);
       display: flex;
       flex-direction: column;
-      gap: 13px;
+      gap: 9px;
       color: var(--muted);
-      font-size: 9px;
-      letter-spacing: 0.16em;
-      padding: 14px 16px;
+      font-size: 8px;
+      letter-spacing: 0.18em;
+      padding: 13px 15px;
       border: 1px solid var(--hairline-soft);
-      background: rgba(0, 0, 0, 0.28);
+      background: rgba(0, 0, 0, 0.32);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      min-width: 130px;
+      min-width: 132px;
     }
 
     .telemetry .row {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
 
     .telemetry .val {
       color: rgba(255, 255, 255, 0.95);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.08em;
       font-variant-numeric: tabular-nums;
@@ -183,9 +235,125 @@
     }
 
     .telemetry .val.idle {
-      color: rgba(255, 255, 255, 0.32);
+      color: rgba(255, 255, 255, 0.3);
     }
 
+    .telemetry .val.warn {
+      color: #ff8a5c;
+    }
+
+    /* ---------------- RIGHT STACK ---------------- */
+    .right-stack {
+      position: absolute;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 124px;
+    }
+
+    #gazeWidget {
+      position: relative;
+      width: 124px;
+      height: 124px;
+      border: 1px solid var(--hairline-soft);
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    #gazeWidget .label {
+      position: absolute;
+      top: 5px;
+      left: 7px;
+      font-size: 7px;
+      letter-spacing: 0.24em;
+      color: var(--muted-2);
+      text-transform: uppercase;
+    }
+
+    #gazeWidget .grid9 {
+      position: absolute;
+      inset: 15px 6px 6px 6px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+      background-size: 33.333% 33.333%;
+      background-position: -1px -1px;
+    }
+
+    #gazeWidget .crosshair {
+      position: absolute;
+      left: 50%;
+      top: calc(50% + 4px);
+      width: 16px;
+      height: 16px;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    #gazeWidget .dot {
+      position: absolute;
+      left: 50%;
+      top: calc(50% + 4px);
+      width: 7px;
+      height: 7px;
+      margin-left: -3.5px;
+      margin-top: -3.5px;
+      background: var(--accent-hex);
+      box-shadow: 0 0 10px var(--accent-hex);
+      border-radius: 50%;
+      transition: transform .06s linear;
+      will-change: transform;
+    }
+
+    .meter {
+      border: 1px solid var(--hairline-soft);
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      padding: 7px 8px 8px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .meter .label {
+      font-size: 7px;
+      letter-spacing: 0.24em;
+      color: var(--muted-2);
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .meter .big {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    .meter .bar {
+      height: 2px;
+      background: rgba(255, 255, 255, 0.09);
+      overflow: hidden;
+    }
+
+    .meter .bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--accent-hex);
+      transition: width .12s linear;
+    }
+
+    /* ---------------- BOTTOM ---------------- */
     .bottombar {
       position: absolute;
       left: 0;
@@ -195,6 +363,7 @@
       display: flex;
       justify-content: flex-end;
       align-items: flex-end;
+      gap: 10px;
     }
 
     #activateBtn {
@@ -269,6 +438,7 @@
       border-color: rgba(255, 255, 255, 0.12);
     }
 
+    /* ---------------- TOAST / BOOT ---------------- */
     #toast {
       position: absolute;
       left: 50%;
@@ -287,6 +457,7 @@
       z-index: 60;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      white-space: nowrap;
     }
 
     #toast.show {
@@ -325,7 +496,8 @@
       font-size: 10px;
       letter-spacing: 0.26em;
       color: rgba(255, 255, 255, 0.42);
-      max-width: 300px;
+      max-width: 320px;
+      line-height: 1.7;
     }
 
     #boot .bar {
@@ -362,59 +534,459 @@
       display: none;
     }
 
-    /* Gaze crosshair widget */
-    #gazeWidget {
-      position: absolute;
-      right: 22px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 120px;
-      height: 120px;
-      border: 1px solid var(--hairline-soft);
-      background: rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      pointer-events: none;
+    #boot .retry {
+      margin-top: 6px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #e8e8e8;
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      padding: 10px 22px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .15s, color .15s, background .15s;
+      display: none;
     }
 
-    #gazeWidget .label {
+    #boot.error .retry {
+      display: inline-block;
+    }
+
+    #boot .retry:hover {
+      border-color: var(--accent-hex);
+      color: #fff;
+    }
+
+    /* ---------------- SETTINGS PANEL ---------------- */
+    #settingsPanel {
       position: absolute;
-      top: 6px;
-      left: 8px;
-      font-size: 8px;
-      letter-spacing: 0.24em;
-      color: var(--muted-2);
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: min(460px, 92vw);
+      background: var(--panel-bg);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border-left: 1px solid var(--hairline);
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform .34s cubic-bezier(.22, 1, .36, 1);
+      display: flex;
+      flex-direction: column;
+      pointer-events: auto;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+    }
+
+    #settingsPanel.open {
+      transform: translateX(0);
+    }
+
+    .panel-head {
+      padding: max(18px, env(safe-area-inset-top)) 22px 14px 22px;
+      border-bottom: 1px solid var(--hairline);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .panel-head .title {
+      color: var(--fg-bright);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.34em;
       text-transform: uppercase;
     }
 
-    #gazeWidget .crosshair {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 14px;
-      height: 14px;
-      transform: translate(-50%, -50%);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .panel-head .close {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.72);
+      font-family: inherit;
+      font-size: 10px;
+      padding: 5px 11px;
+      letter-spacing: 0.22em;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .18s, color .18s;
     }
 
-    #gazeWidget .dot {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 8px;
-      height: 8px;
-      margin-left: -4px;
-      margin-top: -4px;
-      background: var(--accent-hex);
-      box-shadow: 0 0 10px var(--accent-hex);
+    .panel-head .close:hover {
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+    }
+
+    .panel-head .close:focus-visible {
+      outline: 1px solid var(--accent-hex);
+      outline-offset: 1px;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0 44px 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+    }
+
+    .panel-body::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .panel-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 2px;
+    }
+
+    .section {
+      border-bottom: 1px solid var(--hairline-soft);
+    }
+
+    .section-head {
+      padding: 15px 22px 12px 22px;
+      color: var(--muted-2);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: color .18s;
+      user-select: none;
+    }
+
+    .section-head:hover {
+      color: var(--muted);
+    }
+
+    .section-head .chev {
+      color: rgba(255, 255, 255, 0.22);
+      transition: transform .22s cubic-bezier(.22, 1, .36, 1);
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .section.collapsed .chev {
+      transform: rotate(-90deg);
+    }
+
+    .section.collapsed .section-content {
+      display: none;
+    }
+
+    .section-content {
+      padding: 0 22px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .field .label .value {
+      color: rgba(255, 255, 255, 0.94);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .field input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right,
+          var(--accent-hex) var(--fill, 0%),
+          rgba(255, 255, 255, 0.12) var(--fill, 0%));
+      outline: none;
+      cursor: pointer;
+      border-radius: 1px;
+    }
+
+    .field input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: #fff;
       border-radius: 50%;
-      transition: transform .06s linear;
-      will-change: transform;
+      cursor: pointer;
+      border: 2px solid #000;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+      transition: transform .12s;
     }
 
-    #gazeWidget .rings {
+    .field input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    .field input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #000;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+    }
+
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    .toggle:hover {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle .switch {
+      width: 30px;
+      height: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      position: relative;
+      transition: border-color .2s, background .2s;
+      flex-shrink: 0;
+    }
+
+    .toggle .switch::after {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      transition: left .2s cubic-bezier(.22, 1, .36, 1), background .2s;
+    }
+
+    .toggle.on {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle.on .switch {
+      border-color: var(--accent-hex);
+    }
+
+    .toggle.on .switch::after {
+      left: 17px;
+      background: var(--accent-hex);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-row button {
+      flex: 1;
+      min-width: 90px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.76);
+      font-family: inherit;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      padding: 9px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+
+    .btn-row button:hover {
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-row button:focus-visible {
+      outline: 1px solid var(--accent-hex);
+      outline-offset: 1px;
+    }
+
+    .btn-row button.primary {
+      border-color: var(--accent-hex);
+      color: #fff;
+    }
+
+    .color-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 26px;
+      height: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      cursor: pointer;
+      position: relative;
+      transition: transform .12s, border-color .12s, box-shadow .12s;
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .color-swatch.active {
+      border-color: #fff;
+      box-shadow: 0 0 0 1px #fff inset;
+    }
+
+    .select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.85);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      padding: 8px 10px;
+      width: 100%;
+      cursor: pointer;
+      text-transform: uppercase;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
+      background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      transition: border-color .15s;
+    }
+
+    .select:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .select:focus {
+      outline: none;
+      border-color: var(--accent-hex);
+    }
+
+    .select option {
+      background: #0a0c0f;
+      color: #fff;
+    }
+
+    .hint {
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.26);
+      line-height: 1.6;
+      text-transform: uppercase;
+    }
+
+    .color-input {
+      width: 100%;
+      height: 26px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      padding: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .color-input::-webkit-color-swatch-wrapper {
+      padding: 2px;
+    }
+
+    .color-input::-webkit-color-swatch {
+      border: none;
+    }
+
+    .color-input::-moz-color-swatch {
+      border: none;
+    }
+
+    #panelOverlay {
       position: absolute;
       inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s;
+    }
+
+    #panelOverlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (max-width: 720px) {
+      .sys-sub {
+        display: none;
+      }
+
+      .telemetry {
+        left: 12px;
+        padding: 10px 11px;
+        min-width: 112px;
+        gap: 6px;
+        font-size: 7px;
+      }
+
+      .telemetry .val {
+        font-size: 10px;
+      }
+
+      .right-stack {
+        right: 12px;
+        width: 104px;
+      }
+
+      #gazeWidget {
+        width: 104px;
+        height: 104px;
+      }
+
+      .topbar {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .bottombar {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      #activateBtn {
+        min-width: 150px;
+        padding: 13px 20px;
+        font-size: 10px;
+        letter-spacing: 0.24em;
+      }
     }
   </style>
 </head>
@@ -429,16 +1001,22 @@
 
     <div class="topbar">
       <div class="topbar-left">
-        <button class="icon-btn" id="backBtn" type="button" title="Back to SENTINEL">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <line x1="19" y1="12" x2="5" y2="12"/>
-            <polyline points="12 19 5 12 12 5"/>
-          </svg>
-          SENTINEL
-        </button>
+        <div class="sys-id">
+          <span class="sys-mark"></span>
+          <span class="sys-name">OCULUS</span>
+          <span class="sys-sep">/</span>
+          <span class="sys-sub">OPTICAL TELEMETRY</span>
+        </div>
       </div>
       <div class="topbar-right">
         <div class="clock" id="clock">--:--:--</div>
+        <button class="icon-btn" id="settingsToggle" type="button" title="Settings (S)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -449,11 +1027,11 @@
           <div class="val idle" id="tFps">—</div>
         </div>
         <div class="row">
-          <div>FACES</div>
-          <div class="val idle" id="tFaces">0</div>
+          <div>SUBJECT</div>
+          <div class="val idle" id="tFace">0</div>
         </div>
         <div class="row">
-          <div>EAR</div>
+          <div>EAR L/R</div>
           <div class="val idle" id="tEar">—</div>
         </div>
         <div class="row">
@@ -461,15 +1039,52 @@
           <div class="val idle" id="tBlink">0</div>
         </div>
         <div class="row">
+          <div>RATE /MIN</div>
+          <div class="val idle" id="tRate">—</div>
+        </div>
+        <div class="row">
+          <div>PERCLOS</div>
+          <div class="val idle" id="tPerclos">—</div>
+        </div>
+        <div class="row">
           <div>GAZE</div>
           <div class="val idle" id="tGaze">—</div>
         </div>
+        <div class="row">
+          <div>FIXATIONS</div>
+          <div class="val idle" id="tFix">0</div>
+        </div>
+        <div class="row">
+          <div>HEAD Y/P/R</div>
+          <div class="val idle" id="tPose">—</div>
+        </div>
+        <div class="row">
+          <div>ATTENTION</div>
+          <div class="val idle" id="tAtt">—</div>
+        </div>
       </div>
 
-      <div id="gazeWidget">
-        <div class="label">GAZE VECTOR</div>
-        <div class="crosshair"></div>
-        <div class="dot" id="gazeDot"></div>
+      <div class="right-stack" id="rightStack">
+        <div id="gazeWidget">
+          <div class="label">GAZE VECTOR</div>
+          <div class="grid9"></div>
+          <div class="crosshair"></div>
+          <div class="dot" id="gazeDot"></div>
+        </div>
+
+        <div class="meter">
+          <div class="label"><span>ATTENTION</span><span id="mAttPct">—</span></div>
+          <div class="bar"><i id="barAtt"></i></div>
+        </div>
+
+        <div class="meter">
+          <div class="label"><span>PERCLOS</span><span id="mPerPct">—</span></div>
+          <div class="bar"><i id="barPer"></i></div>
+        </div>
+
+        <div class="meter">
+          <div class="label"><span>DISTANCE</span><span id="mDist">—</span></div>
+        </div>
       </div>
 
       <div class="bottombar">
@@ -478,66 +1093,787 @@
     </div>
 
     <div id="toast"></div>
+    <div id="panelOverlay"></div>
+
+    <aside id="settingsPanel" aria-hidden="true">
+      <div class="panel-head">
+        <div class="title">Configuration</div>
+        <button class="close" id="settingsClose" type="button">CLOSE</button>
+      </div>
+      <div class="panel-body">
+
+        <!-- ============ PRESETS ============ -->
+        <div class="section" data-section="presets">
+          <div class="section-head"><span>Presets</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Load Preset</span></div>
+              <select class="select" id="presetSelect">
+                <option value="">— Choose —</option>
+                <option value="default">Default</option>
+                <option value="clinical">Clinical</option>
+                <option value="recon">Recon</option>
+                <option value="noir">Noir</option>
+                <option value="neon">Neon</option>
+                <option value="minimal">Minimal</option>
+                <option value="thermal">Thermal</option>
+                <option value="cinema">Cinema</option>
+              </select>
+            </div>
+            <div class="hint">Presets override every setting. Reset (in System) restores defaults.</div>
+          </div>
+        </div>
+
+        <!-- ============ SOURCE ============ -->
+        <div class="section" data-section="source">
+          <div class="section-head"><span>Source</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Facing</span></div>
+              <select class="select" data-key="facingMode">
+                <option value="user">Front (User)</option>
+                <option value="environment">Rear (Environment)</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Resolution</span></div>
+              <select class="select" data-key="resolution">
+                <option value="640x480">640 × 480</option>
+                <option value="1280x720">1280 × 720</option>
+                <option value="1920x1080">1920 × 1080</option>
+              </select>
+            </div>
+            <label class="toggle" data-key="pauseOnHide"><span>Pause When Hidden</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <!-- ============ DETECTION ============ -->
+        <div class="section" data-section="detection">
+          <div class="section-head"><span>Detection</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="refineLandmarks"><span>Iris Refinement</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label">
+                <span>Detection Confidence</span><span class="value" data-value="minDetection">0.50</span>
+              </div>
+              <input type="range" min="0.1" max="0.95" step="0.05" data-key="minDetection">
+            </div>
+            <div class="field">
+              <div class="label">
+                <span>Tracking Confidence</span><span class="value" data-value="minTracking">0.50</span>
+              </div>
+              <input type="range" min="0.1" max="0.95" step="0.05" data-key="minTracking">
+            </div>
+            <div class="hint">Iris refinement adds 10 landmarks per eye (indices 468–477) and is required for gaze
+              vector estimation.</div>
+          </div>
+        </div>
+
+        <!-- ============ TRACKING ============ -->
+        <div class="section" data-section="tracking">
+          <div class="section-head"><span>Tracking</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Stabilization</span><span class="value" data-value="stabilization">0.60</span>
+              </div>
+              <input type="range" min="0" max="0.95" step="0.05" data-key="stabilization">
+            </div>
+            <div class="field">
+              <div class="label"><span>Responsiveness</span><span class="value" data-value="responsiveness">0.50</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" data-key="responsiveness">
+            </div>
+            <div class="field">
+              <div class="label"><span>Prediction Lead</span><span class="value" data-value="prediction">0.6</span>
+              </div>
+              <input type="range" min="0" max="2" step="0.1" data-key="prediction">
+            </div>
+            <div class="field">
+              <div class="label"><span>Loss Grace Frames</span><span class="value" data-value="graceFrames">8</span>
+              </div>
+              <input type="range" min="0" max="40" step="1" data-key="graceFrames">
+            </div>
+            <div class="hint">Adaptive one-euro filter applied per landmark axis. Higher stabilization suppresses
+              jitter; higher responsiveness reduces motion lag.</div>
+          </div>
+        </div>
+
+        <!-- ============ OCULAR ============ -->
+        <div class="section" data-section="ocular">
+          <div class="section-head"><span>Ocular Analysis</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label">
+                <span>Closed Threshold (EAR)</span><span class="value" data-value="earClosed">0.19</span>
+              </div>
+              <input type="range" min="0.08" max="0.32" step="0.005" data-key="earClosed">
+            </div>
+            <div class="field">
+              <div class="label"><span>Open Threshold (EAR)</span><span class="value" data-value="earOpen">0.26</span>
+              </div>
+              <input type="range" min="0.12" max="0.45" step="0.005" data-key="earOpen">
+            </div>
+            <div class="field">
+              <div class="label"><span>Blink Debounce (ms)</span><span class="value" data-value="blinkMinMs">60</span>
+              </div>
+              <input type="range" min="10" max="300" step="5" data-key="blinkMinMs">
+            </div>
+            <div class="field">
+              <div class="label"><span>PERCLOS Window (s)</span><span class="value" data-value="perclosWindow">60</span>
+              </div>
+              <input type="range" min="10" max="120" step="5" data-key="perclosWindow">
+            </div>
+            <div class="field">
+              <div class="label"><span>Gaze Smoothing</span><span class="value" data-value="gazeSmoothing">0.55</span>
+              </div>
+              <input type="range" min="0" max="0.95" step="0.05" data-key="gazeSmoothing">
+            </div>
+            <div class="field">
+              <div class="label"><span>Fixation Radius</span><span class="value" data-value="fixationRadius">0.09</span>
+              </div>
+              <input type="range" min="0.02" max="0.30" step="0.01" data-key="fixationRadius">
+            </div>
+            <div class="field">
+              <div class="label"><span>Fixation Time (ms)</span><span class="value" data-value="fixationTime">350</span>
+              </div>
+              <input type="range" min="100" max="1200" step="25" data-key="fixationTime">
+            </div>
+            <div class="field">
+              <div class="label">
+                <span>Saccade Threshold</span><span class="value" data-value="saccadeThreshold">1.8</span>
+              </div>
+              <input type="range" min="0.4" max="6" step="0.1" data-key="saccadeThreshold">
+            </div>
+            <div class="hint">EAR thresholds define blink hysteresis. PERCLOS is the fraction of time the eyes are ≥80%
+              closed. Saccades are gaze velocities above the threshold (normalized units / second).</div>
+          </div>
+        </div>
+
+        <!-- ============ RETICLE ============ -->
+        <div class="section" data-section="reticle">
+          <div class="section-head"><span>Reticle</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="showFaceOval"><span>Face Oval</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showMesh"><span>Facial Mesh</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Mesh Opacity</span><span class="value" data-value="meshOpacity">0.16</span></div>
+              <input type="range" min="0.02" max="0.6" step="0.01" data-key="meshOpacity">
+            </div>
+            <label class="toggle" data-key="showEyes"><span>Eye Contours</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showIris"><span>Iris Reticle</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showBrows"><span>Eyebrows</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showLips"><span>Lips</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Iris Scale</span><span class="value" data-value="irisScale">1.0</span></div>
+              <input type="range" min="0.5" max="2" step="0.05" data-key="irisScale">
+            </div>
+            <div class="field">
+              <div class="label"><span>Contour Width</span><span class="value" data-value="eyeStroke">1.2</span></div>
+              <input type="range" min="0.4" max="3" step="0.1" data-key="eyeStroke">
+            </div>
+            <label class="toggle" data-key="reticleTicks"><span>Crosshair Ticks</span><span class="switch"></span></label>
+            <label class="toggle" data-key="reticleLabels"><span>Landmark Labels</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <!-- ============ GAZE ============ -->
+        <div class="section" data-section="gaze">
+          <div class="section-head"><span>Gaze</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="fxGazeRay"><span>Gaze Ray</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxGazeTrail"><span>Gaze Trail</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Trail Length</span><span class="value" data-value="gazeTrailLen">48</span></div>
+              <input type="range" min="6" max="160" step="2" data-key="gazeTrailLen">
+            </div>
+            <label class="toggle" data-key="fxFixation"><span>Fixation Markers</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxGazeZone"><span>Zone Readout</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxZoneGrid"><span>Zone Grid</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxHeat"><span>Gaze Heat Map</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Heat Decay</span><span class="value" data-value="heatDecay">0.012</span></div>
+              <input type="range" min="0.001" max="0.06" step="0.001" data-key="heatDecay">
+            </div>
+            <div class="btn-row">
+              <button id="calibrateBtn" type="button" class="primary">Calibrate Center</button>
+              <button id="clearCalibBtn" type="button">Clear</button>
+            </div>
+            <div class="hint">Calibration records the resting gaze offset. Look directly at the on-screen reticle during
+              the countdown. Press C to calibrate.</div>
+          </div>
+        </div>
+
+        <!-- ============ POSE ============ -->
+        <div class="section" data-section="pose">
+          <div class="section-head"><span>Head Pose</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="fxAxis"><span>Orientation Gizmo</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxAim"><span>Aim Vector</span><span class="switch"></span></label>
+            <label class="toggle" data-key="poseLabels"><span>Angle Readout</span><span class="switch"></span></label>
+            <div class="hint">Yaw / pitch / roll derived from facial landmark geometry. Values are approximate and
+              relative to the camera axis.</div>
+          </div>
+        </div>
+
+        <!-- ============ BIOMETRICS ============ -->
+        <div class="section" data-section="biometrics">
+          <div class="section-head"><span>Biometrics</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="fxEarGraph"><span>EAR Waveform</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Waveform Samples</span><span class="value" data-value="earGraphLen">180</span>
+              </div>
+              <input type="range" min="30" max="400" step="10" data-key="earGraphLen">
+            </div>
+            <label class="toggle" data-key="fxBlinkBar"><span>Blink Bar</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPerclos"><span>PERCLOS Meter</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxAttention"><span>Attention Gauge</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxDistance"><span>Distance Readout</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <!-- ============ OVERLAYS ============ -->
+        <div class="section" data-section="overlays">
+          <div class="section-head"><span>Overlays</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="fxCorners"><span>Frame Corners</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxCrosshair"><span>Center Crosshair</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxScan"><span>Scan Sweep</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxLock"><span>Target Lock</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxTicker"><span>Data Ticker</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxGrid"><span>Bounding Grid</span><span class="switch"></span></label>
+            <label class="toggle" data-key="fxPulse"><span>Iris Pulse Rings</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <!-- ============ APPEARANCE ============ -->
+        <div class="section" data-section="appearance">
+          <div class="section-head"><span>Appearance</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Accent</span><span class="value" data-value="accentName">WHITE</span></div>
+              <div class="color-row" id="accentColors">
+                <div class="color-swatch" data-accent="#ffffff" style="background:#ffffff"></div>
+                <div class="color-swatch" data-accent="#00e0b8" style="background:#00e0b8"></div>
+                <div class="color-swatch" data-accent="#5fc9ff" style="background:#5fc9ff"></div>
+                <div class="color-swatch" data-accent="#ff5c5c" style="background:#ff5c5c"></div>
+                <div class="color-swatch" data-accent="#ffd166" style="background:#ffd166"></div>
+                <div class="color-swatch" data-accent="#b28dff" style="background:#b28dff"></div>
+                <div class="color-swatch" data-accent="#7dff8a" style="background:#7dff8a"></div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="label"><span>Custom Accent</span></div>
+              <input type="color" class="color-input" id="accentCustom" value="#ffffff">
+            </div>
+            <div class="field">
+              <div class="label"><span>Glow Color</span></div>
+              <input type="color" class="color-input" id="glowCustom" value="#ffffff">
+            </div>
+            <label class="toggle" data-key="videoGrayscale"><span>Desaturate Video</span><span class="switch"></span></label>
+            <label class="toggle" data-key="videoMirror"><span>Mirror View</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label">
+                <span>Video Brightness</span><span class="value" data-value="videoBrightness">0.92</span>
+              </div>
+              <input type="range" min="0.3" max="1.6" step="0.02" data-key="videoBrightness">
+            </div>
+            <div class="field">
+              <div class="label"><span>Video Contrast</span><span class="value" data-value="videoContrast">1.10</span>
+              </div>
+              <input type="range" min="0.5" max="2" step="0.05" data-key="videoContrast">
+            </div>
+            <div class="field">
+              <div class="label"><span>Video Saturation</span><span class="value" data-value="videoSaturate">0.55</span>
+              </div>
+              <input type="range" min="0" max="2" step="0.05" data-key="videoSaturate">
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ INTERFACE ============ -->
+        <div class="section" data-section="interface">
+          <div class="section-head"><span>Interface</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="showTelemetry"><span>Telemetry</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showClock"><span>Clock</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showFps"><span>FPS Readout</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showGazeWidget"><span>Gaze Widget</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Inference Rate Cap</span><span class="value" data-value="fpsCap">60</span></div>
+              <input type="range" min="10" max="60" step="5" data-key="fpsCap">
+            </div>
+            <div class="hint">Keys — A activate · S settings · H hud · F fullscreen · P save frame · C calibrate · Esc
+              close</div>
+          </div>
+        </div>
+
+        <!-- ============ SYSTEM ============ -->
+        <div class="section" data-section="system">
+          <div class="section-head"><span>System</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="btn-row">
+              <button id="resetDefaults" type="button">Reset</button>
+              <button id="exportConfig" type="button">Export</button>
+            </div>
+            <div class="btn-row">
+              <button id="importConfig" type="button">Import</button>
+              <button id="toggleFullscreen" type="button">Fullscreen</button>
+            </div>
+            <div class="btn-row">
+              <button id="screenshotBtn" type="button">Save Frame</button>
+            </div>
+            <div class="hint">Configuration persists to local storage under <em>sentinel.oculus.v1</em>.</div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
 
     <div id="boot">
       <div class="title">SENTINEL · OCULUS</div>
       <div class="sub" id="bootMsg">INITIALIZING</div>
       <div class="bar"><i></i></div>
+      <button class="retry" id="bootRetry" type="button">RETRY</button>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous">
+  <!-- ==========================================================
+       MediaPipe Face Mesh — external CDN dependency.
+       `onerror` sets a flag we can inspect during boot to give
+       the user a meaningful failure message instead of silence.
+       ========================================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"
+    onerror="window.__oculusLibError = 'CDN unreachable';"></script>
+
+  <!-- Post-load probe: runs immediately after the script tag above. -->
+  <script>
+    window.__oculusLibReady = (typeof FaceMesh !== 'undefined');
   </script>
 
   <script>
     (() => {
       "use strict";
 
+      // ============================================================
+      //  ERROR HANDLING
+      // ============================================================
+      // Cross-origin script errors (from the CDN-loaded MediaPipe
+      // WASM / .tflite / .binarypb assets) arrive as "Script error."
+      // with no error object and no filename. They are benign
+      // internal probes and cannot be inspected. Filter them out so
+      // the console stays usable, but keep a low-noise counter for
+      // diagnostics.
+      let _xoErrCount = 0;
+
       window.addEventListener('error', (e) => {
-        // eslint-disable-next-line no-console
-        console.error('[OCULUS]', e.message, e.error && e.error.stack);
+        const msg = e && e.message ? e.message : '';
+        const isXOrigin = (msg === 'Script error.' || msg === 'Script error')
+          && !e.error && !e.filename;
+        if (isXOrigin) {
+          _xoErrCount++;
+          if (_xoErrCount === 1) {
+            console.info('[OCULUS] Cross-origin script warnings suppressed ' +
+              '(MediaPipe WASM probes). This is normal.');
+          }
+          return;
+        }
+        console.error('[OCULUS]', msg,
+          e.error && e.error.stack,
+          e.filename ? `@${e.filename}:${e.lineno}:${e.colno}` : '');
+      }, true);
+
+      window.addEventListener('unhandledrejection', (e) => {
+        const r = e.reason;
+        const s = r && r.message ? r.message : String(r || '');
+        if (s === 'Script error.' || s === 'Script error') return;
+        console.error('[OCULUS] Unhandled rejection:', r);
       });
 
       // ============================================================
       //  ELEMENTS
       // ============================================================
-      const video       = document.getElementById('video');
-      const canvas      = document.getElementById('overlay');
-      const ctx         = canvas.getContext('2d', { alpha: true, desynchronized: true });
-      const bootEl      = document.getElementById('boot');
-      const bootMsg     = document.getElementById('bootMsg');
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('overlay');
+      const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
+      const bootEl = document.getElementById('boot');
+      const bootMsg = document.getElementById('bootMsg');
+      const bootRetry = document.getElementById('bootRetry');
       const activateBtn = document.getElementById('activateBtn');
-      const clockEl     = document.getElementById('clock');
-      const toastEl     = document.getElementById('toast');
-      const backBtn     = document.getElementById('backBtn');
-      const gazeDot     = document.getElementById('gazeDot');
+      const clockEl = document.getElementById('clock');
+      const hudEl = document.getElementById('hud');
+      const telemetryEl = document.getElementById('telemetry');
+      const rightStack = document.getElementById('rightStack');
+      const toastEl = document.getElementById('toast');
+      const gazeDot = document.getElementById('gazeDot');
 
-      const tFps   = document.getElementById('tFps');
-      const tFaces = document.getElementById('tFaces');
-      const tEar   = document.getElementById('tEar');
+      const tFps = document.getElementById('tFps');
+      const tFace = document.getElementById('tFace');
+      const tEar = document.getElementById('tEar');
       const tBlink = document.getElementById('tBlink');
-      const tGaze  = document.getElementById('tGaze');
+      const tRate = document.getElementById('tRate');
+      const tPerclos = document.getElementById('tPerclos');
+      const tGaze = document.getElementById('tGaze');
+      const tFix = document.getElementById('tFix');
+      const tPose = document.getElementById('tPose');
+      const tAtt = document.getElementById('tAtt');
+
+      const mAttPct = document.getElementById('mAttPct');
+      const barAtt = document.getElementById('barAtt');
+      const mPerPct = document.getElementById('mPerPct');
+      const barPer = document.getElementById('barPer');
+      const mDist = document.getElementById('mDist');
+
+      const settingsPanel = document.getElementById('settingsPanel');
+      const settingsToggle = document.getElementById('settingsToggle');
+      const settingsClose = document.getElementById('settingsClose');
+      const panelOverlay = document.getElementById('panelOverlay');
+
+      const accentCustom = document.getElementById('accentCustom');
+      const glowCustom = document.getElementById('glowCustom');
+      const presetSelect = document.getElementById('presetSelect');
 
       // ============================================================
-      //  CONSTANTS — MediaPipe FaceMesh indices
+      //  CONFIG
       // ============================================================
-      const RIGHT_EYE = { outer: 33,  inner: 133, top1: 160, top2: 158, bot1: 153, bot2: 144, iris: 468 };
-      const LEFT_EYE  = { outer: 362, inner: 263, top1: 385, top2: 387, bot1: 380, bot2: 373, iris: 473 };
+      const DEFAULTS = {
+        // Source
+        facingMode: 'user',
+        resolution: '1280x720',
+        pauseOnHide: true,
 
-      // Closed contours (order matters — must be a loop)
+        // Detection
+        refineLandmarks: true,
+        minDetection: 0.5,
+        minTracking: 0.5,
+
+        // Tracking
+        stabilization: 0.60,
+        responsiveness: 0.50,
+        prediction: 0.6,
+        graceFrames: 8,
+
+        // Ocular analysis
+        earClosed: 0.19,
+        earOpen: 0.26,
+        blinkMinMs: 60,
+        perclosWindow: 60,
+        gazeSmoothing: 0.55,
+        fixationRadius: 0.09,
+        fixationTime: 350,
+        saccadeThreshold: 1.8,
+        gazeOffsetX: 0,
+        gazeOffsetY: 0,
+
+        // Reticle
+        showFaceOval: true,
+        showMesh: false,
+        meshOpacity: 0.16,
+        showEyes: true,
+        showIris: true,
+        showBrows: true,
+        showLips: false,
+        irisScale: 1.0,
+        eyeStroke: 1.2,
+        reticleTicks: true,
+        reticleLabels: true,
+
+        // Gaze
+        fxGazeRay: true,
+        fxGazeTrail: false,
+        gazeTrailLen: 48,
+        fxFixation: true,
+        fxGazeZone: true,
+        fxZoneGrid: false,
+        fxHeat: false,
+        heatDecay: 0.012,
+
+        // Pose
+        fxAxis: false,
+        fxAim: false,
+        poseLabels: true,
+
+        // Biometrics
+        fxEarGraph: true,
+        earGraphLen: 180,
+        fxBlinkBar: false,
+        fxPerclos: false,
+        fxAttention: false,
+        fxDistance: false,
+
+        // Overlays
+        fxCorners: true,
+        fxCrosshair: false,
+        fxScan: false,
+        fxLock: false,
+        fxTicker: false,
+        fxGrid: false,
+        fxPulse: false,
+
+        // Appearance
+        accent: '#ffffff',
+        accentName: 'WHITE',
+        glowColor: '#ffffff',
+        videoGrayscale: true,
+        videoMirror: true,
+        videoBrightness: 0.92,
+        videoContrast: 1.10,
+        videoSaturate: 0.55,
+
+        // Interface
+        showTelemetry: true,
+        showClock: true,
+        showFps: true,
+        showGazeWidget: true,
+        fpsCap: 60,
+      };
+
+      const STORAGE_KEY = 'sentinel.oculus.v1';
+      const config = { ...DEFAULTS };
+
+      function loadConfig() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) Object.assign(config, DEFAULTS, JSON.parse(raw));
+        } catch (e) { /* ignore */ }
+      }
+      function saveConfig() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch (e) { /* ignore */ }
+      }
+
+      // ============================================================
+      //  PRESETS
+      // ============================================================
+      const PRESETS = {
+        default: {},
+        clinical: {
+          accent: '#5fc9ff', accentName: 'BLUE', glowColor: '#5fc9ff',
+          showMesh: true, meshOpacity: 0.10, showLips: true,
+          fxEarGraph: true, earGraphLen: 300, fxBlinkBar: true,
+          fxPerclos: true, fxAttention: true, fxDistance: true,
+          fxGazeZone: true, fxFixation: true, poseLabels: true,
+          fxTicker: true, fxCorners: true, fxHeat: false,
+          videoSaturate: 0.25, videoBrightness: 0.95,
+          stabilization: 0.72, gazeSmoothing: 0.68,
+        },
+        recon: {
+          accent: '#7dff8a', accentName: 'LIME', glowColor: '#7dff8a',
+          showMesh: true, meshOpacity: 0.22, showEyes: true, showIris: true,
+          fxLock: true, fxScan: true, fxGrid: true, fxCorners: true,
+          fxTicker: true, fxAxis: true, poseLabels: true,
+          fxGazeTrail: true, gazeTrailLen: 90, fxGazeRay: true,
+          videoSaturate: 0.12, videoContrast: 1.30, videoBrightness: 0.85,
+          stabilization: 0.55, responsiveness: 0.65,
+        },
+        noir: {
+          accent: '#ffffff', accentName: 'WHITE', glowColor: '#aaaaaa',
+          showFaceOval: true, showEyes: true, showIris: true, showBrows: false,
+          showMesh: false, fxCorners: true, fxCrosshair: true,
+          fxGazeRay: true, fxFixation: true, poseLabels: false,
+          videoSaturate: 0, videoContrast: 1.45, videoBrightness: 0.7,
+          eyeStroke: 1.0, meshOpacity: 0.08,
+        },
+        neon: {
+          accent: '#00e0b8', accentName: 'TEAL', glowColor: '#00e0b8',
+          showMesh: true, meshOpacity: 0.34, showIris: true,
+          fxGazeTrail: true, gazeTrailLen: 110, fxPulse: true, fxScan: true,
+          fxLock: true, fxAxis: true, fxHeat: true, heatDecay: 0.02,
+          fxTicker: true, videoSaturate: 0.4, videoBrightness: 0.82,
+          eyeStroke: 1.6,
+        },
+        minimal: {
+          accent: '#ffffff', accentName: 'WHITE', glowColor: '#ffffff',
+          showFaceOval: false, showMesh: false, showBrows: false,
+          showEyes: true, showIris: true, reticleTicks: false, reticleLabels: false,
+          fxGazeRay: true, fxGazeTrail: false, fxFixation: false,
+          fxCorners: false, fxTicker: false, fxEarGraph: false,
+          fxGazeZone: false, poseLabels: false, eyeStroke: 1.0,
+        },
+        thermal: {
+          accent: '#ff5c5c', accentName: 'RED', glowColor: '#ffb37a',
+          showMesh: true, meshOpacity: 0.30, showLips: true, showBrows: true,
+          fxHeat: true, heatDecay: 0.018, fxTicker: true, fxCorners: true,
+          fxDistance: true, videoSaturate: 0.1, videoBrightness: 0.78,
+          videoContrast: 1.28,
+        },
+        cinema: {
+          accent: '#b28dff', accentName: 'VIOLET', glowColor: '#5fc9ff',
+          showFaceOval: true, showMesh: true, meshOpacity: 0.12,
+          showEyes: true, showIris: true, eyeStroke: 0.9,
+          fxGazeRay: true, fxGazeTrail: true, gazeTrailLen: 130,
+          fxFixation: true, fxCorners: false, fxCrosshair: false,
+          fxEarGraph: false, poseLabels: false,
+          videoSaturate: 0.28, videoBrightness: 0.72, videoContrast: 1.35,
+          stabilization: 0.78, gazeSmoothing: 0.72,
+        },
+      };
+
+      function applyPreset(name) {
+        const p = PRESETS[name];
+        if (!p) return;
+        Object.assign(config, DEFAULTS, p);
+        updateAccentRGB();
+        updateGlowRGB();
+        applyVideoFilter();
+        syncAllInputs();
+        onConfigChange('showTelemetry', config.showTelemetry);
+        onConfigChange('showClock', config.showClock);
+        onConfigChange('showGazeWidget', config.showGazeWidget);
+        saveConfig();
+        showToast(`Preset · ${name.toUpperCase()}`);
+      }
+
+      // ============================================================
+      //  MATH HELPERS
+      // ============================================================
+      const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+      const D2R = Math.PI / 180;
+      const R2D = 180 / Math.PI;
+
+      function dist2(ax, ay, bx, by) {
+        const dx = ax - bx, dy = ay - by;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+      function dist3(x, y, z) { return Math.sqrt(x * x + y * y + z * z); }
+
+      // ============================================================
+      //  COLOR
+      // ============================================================
+      const ACCENT_RGB = { r: 255, g: 255, b: 255 };
+      const GLOW_RGB = { r: 255, g: 255, b: 255 };
+      const RGBA_LUT = new Array(33);
+      const GLOW_LUT = new Array(33);
+
+      function hexToRgb(hex) {
+        const h = (hex || '#ffffff').replace('#', '');
+        const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+        return {
+          r: parseInt(full.substring(0, 2), 16) || 0,
+          g: parseInt(full.substring(2, 4), 16) || 0,
+          b: parseInt(full.substring(4, 6), 16) || 0,
+        };
+      }
+
+      function updateAccentRGB() {
+        const c = hexToRgb(config.accent);
+        ACCENT_RGB.r = c.r; ACCENT_RGB.g = c.g; ACCENT_RGB.b = c.b;
+        document.documentElement.style.setProperty('--accent-hex', config.accent);
+        RGBA_LUT.fill(undefined);
+      }
+      function updateGlowRGB() {
+        const c = hexToRgb(config.glowColor || config.accent);
+        GLOW_RGB.r = c.r; GLOW_RGB.g = c.g; GLOW_RGB.b = c.b;
+        document.documentElement.style.setProperty('--glow-hex', config.glowColor);
+        GLOW_LUT.fill(undefined);
+      }
+      function rgbaQ(a) {
+        if (a <= 0) return 'rgba(0,0,0,0)';
+        if (a >= 1) a = 1;
+        let idx = (a * 32 + 0.5) | 0;
+        if (idx < 0) idx = 0; else if (idx > 32) idx = 32;
+        let s = RGBA_LUT[idx];
+        if (s === undefined) {
+          s = `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${idx / 32})`;
+          RGBA_LUT[idx] = s;
+        }
+        return s;
+      }
+      function glowQ(a) {
+        if (a <= 0) return 'rgba(0,0,0,0)';
+        if (a >= 1) a = 1;
+        let idx = (a * 32 + 0.5) | 0;
+        if (idx < 0) idx = 0; else if (idx > 32) idx = 32;
+        let s = GLOW_LUT[idx];
+        if (s === undefined) {
+          s = `rgba(${GLOW_RGB.r},${GLOW_RGB.g},${GLOW_RGB.b},${idx / 32})`;
+          GLOW_LUT[idx] = s;
+        }
+        return s;
+      }
+
+      // ============================================================
+      //  ONE-EURO FILTER
+      // ============================================================
+      class LowPass {
+        constructor() { this.y = 0; this.initialized = false; }
+        filter(x, alpha) {
+          if (!this.initialized) { this.y = x; this.initialized = true; }
+          else this.y = alpha * x + (1 - alpha) * this.y;
+          return this.y;
+        }
+        reset() { this.initialized = false; this.y = 0; }
+      }
+
+      class OneEuroFilter {
+        constructor(minCutoff, beta, dCutoff) {
+          this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+          this.xFilt = new LowPass(); this.dxFilt = new LowPass();
+          this.prevX = null; this.prevT = null;
+          this.value = 0; this.velocity = 0;
+        }
+        setParams(minCutoff, beta, dCutoff) {
+          this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+        }
+        alpha(cutoff, dt) {
+          const tau = 1 / (2 * Math.PI * cutoff);
+          return 1 / (1 + tau / dt);
+        }
+        filter(x, tSec) {
+          if (this.prevT === null) {
+            this.prevT = tSec; this.prevX = x;
+            this.value = this.xFilt.filter(x, 1);
+            this.velocity = 0;
+            return this.value;
+          }
+          const dt = tSec - this.prevT;
+          if (dt <= 0) return this.value;
+          const dx = (x - this.prevX) / dt;
+          this.prevX = x; this.prevT = tSec;
+          const aD = this.alpha(this.dCutoff, dt);
+          const dxHat = this.dxFilt.filter(dx, aD);
+          const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+          const a = this.alpha(cutoff, dt);
+          this.value = this.xFilt.filter(x, a);
+          this.velocity = dxHat;
+          return this.value;
+        }
+        reset() {
+          this.xFilt.reset(); this.dxFilt.reset();
+          this.prevX = null; this.prevT = null;
+          this.value = 0; this.velocity = 0;
+        }
+      }
+
+      const minCutoffFromStabilization = s => 12 * Math.pow(0.038, s);
+      const betaFromResponsiveness = r => 0.003 + r * 0.117;
+      const D_CUTOFF = 1.0;
+
+      // ============================================================
+      //  LANDMARK TOPOLOGY
+      // ============================================================
+      const RIGHT_EYE = { outer: 33, inner: 133, top1: 160, top2: 158, bot1: 153, bot2: 144, iris: 468 };
+      const LEFT_EYE = { outer: 362, inner: 263, top1: 385, top2: 387, bot1: 380, bot2: 373, iris: 473 };
+
       const RIGHT_EYE_CONTOUR = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
-      const LEFT_EYE_CONTOUR  = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+      const LEFT_EYE_CONTOUR = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+      const RIGHT_IRIS_RING = [469, 470, 471, 472];
+      const LEFT_IRIS_RING = [474, 475, 476, 477];
 
-      // Face oval outline
       const FACE_OVAL = [
         10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
         397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
         172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
       ];
 
-      // Eyebrow contours (nice for context)
       const RIGHT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
-      const LEFT_BROW  = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+      const LEFT_BROW = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+
+      const LIPS_OUTER = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185];
+      const LIPS_INNER = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191];
+
+      const LABEL_POINTS = [1, 10, 152, 33, 133, 362, 263, 61, 291];
+
+      const MAX_LM = 478;
 
       // ============================================================
       //  STATE
@@ -551,13 +1887,71 @@
         inferenceInFlight: false,
         inferenceLast: 0,
         fpsSmooth: 0,
-        lastFace: null,
-        lastEar: 0.3,
-        blinkCount: 0,
-        blinkState: false,
-        gaze: { x: 0, y: 0 },
         lostFrames: 0,
+        initialized: false,
+        startTime: 0,
+        hasIris: false,
+
+        smooth: new Array(MAX_LM),
+        screen: new Array(MAX_LM),
+        filters: new Array(MAX_LM * 3),
       };
+
+      for (let i = 0; i < MAX_LM; i++) {
+        state.smooth[i] = { x: 0, y: 0, z: 0 };
+        state.screen[i] = { x: 0, y: 0, z: 0 };
+      }
+      for (let i = 0; i < MAX_LM * 3; i++) {
+        state.filters[i] = new OneEuroFilter(1.0, 0.02, D_CUTOFF);
+      }
+
+      // ============================================================
+      //  METRICS
+      // ============================================================
+      const M = {
+        present: false,
+        earL: 0, earR: 0, ear: 0,
+        eyeOpenL: 1, eyeOpenR: 1,
+        blinkCount: 0,
+        blinkRate: 0,
+        perclos: 0,
+        gazeRaw: { x: 0, y: 0 },
+        gaze: { x: 0, y: 0 },
+        gazeValid: false,
+        zone: '—',
+        fixationCount: 0,
+        fixating: false,
+        fixationT0: 0,
+        anchorX: 0, anchorY: 0,
+        saccade: false,
+        yaw: 0, pitch: 0, roll: 0,
+        attention: 0,
+        drowsy: 0,
+        ipd: 0,
+        distanceCm: 0,
+        mar: 0,
+        browRaise: 0,
+        faceScale: 0,
+        _fixLogged: 0,
+      };
+
+      const blink = {
+        state: false,
+        lastOpenT: 0,
+        lastBlinkT: 0,
+        events: [],
+      };
+
+      const perclosSamples = [];
+      let lastPerclosPush = 0;
+
+      const EAR_RING = 512;
+      const earHist = new Float32Array(EAR_RING);
+      let earHistIdx = 0;
+      let earHistCount = 0;
+
+      const gazeTrail = [];
+      const fixations = [];
 
       // ============================================================
       //  CANVAS SIZE + COVER MAPPING
@@ -574,7 +1968,7 @@
         const vA = vw / vh;
         let dW, dH;
         if (vA > cA) { dH = viewH; dW = viewH * vA; }
-        else         { dW = viewW; dH = viewW / vA; }
+        else { dW = viewW; dH = viewW / vA; }
         cover.drawW = dW;
         cover.drawH = dH;
         cover.offsetX = (viewW - dW) / 2;
@@ -592,33 +1986,29 @@
         canvas.style.height = viewH + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         updateCover();
+        heat.w = 0;
       }
 
       window.addEventListener('resize', resize);
       window.addEventListener('orientationchange', () => setTimeout(resize, 120));
       video.addEventListener('loadedmetadata', updateCover);
       video.addEventListener('loadeddata', updateCover);
-      resize();
 
       // ============================================================
-      //  PROJECTION (mirrored, matching video)
+      //  PROJECTION
       // ============================================================
-      function projectX(nx) { return cover.offsetX + (1 - nx) * cover.drawW; }
+      function projectX(nx) { return cover.offsetX + (config.videoMirror ? 1 - nx : nx) * cover.drawW; }
       function projectY(ny) { return cover.offsetY + ny * cover.drawH; }
 
-      // ============================================================
-      //  MATH
-      // ============================================================
-      function dist2(ax, ay, bx, by) {
-        const dx = ax - bx, dy = ay - by;
-        return Math.sqrt(dx * dx + dy * dy);
-      }
-
-      // ============================================================
-      //  COLOR
-      // ============================================================
-      function rgba(a) {
-        return `rgba(255,255,255,${a})`;
+      function projectAll() {
+        const n = state.hasIris ? 478 : 468;
+        for (let i = 0; i < n; i++) {
+          const s = state.smooth[i];
+          const p = state.screen[i];
+          p.x = projectX(s.x);
+          p.y = projectY(s.y);
+          p.z = s.z;
+        }
       }
 
       // ============================================================
@@ -640,11 +2030,11 @@
         toastEl.textContent = text;
         toastEl.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 1100);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 1200);
       }
 
       // ============================================================
-      //  EAR — Eye Aspect Ratio
+      //  EAR / GAZE
       // ============================================================
       function computeEAR(lm, eye) {
         const p1 = lm[eye.outer];
@@ -653,247 +2043,281 @@
         const p4 = lm[eye.inner];
         const p5 = lm[eye.bot1];
         const p6 = lm[eye.bot2];
+        if (!p1 || !p2 || !p3 || !p4 || !p5 || !p6) return 0.3;
         const d1 = dist2(p2.x, p2.y, p6.x, p6.y);
         const d2 = dist2(p3.x, p3.y, p5.x, p5.y);
-        const d3 = dist2(p1.x, p1.y, p4.x, p4.y) || 1;
+        const d3 = dist2(p1.x, p1.y, p4.x, p4.y) || 1e-5;
         return (d1 + d2) / (2 * d3);
       }
 
-      // ============================================================
-      //  GAZE — normalized (-1..1) iris offset within eye bounds
-      // ============================================================
       function computeGaze(lm, eye) {
-        if (lm.length <= eye.iris) return { x: 0, y: 0, valid: false };
+        if (!state.hasIris) return { x: 0, y: 0, valid: false };
         const outer = lm[eye.outer];
         const inner = lm[eye.inner];
-        const top   = lm[eye.top1];
-        const bot   = lm[eye.bot1];
-        const iris  = lm[eye.iris];
+        const top = lm[eye.top1];
+        const bot = lm[eye.bot1];
+        const iris = lm[eye.iris];
+        if (!outer || !inner || !top || !bot || !iris) return { x: 0, y: 0, valid: false };
 
-        // Horizontal axis: outer -> inner
         const hx = inner.x - outer.x;
         const hy = inner.y - outer.y;
-        const hl2 = hx * hx + hy * hy || 1;
-        const hTx = iris.x - outer.x;
-        const hTy = iris.y - outer.y;
-        const hT = (hTx * hx + hTy * hy) / hl2;
+        const hl2 = hx * hx + hy * hy || 1e-9;
+        const hT = ((iris.x - outer.x) * hx + (iris.y - outer.y) * hy) / hl2;
 
-        // Vertical axis: top -> bottom
         const vx = bot.x - top.x;
         const vy = bot.y - top.y;
-        const vl2 = vx * vx + vy * vy || 1;
-        const vTx = iris.x - top.x;
-        const vTy = iris.y - top.y;
-        const vT = (vTx * vx + vTy * vy) / vl2;
+        const vl2 = vx * vx + vy * vy || 1e-9;
+        const vT = ((iris.x - top.x) * vx + (iris.y - top.y) * vy) / vl2;
 
-        // 0.5 = center; scale to -1..1 (clamped)
         let gx = (hT - 0.5) * 2;
         let gy = (vT - 0.5) * 2;
-        if (gx > 1) gx = 1; else if (gx < -1) gx = -1;
-        if (gy > 1) gy = 1; else if (gy < -1) gy = -1;
-
+        gx = clamp(gx, -1, 1);
+        gy = clamp(gy, -1, 1);
         return { x: gx, y: gy, valid: true };
       }
 
-      function gazeLabel(g) {
+      function gazeZone(g) {
         const ax = Math.abs(g.x), ay = Math.abs(g.y);
-        if (ax < 0.18 && ay < 0.18) return 'CENTER';
-        if (ax > ay) return g.x < 0 ? 'LEFT' : 'RIGHT';
-        return g.y < 0 ? 'UP' : 'DOWN';
+        if (ax < 0.15 && ay < 0.15) return 'C';
+        const v = g.y < -0.15 ? 'U' : (g.y > 0.15 ? 'D' : 'C');
+        const h = g.x < -0.15 ? 'L' : (g.x > 0.15 ? 'R' : 'C');
+        if (h === 'C' && v === 'C') return 'C';
+        if (h === 'C') return v;
+        if (v === 'C') return h;
+        return v + h;
       }
 
       // ============================================================
-      //  DRAW HELPERS
+      //  HEAD POSE
       // ============================================================
-      function drawPolyline(lm, indices, stroke, width, closed) {
-        if (!indices.length) return;
-        ctx.strokeStyle = stroke;
-        ctx.lineWidth = width;
-        ctx.beginPath();
-        for (let i = 0; i < indices.length; i++) {
-          const p = lm[indices[i]];
-          if (!p) continue;
-          const x = projectX(p.x);
-          const y = projectY(p.y);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        if (closed) ctx.closePath();
-        ctx.stroke();
-      }
-
-      function drawIris(lm, eye, bright) {
-        if (lm.length <= eye.iris) return;
-        const iris = lm[eye.iris];
-        const cx = projectX(iris.x);
-        const cy = projectY(iris.y);
-
-        const outer = lm[eye.outer];
-        const inner = lm[eye.inner];
-        const eyeW = Math.abs(projectX(inner.x) - projectX(outer.x));
-        const r = Math.max(5, eyeW * 0.20);
-
-        // Outer glow
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 3);
-        grad.addColorStop(0, rgba(0.20));
-        grad.addColorStop(0.5, rgba(0.06));
-        grad.addColorStop(1, rgba(0));
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Iris ring
-        ctx.strokeStyle = rgba(0.85);
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Inner dot
-        ctx.fillStyle = rgba(0.95 + bright * 0.05);
-        ctx.beginPath();
-        ctx.arc(cx, cy, Math.max(1.6, r * 0.35), 0, Math.PI * 2);
-        ctx.fill();
-
-        // Crosshair ticks
-        const L = r * 1.6;
-        ctx.strokeStyle = rgba(0.55);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(cx - L, cy); ctx.lineTo(cx - r - 2, cy);
-        ctx.moveTo(cx + r + 2, cy); ctx.lineTo(cx + L, cy);
-        ctx.moveTo(cx, cy - L); ctx.lineTo(cx, cy - r - 2);
-        ctx.moveTo(cx, cy + r + 2); ctx.lineTo(cx, cy + L);
-        ctx.stroke();
-
-        return { x: cx, y: cy, r };
-      }
-
-      // ============================================================
-      //  RENDER
-      // ============================================================
-      function render() {
-        ctx.clearRect(0, 0, viewW, viewH);
-
-        const lm = state.lastFace;
-
-        if (!lm || !state.active) {
-          state.rafRender = requestAnimationFrame(render);
-          return;
+      function computeHeadPose(lm) {
+        const nose = lm[1];
+        const chin = lm[152];
+        const eyeL = lm[33];
+        const eyeR = lm[263];
+        const edgeL = lm[234];
+        const edgeR = lm[454];
+        if (!nose || !chin || !eyeL || !eyeR || !edgeL || !edgeR) {
+          return { yaw: 0, pitch: 0, roll: 0 };
         }
 
-        // Subtle reticle frame corners (top-left, bottom-right)
-        ctx.strokeStyle = rgba(0.35);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        const m = 30, L = 14;
-        ctx.moveTo(m, m + L); ctx.lineTo(m, m); ctx.lineTo(m + L, m);
-        ctx.moveTo(viewW - m - L, viewH - m); ctx.lineTo(viewW - m, viewH - m); ctx.lineTo(viewW - m, viewH - m - L);
-        ctx.stroke();
+        const dL = Math.abs(nose.x - edgeL.x);
+        const dR = Math.abs(edgeR.x - nose.x);
+        const sum = dL + dR + 1e-6;
+        const yawRaw = (dL - dR) / sum;
+        const yaw = clamp(yawRaw * 105, -90, 90);
 
-        // Face oval (dashed, subtle)
-        ctx.setLineDash([4, 5]);
-        drawPolyline(lm, FACE_OVAL, rgba(0.22), 1, true);
-        ctx.setLineDash([]);
+        const eyeMidY = (eyeL.y + eyeR.y) * 0.5;
+        const span = (chin.y - eyeMidY) || 1e-6;
+        const t = (nose.y - eyeMidY) / span;
+        const pitch = clamp((0.45 - t) * 165, -90, 90);
 
-        // Eyebrows (thin lines)
-        drawPolyline(lm, RIGHT_BROW, rgba(0.35), 1, false);
-        drawPolyline(lm, LEFT_BROW,  rgba(0.35), 1, false);
+        const dx = eyeR.x - eyeL.x;
+        const dy = eyeR.y - eyeL.y;
+        let roll = Math.atan2(dy, dx) * R2D;
+        if (roll > 90) roll -= 180;
+        if (roll < -90) roll += 180;
 
-        // Eye contours (accent)
-        const blink = state.lastEar < 0.18;
-        const eyeStroke = blink ? rgba(0.35) : rgba(0.9);
-        drawPolyline(lm, RIGHT_EYE_CONTOUR, eyeStroke, 1.4, true);
-        drawPolyline(lm, LEFT_EYE_CONTOUR,  eyeStroke, 1.4, true);
+        return { yaw, pitch, roll };
+      }
 
-        // Irises
-        if (lm.length > 468) {
-          const rIris = drawIris(lm, RIGHT_EYE, blink ? 0 : 1);
-          const lIris = drawIris(lm, LEFT_EYE,  blink ? 0 : 1);
+      // ============================================================
+      //  SMOOTH + PROJECT
+      // ============================================================
+      function smoothLandmarks(lm, now) {
+        const tSec = now / 1000;
+        const minCutoff = minCutoffFromStabilization(config.stabilization);
+        const beta = betaFromResponsiveness(config.responsiveness);
+        const lead = config.prediction * 0.03;
 
-          if (rIris && lIris && !blink) {
-            // Gaze ray from averaged iris outward
-            const g = state.gaze;
-            const cx = (rIris.x + lIris.x) * 0.5;
-            const cy = (rIris.y + lIris.y) * 0.5;
-            const len = Math.max(60, Math.abs(projectX(lm[LEFT_EYE.outer].x) - projectX(lm[RIGHT_EYE.outer].x)) * 0.7);
-            const ex = cx + g.x * len;
-            const ey = cy + g.y * len;
+        const count = lm.length;
+        state.hasIris = count > 468;
 
-            ctx.strokeStyle = rgba(0.75);
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(ex, ey);
-            ctx.stroke();
+        if (!state.initialized) {
+          for (let j = 0; j < count; j++) {
+            const p = lm[j];
+            const s = state.smooth[j];
+            s.x = p.x; s.y = p.y; s.z = p.z || 0;
+          }
+          for (let j = 0; j < count; j++) {
+            const p = lm[j];
+            const fIdx = j * 3;
+            state.filters[fIdx].filter(p.x, tSec);
+            state.filters[fIdx + 1].filter(p.y, tSec);
+            state.filters[fIdx + 2].filter(p.z || 0, tSec);
+          }
+          state.initialized = true;
+        }
 
-            // Arrow head
-            const a = Math.atan2(ey - cy, ex - cx);
-            const h = 8;
-            ctx.beginPath();
-            ctx.moveTo(ex, ey);
-            ctx.lineTo(ex - Math.cos(a - 0.4) * h, ey - Math.sin(a - 0.4) * h);
-            ctx.moveTo(ex, ey);
-            ctx.lineTo(ex - Math.cos(a + 0.4) * h, ey - Math.sin(a + 0.4) * h);
-            ctx.stroke();
+        for (let j = 0; j < count; j++) {
+          const p = lm[j];
+          const s = state.smooth[j];
+          const fIdx = j * 3;
+          const fx = state.filters[fIdx];
+          const fy = state.filters[fIdx + 1];
+          const fz = state.filters[fIdx + 2];
+          fx.setParams(minCutoff, beta, D_CUTOFF);
+          fy.setParams(minCutoff, beta, D_CUTOFF);
+          fz.setParams(minCutoff, beta, D_CUTOFF);
+          s.x = fx.filter(p.x, tSec) + fx.velocity * lead;
+          s.y = fy.filter(p.y, tSec) + fy.velocity * lead;
+          s.z = fz.filter(p.z || 0, tSec) + fz.velocity * lead;
+        }
 
-            // Head orientation tag on the forehead
-            const fore = lm[10];
-            const fx = projectX(fore.x);
-            const fy = projectY(fore.y) - 24;
-            ctx.font = '9px ui-monospace, Menlo, monospace';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = rgba(0.85);
-            const tagW = 110, tagH = 38;
-            ctx.fillStyle = 'rgba(0,0,0,0.55)';
-            ctx.fillRect(fx - 4, fy - 4, tagW, tagH);
-            ctx.strokeStyle = rgba(0.5);
-            ctx.lineWidth = 1;
-            ctx.strokeRect(fx - 4, fy - 4, tagW, tagH);
-            ctx.fillStyle = rgba(0.92);
-            ctx.fillText(`GAZE  ${gazeLabel(g)}`, fx, fy);
-            ctx.fillStyle = rgba(0.6);
-            ctx.fillText(`EAR   ${state.lastEar.toFixed(3)}`, fx, fy + 13);
-            ctx.fillText(`BLINK ${state.blinkState ? 'CLOSED' : 'OPEN'}`, fx, fy + 26);
+        for (let j = count; j < MAX_LM; j++) {
+          state.smooth[j].x = state.smooth[0].x;
+          state.smooth[j].y = state.smooth[0].y;
+          state.smooth[j].z = state.smooth[0].z;
+        }
+      }
+
+      // ============================================================
+      //  METRIC UPDATE
+      // ============================================================
+      function updateMetrics(now) {
+        const lm = state.smooth;
+
+        const earR = computeEAR(lm, RIGHT_EYE);
+        const earL = computeEAR(lm, LEFT_EYE);
+        M.earR = earR;
+        M.earL = earL;
+        M.ear = (earR + earL) * 0.5;
+
+        const closedT = config.earClosed;
+        const openT = Math.max(closedT + 0.01, config.earOpen);
+        M.eyeOpenL = clamp((earL - closedT) / (openT - closedT), 0, 1);
+        M.eyeOpenR = clamp((earR - closedT) / (openT - closedT), 0, 1);
+
+        const nowClosed = M.ear < closedT;
+        if (nowClosed && !blink.state) {
+          blink.state = true;
+          blink.lastOpenT = now;
+        } else if (!nowClosed && blink.state && M.ear > openT) {
+          blink.state = false;
+          const dur = now - blink.lastOpenT;
+          if (dur >= config.blinkMinMs) {
+            blink.lastBlinkT = now;
+            M.blinkCount++;
+            blink.events.push(now);
           }
         }
 
-        state.rafRender = requestAnimationFrame(render);
-      }
-
-      // ============================================================
-      //  UPDATE TELEMETRY / GAZE WIDGET
-      // ============================================================
-      function updateTelemetry() {
-        const face = state.lastFace;
-        const has = !!face;
-
-        tFaces.textContent = has ? '1' : '0';
-        tFaces.classList.toggle('idle', !has);
-
-        if (has) {
-          tEar.textContent = state.lastEar.toFixed(3);
-          tEar.classList.remove('idle');
-          tBlink.textContent = String(state.blinkCount);
-          tBlink.classList.remove('idle');
-          tGaze.textContent = gazeLabel(state.gaze);
-          tGaze.classList.remove('idle');
-
-          // Gaze widget — map (-1..1) into a 40px radius
-          const px = state.gaze.x * 40;
-          const py = state.gaze.y * 40;
-          gazeDot.style.transform = `translate(${px}px, ${py}px)`;
-        } else {
-          tEar.textContent = '—';
-          tBlink.textContent = '0';
-          tGaze.textContent = '—';
-          tEar.classList.add('idle');
-          tBlink.classList.add('idle');
-          tGaze.classList.add('idle');
-          gazeDot.style.transform = 'translate(0px, 0px)';
+        const cut = now - 60000;
+        let w = 0;
+        for (let i = 0; i < blink.events.length; i++) {
+          if (blink.events[i] >= cut) blink.events[w++] = blink.events[i];
         }
+        blink.events.length = w;
+
+        const windowMs = Math.max(5000, Math.min(60000, now - (state.startTime || now)));
+        M.blinkRate = blink.events.length / (windowMs / 60000);
+
+        if (now - lastPerclosPush > 50) {
+          lastPerclosPush = now;
+          perclosSamples.push({ t: now, closed: M.ear < closedT + (openT - closedT) * 0.2 ? 1 : 0 });
+          const winCut = now - config.perclosWindow * 1000;
+          let k = 0;
+          for (let i = 0; i < perclosSamples.length; i++) {
+            if (perclosSamples[i].t >= winCut) perclosSamples[k++] = perclosSamples[i];
+          }
+          perclosSamples.length = k;
+          if (k > 0) {
+            let s = 0;
+            for (let i = 0; i < k; i++) s += perclosSamples[i].closed;
+            M.perclos = s / k;
+          }
+        }
+
+        const gR = computeGaze(lm, RIGHT_EYE);
+        const gL = computeGaze(lm, LEFT_EYE);
+        if (gR.valid && gL.valid) {
+          M.gazeValid = true;
+          M.gazeRaw.x = (gR.x + gL.x) * 0.5;
+          M.gazeRaw.y = (gR.y + gL.y) * 0.5;
+        } else {
+          M.gazeValid = false;
+        }
+
+        const offX = config.gazeOffsetX;
+        const offY = config.gazeOffsetY;
+        const tgtX = clamp(M.gazeRaw.x - offX, -1, 1);
+        const tgtY = clamp(M.gazeRaw.y - offY, -1, 1);
+
+        const gs = clamp(config.gazeSmoothing, 0, 0.95);
+        M.gaze.x = M.gaze.x * gs + tgtX * (1 - gs);
+        M.gaze.y = M.gaze.y * gs + tgtY * (1 - gs);
+        M.zone = M.gazeValid ? gazeZone(M.gaze) : '—';
+
+        if (M.gazeValid) {
+          const d = Math.hypot(M.gaze.x - M.anchorX, M.gaze.y - M.anchorY);
+          if (d < config.fixationRadius) {
+            if (!M.fixating) {
+              M.fixating = true;
+              M.fixationT0 = now;
+            }
+            if (now - M.fixationT0 > config.fixationTime) {
+              if (!M._fixLogged || now - M._fixLogged > 500) {
+                M._fixLogged = now;
+                M.fixationCount++;
+                fixations.push({ x: M.gaze.x, y: M.gaze.y, t: now });
+                if (fixations.length > 60) fixations.shift();
+              }
+            }
+          } else {
+            if (M.fixating) {
+              const dur = now - M.fixationT0;
+              if (dur > config.fixationTime) M.fixationCount++;
+              M.fixating = false;
+            }
+            M.anchorX = M.gaze.x;
+            M.anchorY = M.gaze.y;
+          }
+        }
+
+        const pose = computeHeadPose(lm);
+        M.yaw = M.yaw * 0.8 + pose.yaw * 0.2;
+        M.pitch = M.pitch * 0.8 + pose.pitch * 0.2;
+        M.roll = M.roll * 0.8 + pose.roll * 0.2;
+
+        const eyeLp = state.screen[LEFT_EYE.outer];
+        const eyeRp = state.screen[RIGHT_EYE.outer];
+        M.faceScale = dist2(eyeLp.x, eyeLp.y, eyeRp.x, eyeRp.y);
+
+        const ipdNorm = dist2(lm[33].x, lm[33].y, lm[263].x, lm[263].y);
+        M.ipd = ipdNorm;
+        if (ipdNorm > 1e-4) {
+          const d = 0.063 / (ipdNorm * 1.1547);
+          M.distanceCm = clamp(d * 100, 10, 400);
+        } else {
+          M.distanceCm = 0;
+        }
+
+        const lip13 = lm[13], lip14 = lm[14], c61 = lm[61], c291 = lm[291];
+        if (lip13 && lip14 && c61 && c291) {
+          const open = dist2(lip13.x, lip13.y, lip14.x, lip14.y);
+          const wide = dist2(c61.x, c61.y, c291.x, c291.y) || 1e-5;
+          M.mar = open / wide;
+        }
+
+        const gazeDev = Math.hypot(M.gaze.x, M.gaze.y);
+        const gazeFactor = 1 - clamp(gazeDev / 0.7, 0, 1);
+        const eyeFactor = (M.eyeOpenL + M.eyeOpenR) * 0.5;
+        const headDev = (Math.abs(M.yaw) / 40 + Math.abs(M.pitch) / 35) * 0.5;
+        const headFactor = 1 - clamp(headDev, 0, 1);
+        M.attention = clamp(
+          (gazeFactor * 0.45 + eyeFactor * 0.25 + headFactor * 0.30) * 100,
+          0, 100
+        );
+
+        M.drowsy = clamp(
+          M.perclos * 130 + (1 - eyeFactor) * 35 +
+          clamp((Math.abs(M.pitch) - 12) / 25, 0, 1) * 30,
+          0, 100
+        );
+
+        earHist[earHistIdx] = M.ear;
+        earHistIdx = (earHistIdx + 1) % EAR_RING;
+        if (earHistCount < EAR_RING) earHistCount++;
       }
 
       // ============================================================
@@ -901,70 +2325,1423 @@
       // ============================================================
       function onFaceResults(r) {
         const faces = r.multiFaceLandmarks || [];
+        const now = performance.now();
+
         if (faces.length > 0) {
           const lm = faces[0];
-          state.lastFace = lm;
-
-          // EAR = average of both eyes
-          const earR = computeEAR(lm, RIGHT_EYE);
-          const earL = computeEAR(lm, LEFT_EYE);
-          state.lastEar = (earR + earL) * 0.5;
-
-          // Blink detection with hysteresis
-          const nowClosed = state.lastEar < 0.18;
-          if (nowClosed && !state.blinkState) {
-            state.blinkState = true;
-            state.blinkCount++;
-          } else if (!nowClosed && state.blinkState && state.lastEar > 0.24) {
-            state.blinkState = false;
-          }
-
-          // Gaze = average of both eyes
-          const gR = computeGaze(lm, RIGHT_EYE);
-          const gL = computeGaze(lm, LEFT_EYE);
-          if (gR.valid && gL.valid) {
-            state.gaze.x = (gR.x + gL.x) * 0.5;
-            state.gaze.y = (gR.y + gL.y) * 0.5;
-          }
           state.lostFrames = 0;
+          if (!state.startTime) state.startTime = now;
+          smoothLandmarks(lm, now);
+          updateMetrics(now);
+          M.present = true;
+          projectAll();
+          updateTelemetry(now);
         } else {
           state.lostFrames++;
-          if (state.lostFrames > 6) {
-            state.lastFace = null;
-            state.blinkState = false;
+          if (state.lostFrames > config.graceFrames) {
+            state.initialized = false;
+            M.present = false;
+            M.gazeValid = false;
+            M.zone = '—';
+            updateTelemetry(now);
           }
         }
-        updateTelemetry();
       }
 
       // ============================================================
-      //  MEDIAPIPE FACE MESH (lazy)
+      //  TELEMETRY
+      // ============================================================
+      let lastTelemetryPush = 0;
+
+      function updateTelemetry(now) {
+        if (now - lastTelemetryPush < 90) return;
+        lastTelemetryPush = now;
+
+        const has = M.present;
+
+        tFace.textContent = has ? '1' : '0';
+        tFace.classList.toggle('idle', !has);
+
+        if (has) {
+          tEar.textContent = `${M.earL.toFixed(3)} ${M.earR.toFixed(3)}`;
+          tEar.classList.remove('idle');
+          tBlink.textContent = String(M.blinkCount);
+          tBlink.classList.remove('idle');
+          tRate.textContent = M.blinkRate > 0 ? M.blinkRate.toFixed(1) : '0.0';
+          tRate.classList.remove('idle');
+          tPerclos.textContent = (M.perclos * 100).toFixed(1) + '%';
+          tPerclos.classList.toggle('warn', M.perclos > 0.2);
+          tPerclos.classList.remove('idle');
+          tGaze.textContent = M.gazeValid ? M.zone : '—';
+          tGaze.classList.toggle('idle', !M.gazeValid);
+          tFix.textContent = String(M.fixationCount);
+          tFix.classList.remove('idle');
+          tPose.textContent = `${M.yaw.toFixed(0)} ${M.pitch.toFixed(0)} ${M.roll.toFixed(0)}`;
+          tPose.classList.remove('idle');
+          tAtt.textContent = M.attention.toFixed(0) + '%';
+          tAtt.classList.remove('idle');
+
+          const px = clamp(M.gaze.x, -1, 1) * 42;
+          const py = clamp(M.gaze.y, -1, 1) * 42;
+          gazeDot.style.transform = `translate(${px}px, ${py}px)`;
+
+          const ap = clamp(M.attention, 0, 100);
+          mAttPct.textContent = ap.toFixed(0) + '%';
+          barAtt.style.width = ap + '%';
+
+          const pp = clamp(M.perclos * 100, 0, 100);
+          mPerPct.textContent = pp.toFixed(1) + '%';
+          barPer.style.width = pp + '%';
+
+          mDist.textContent = M.distanceCm > 0 ? M.distanceCm.toFixed(0) + ' CM' : '—';
+        } else {
+          tEar.textContent = '—';
+          tBlink.textContent = '0';
+          tRate.textContent = '—';
+          tPerclos.textContent = '—';
+          tGaze.textContent = '—';
+          tFix.textContent = '0';
+          tPose.textContent = '—';
+          tAtt.textContent = '—';
+          [tEar, tBlink, tRate, tPerclos, tGaze, tFix, tPose, tAtt].forEach(el => el.classList.add('idle'));
+          gazeDot.style.transform = 'translate(0px, 0px)';
+          mAttPct.textContent = '—';
+          barAtt.style.width = '0%';
+          mPerPct.textContent = '—';
+          barPer.style.width = '0%';
+          mDist.textContent = '—';
+        }
+      }
+
+      // ============================================================
+      //  DRAW PRIMITIVES
+      // ============================================================
+      function drawLoop(pts, indices, color, width, closed) {
+        if (!indices || !indices.length) return;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < indices.length; i++) {
+          const p = pts[indices[i]];
+          if (!p) continue;
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+          else ctx.lineTo(p.x, p.y);
+        }
+        if (closed) ctx.closePath();
+        ctx.stroke();
+      }
+
+      function fillLoop(pts, indices, style) {
+        if (!indices || !indices.length) return;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < indices.length; i++) {
+          const p = pts[indices[i]];
+          if (!p) continue;
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+          else ctx.lineTo(p.x, p.y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = style;
+        ctx.fill();
+      }
+
+      function drawConnectors(pts, conns, color, width, alpha) {
+        if (!conns) return;
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (let i = 0; i < conns.length; i += 2) {
+          const a = pts[conns[i]];
+          const b = pts[conns[i + 1]];
+          if (!a || !b) continue;
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawBracket(x, y, s, len) {
+        ctx.beginPath();
+        ctx.moveTo(x - s, y - s + len); ctx.lineTo(x - s, y - s); ctx.lineTo(x - s + len, y - s);
+        ctx.moveTo(x + s - len, y - s); ctx.lineTo(x + s, y - s); ctx.lineTo(x + s, y - s + len);
+        ctx.moveTo(x - s, y + s - len); ctx.lineTo(x - s, y + s); ctx.lineTo(x - s + len, y + s);
+        ctx.moveTo(x + s - len, y + s); ctx.lineTo(x + s, y + s); ctx.lineTo(x + s, y + s - len);
+        ctx.stroke();
+      }
+
+      // ------------------------------------------------------------
+      //  IRIS — graduated instrument reticle
+      // ------------------------------------------------------------
+      function drawIris(pts, eye, ring, active) {
+        const center = pts[eye.iris];
+        if (!center) return null;
+
+        let rSum = 0, n = 0;
+        for (let i = 0; i < ring.length; i++) {
+          const p = pts[ring[i]];
+          if (!p) continue;
+          rSum += dist2(center.x, center.y, p.x, p.y);
+          n++;
+        }
+        let r = n ? rSum / n : 6;
+        r *= config.irisScale;
+        r = Math.max(3, r);
+
+        const a = active ? 1 : 0.34;
+
+        // Soft optical field
+        const grad = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, r * 3.4);
+        grad.addColorStop(0, rgbaQ(0.13 * a));
+        grad.addColorStop(0.45, rgbaQ(0.04 * a));
+        grad.addColorStop(1, rgbaQ(0));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, r * 3.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Limbus ring
+        ctx.strokeStyle = rgbaQ(0.88 * a);
+        ctx.lineWidth = 1.25;
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Graduated index ring (36 divisions, major every 9)
+        const ticks = 36;
+        ctx.strokeStyle = rgbaQ(0.5 * a);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i < ticks; i++) {
+          const ang = (i / ticks) * Math.PI * 2;
+          const major = (i % 9 === 0);
+          const i0 = r + 2.5;
+          const i1 = r + (major ? 9 : 5);
+          const ca = Math.cos(ang), sa = Math.sin(ang);
+          ctx.moveTo(center.x + ca * i0, center.y + sa * i0);
+          ctx.lineTo(center.x + ca * i1, center.y + sa * i1);
+        }
+        ctx.stroke();
+
+        // Pupil
+        const pr = Math.max(1.6, r * 0.32);
+        ctx.fillStyle = rgbaQ(0.92 * a);
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, pr, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pupil collar
+        ctx.strokeStyle = rgbaQ(0.42 * a);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, pr + 3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Cardinal crosshair ticks
+        if (config.reticleTicks && active) {
+          const L = r * 1.95;
+          ctx.strokeStyle = rgbaQ(0.62);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(center.x - L, center.y); ctx.lineTo(center.x - r - 3.5, center.y);
+          ctx.moveTo(center.x + r + 3.5, center.y); ctx.lineTo(center.x + L, center.y);
+          ctx.moveTo(center.x, center.y - L); ctx.lineTo(center.x, center.y - r - 3.5);
+          ctx.moveTo(center.x, center.y + r + 3.5); ctx.lineTo(center.x, center.y + L);
+          ctx.stroke();
+        }
+
+        return { x: center.x, y: center.y, r };
+      }
+
+      // ------------------------------------------------------------
+      //  LANDMARK LABELS
+      // ------------------------------------------------------------
+      function drawLandmarkLabels(pts) {
+        const ids = LABEL_POINTS.slice();
+        if (state.hasIris) { ids.push(468); ids.push(473); }
+
+        ctx.save();
+        ctx.font = '8px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.strokeStyle = rgbaQ(0.22);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i < ids.length; i++) {
+          const p = pts[ids[i]];
+          if (!p) continue;
+          ctx.moveTo(p.x + 3, p.y - 3);
+          ctx.lineTo(p.x + 9, p.y - 9);
+        }
+        ctx.stroke();
+
+        ctx.fillStyle = rgbaQ(0.52);
+        for (let i = 0; i < ids.length; i++) {
+          const p = pts[ids[i]];
+          if (!p) continue;
+          ctx.fillText(String(ids[i]), p.x + 12, p.y - 9);
+        }
+        ctx.restore();
+      }
+
+      // ============================================================
+      //  HEAT MAP
+      // ============================================================
+      const heat = { canvas: null, ctx: null, w: 0, h: 0, scale: 5 };
+
+      function ensureHeat() {
+        const w = Math.max(48, Math.round(viewW / heat.scale));
+        const h = Math.max(48, Math.round(viewH / heat.scale));
+        if (heat.canvas && heat.w === w && heat.h === h) return heat;
+        heat.canvas = document.createElement('canvas');
+        heat.canvas.width = w;
+        heat.canvas.height = h;
+        heat.ctx = heat.canvas.getContext('2d');
+        heat.w = w;
+        heat.h = h;
+        return heat;
+      }
+
+      function pushHeat(x, y) {
+        const H = ensureHeat();
+        const c = H.ctx;
+
+        c.globalCompositeOperation = 'destination-out';
+        c.fillStyle = `rgba(0,0,0,${config.heatDecay})`;
+        c.fillRect(0, 0, H.w, H.h);
+        c.globalCompositeOperation = 'source-over';
+
+        if (x < 0) return;
+        const hx = (x / viewW) * H.w;
+        const hy = (y / viewH) * H.h;
+        const r = 7;
+        const g = c.createRadialGradient(hx, hy, 0, hx, hy, r);
+        g.addColorStop(0, rgbaQ(0.30));
+        g.addColorStop(0.6, rgbaQ(0.10));
+        g.addColorStop(1, rgbaQ(0));
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(hx, hy, r, 0, Math.PI * 2);
+        c.fill();
+      }
+
+      function drawHeat() {
+        if (!heat.canvas) return;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(heat.canvas, 0, 0, viewW, viewH);
+        ctx.restore();
+      }
+
+      // ============================================================
+      //  CALIBRATION
+      // ============================================================
+      const calib = { active: false, t0: 0, samples: [] };
+
+      function startCalibration() {
+        if (!state.active) { showToast('ACTIVATE FIRST'); return; }
+        if (!M.gazeValid) { showToast('NO GAZE SIGNAL'); return; }
+        calib.active = true;
+        calib.t0 = performance.now();
+        calib.samples = [];
+        showToast('LOOK AT CENTER');
+      }
+
+      function clearCalibration() {
+        config.gazeOffsetX = 0;
+        config.gazeOffsetY = 0;
+        saveConfig();
+        showToast('CALIBRATION CLEARED');
+      }
+
+      function updateCalibration(now) {
+        if (!calib.active) return;
+        const elapsed = now - calib.t0;
+        if (elapsed > 900 && M.gazeValid) {
+          calib.samples.push({ x: M.gazeRaw.x, y: M.gazeRaw.y });
+        }
+        if (elapsed > 3200) {
+          calib.active = false;
+          if (calib.samples.length > 5) {
+            let sx = 0, sy = 0;
+            for (let i = 0; i < calib.samples.length; i++) {
+              sx += calib.samples[i].x;
+              sy += calib.samples[i].y;
+            }
+            config.gazeOffsetX = clamp(sx / calib.samples.length, -0.5, 0.5);
+            config.gazeOffsetY = clamp(sy / calib.samples.length, -0.5, 0.5);
+            saveConfig();
+            showToast(`CALIBRATED ${config.gazeOffsetX.toFixed(3)} ${config.gazeOffsetY.toFixed(3)}`);
+          } else {
+            showToast('CALIBRATION FAILED');
+          }
+        }
+      }
+
+      function drawCalibration(now) {
+        if (!calib.active) return;
+        const elapsed = now - calib.t0;
+        const cx = viewW * 0.5;
+        const cy = viewH * 0.5;
+        const total = 3200;
+        const p = clamp(elapsed / total, 0, 1);
+
+        ctx.save();
+
+        // Outer index ring
+        ctx.strokeStyle = rgbaQ(0.14);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i < 48; i++) {
+          const ang = (i / 48) * Math.PI * 2;
+          const major = (i % 6 === 0);
+          const r0 = 52;
+          const r1 = 52 + (major ? 7 : 3.5);
+          ctx.moveTo(cx + Math.cos(ang) * r0, cy + Math.sin(ang) * r0);
+          ctx.lineTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = rgbaQ(0.22);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 46, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Progress arc
+        ctx.strokeStyle = rgbaQ(0.95);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 46, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2);
+        ctx.stroke();
+
+        // Center bracket
+        ctx.strokeStyle = rgbaQ(0.9);
+        ctx.lineWidth = 1;
+        drawBracket(cx, cy, 12, 5);
+
+        ctx.fillStyle = rgbaQ(0.95);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '9px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = rgbaQ(0.7);
+        ctx.fillText('HOLD GAZE ON RETICLE', cx, cy + 76);
+
+        ctx.restore();
+      }
+
+      // ============================================================
+      //  RENDER — RETICLE
+      // ============================================================
+      function drawReticle(pts) {
+        const w = config.eyeStroke;
+        const blinkClosed = M.ear < config.earClosed;
+        const eyeA = blinkClosed ? 0.32 : 0.9;
+
+        if (config.showMesh) {
+          const tess = (typeof FACEMESH_TESSELATION !== 'undefined') ? FACEMESH_TESSELATION : null;
+          if (tess) {
+            drawConnectors(pts, tess, rgbaQ(1), 0.5, config.meshOpacity);
+          }
+        }
+
+        if (config.showFaceOval) {
+          // Contour
+          drawLoop(pts, FACE_OVAL, rgbaQ(0.13), 1, true);
+
+          // Outward graduation ticks along the contour
+          ctx.strokeStyle = rgbaQ(0.20);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < FACE_OVAL.length; i += 2) {
+            const p0 = pts[FACE_OVAL[i]];
+            const p1 = pts[FACE_OVAL[(i + 2) % FACE_OVAL.length]];
+            if (!p0 || !p1) continue;
+            const dx = p1.x - p0.x, dy = p1.y - p0.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const nx = -dy / len, ny = dx / len;
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p0.x + nx * 7, p0.y + ny * 7);
+          }
+          ctx.stroke();
+        }
+
+        if (config.showBrows) {
+          drawLoop(pts, RIGHT_BROW, rgbaQ(0.24), 1, false);
+          drawLoop(pts, LEFT_BROW, rgbaQ(0.24), 1, false);
+        }
+
+        if (config.showLips) {
+          drawLoop(pts, LIPS_OUTER, rgbaQ(0.24), 1, true);
+          drawLoop(pts, LIPS_INNER, rgbaQ(0.15), 1, true);
+        }
+
+        if (config.showEyes) {
+          // Aperture fill
+          fillLoop(pts, RIGHT_EYE_CONTOUR, rgbaQ(0.05));
+          fillLoop(pts, LEFT_EYE_CONTOUR, rgbaQ(0.05));
+
+          const col = rgbaQ(eyeA);
+          drawLoop(pts, RIGHT_EYE_CONTOUR, col, w, true);
+          drawLoop(pts, LEFT_EYE_CONTOUR, col, w, true);
+
+          // Canthus registration marks
+          const marks = [RIGHT_EYE.outer, RIGHT_EYE.inner, LEFT_EYE.outer, LEFT_EYE.inner];
+          ctx.fillStyle = rgbaQ(0.7 * eyeA);
+          for (let i = 0; i < marks.length; i++) {
+            const p = pts[marks[i]];
+            if (!p) continue;
+            ctx.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);
+          }
+        }
+
+        let rIris = null, lIris = null;
+        if (config.showIris && state.hasIris) {
+          const active = !blinkClosed;
+          rIris = drawIris(pts, RIGHT_EYE, RIGHT_IRIS_RING, active);
+          lIris = drawIris(pts, LEFT_EYE, LEFT_IRIS_RING, active);
+        }
+
+        if (config.reticleLabels) drawLandmarkLabels(pts);
+
+        return { rIris, lIris, blinkClosed };
+      }
+
+      // ============================================================
+      //  RENDER — GAZE
+      // ============================================================
+      function drawGaze(irisInfo, pts, now) {
+        const { rIris, lIris, blinkClosed } = irisInfo;
+
+        let ox, oy, rayLen = 200;
+        if (rIris && lIris) {
+          ox = (rIris.x + lIris.x) * 0.5;
+          oy = (rIris.y + lIris.y) * 0.5;
+          rayLen = Math.max(120, M.faceScale * 1.4);
+        } else {
+          const fore = pts[168];
+          if (!fore) return null;
+          ox = fore.x;
+          oy = fore.y;
+        }
+
+        const gx = M.gaze.x;
+        const gy = M.gaze.y;
+        const tipX = ox + gx * rayLen;
+        const tipY = oy + gy * rayLen;
+
+        if (config.fxHeat && M.gazeValid) {
+          pushHeat(tipX, tipY);
+        }
+
+        if (config.fxGazeTrail && M.gazeValid) {
+          gazeTrail.push({ x: tipX, y: tipY, t: now });
+          const maxLen = config.gazeTrailLen | 0;
+          while (gazeTrail.length > maxLen) gazeTrail.shift();
+        } else if (!config.fxGazeTrail && gazeTrail.length) {
+          gazeTrail.length = 0;
+        }
+
+        if (gazeTrail.length > 1) {
+          ctx.lineCap = 'round';
+          for (let i = 1; i < gazeTrail.length; i++) {
+            const a = gazeTrail[i - 1];
+            const b = gazeTrail[i];
+            const age = (now - b.t) / 1400;
+            if (age >= 1) continue;
+            const alpha = (1 - age) * 0.62;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = rgbaQ(alpha);
+            ctx.lineWidth = 1.8 * (1 - age) + 0.4;
+            ctx.stroke();
+          }
+          const head = gazeTrail[gazeTrail.length - 1];
+          ctx.fillStyle = rgbaQ(0.88);
+          ctx.fillRect(head.x - 1.5, head.y - 1.5, 3, 3);
+          ctx.lineCap = 'butt';
+        }
+
+        if (config.fxGazeRay && !blinkClosed && M.gazeValid) {
+          const ang = Math.atan2(tipY - oy, tipX - ox);
+          const dx = tipX - ox;
+          const dy = tipY - oy;
+
+          // Dashed guidance line
+          ctx.save();
+          ctx.setLineDash([2, 6]);
+          ctx.strokeStyle = rgbaQ(0.26);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ox, oy);
+          ctx.lineTo(tipX, tipY);
+          ctx.stroke();
+          ctx.restore();
+
+          // Solid proximal core
+          ctx.strokeStyle = rgbaQ(0.85);
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(ox, oy);
+          ctx.lineTo(ox + dx * 0.22, oy + dy * 0.22);
+          ctx.stroke();
+
+          // Range ticks perpendicular to the vector
+          const nx = -dy / (Math.hypot(dx, dy) || 1);
+          const ny = dx / (Math.hypot(dx, dy) || 1);
+          ctx.strokeStyle = rgbaQ(0.32);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let d = 0.25; d < 0.99; d += 0.25) {
+            const px = ox + dx * d;
+            const py = oy + dy * d;
+            const L = 4.5;
+            ctx.moveTo(px - nx * L, py - ny * L);
+            ctx.lineTo(px + nx * L, py + ny * L);
+          }
+          ctx.stroke();
+
+          // Origin node
+          ctx.fillStyle = rgbaQ(0.85);
+          ctx.beginPath();
+          ctx.arc(ox, oy, 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Terminal bracket
+          ctx.strokeStyle = rgbaQ(0.9);
+          ctx.lineWidth = 1.2;
+          drawBracket(tipX, tipY, 9, 3.5);
+        }
+
+        if (config.fxFixation) {
+          for (let i = 0; i < fixations.length; i++) {
+            const f = fixations[i];
+            const age = (now - f.t) / 4000;
+            if (age >= 1) continue;
+            const alpha = (1 - age) * 0.6;
+            const size = 9 + (1 - age) * 5;
+            const fx = ox + f.x * rayLen;
+            const fy = oy + f.y * rayLen;
+
+            ctx.strokeStyle = rgbaQ(alpha);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(fx, fy - size);
+            ctx.lineTo(fx + size, fy);
+            ctx.lineTo(fx, fy + size);
+            ctx.lineTo(fx - size, fy);
+            ctx.closePath();
+            ctx.stroke();
+
+            ctx.fillStyle = rgbaQ(alpha * 1.4);
+            ctx.fillRect(fx - 1, fy - 1, 2, 2);
+          }
+        }
+
+        return { ox, oy, tipX, tipY };
+      }
+
+      function drawGazeZoneGrid() {
+        if (!config.fxZoneGrid) return;
+        ctx.save();
+        ctx.strokeStyle = rgbaQ(0.10);
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 6]);
+        for (let i = 1; i < 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo((viewW / 3) * i, 0);
+          ctx.lineTo((viewW / 3) * i, viewH);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, (viewH / 3) * i);
+          ctx.lineTo(viewW, (viewH / 3) * i);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      // ============================================================
+      //  RENDER — POSE
+      // ============================================================
+      function drawPose(pts) {
+        const nose = pts[1];
+        const chin = pts[152];
+        if (!nose || !chin) return;
+
+        const cx = nose.x;
+        const cy = (nose.y + chin.y) * 0.5;
+        const L = Math.max(38, M.faceScale * 0.9);
+
+        const yawR = M.yaw * D2R;
+        const pitchR = M.pitch * D2R;
+        const rollR = M.roll * D2R;
+
+        if (config.fxAxis) {
+          // --- Artificial horizon ---
+          const hl = L * 1.75;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(-rollR);
+
+          ctx.strokeStyle = rgbaQ(0.20);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-hl, 0); ctx.lineTo(-hl * 0.22, 0);
+          ctx.moveTo(hl * 0.22, 0); ctx.lineTo(hl, 0);
+          ctx.stroke();
+
+          ctx.strokeStyle = rgbaQ(0.13);
+          ctx.beginPath();
+          for (let k = 1; k <= 3; k++) {
+            const d = (hl * 0.22) * k;
+            const half = 14 - k * 3;
+            ctx.moveTo(-d, -half); ctx.lineTo(-d, half);
+            ctx.moveTo(d, -half); ctx.lineTo(d, half);
+          }
+          ctx.stroke();
+
+          ctx.restore();
+
+          // --- Orientation triad ---
+          const cosR = Math.cos(rollR), sinR = Math.sin(rollR);
+          const cosY = Math.cos(yawR), sinY = Math.sin(yawR);
+          const cosP = Math.cos(pitchR), sinP = Math.sin(pitchR);
+
+          const basis = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+
+          const rot = basis.map(([x, y, z]) => {
+            const x1 = x * cosR - y * sinR;
+            const y1 = x * sinR + y * cosR;
+            const z1 = z;
+            const x2 = x1 * cosY + z1 * sinY;
+            const z2 = -x1 * sinY + z1 * cosY;
+            const y2 = y1;
+            const y3 = y2 * cosP - z2 * sinP;
+            const z3 = y2 * sinP + z2 * cosP;
+            return [x2, y3, z3];
+          });
+
+          const colors = [rgbaQ(0.9), rgbaQ(0.62), rgbaQ(0.62)];
+          const labels = ['X', 'Y', 'Z'];
+
+          ctx.lineWidth = 1.3;
+          for (let i = 0; i < 3; i++) {
+            const ax = rot[i][0] * L;
+            const ay = rot[i][1] * L;
+            ctx.strokeStyle = colors[i];
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + ax, cy + ay);
+            ctx.stroke();
+
+            const ang = Math.atan2(ay, ax);
+            const hh = 5;
+            ctx.beginPath();
+            ctx.moveTo(cx + ax, cy + ay);
+            ctx.lineTo(cx + ax - Math.cos(ang - 0.4) * hh, cy + ay - Math.sin(ang - 0.4) * hh);
+            ctx.moveTo(cx + ax, cy + ay);
+            ctx.lineTo(cx + ax - Math.cos(ang + 0.4) * hh, cy + ay - Math.sin(ang + 0.4) * hh);
+            ctx.stroke();
+
+            ctx.font = '9px ui-monospace, Menlo, monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = colors[i];
+            ctx.fillText(labels[i], cx + ax * 1.16, cy + ay * 1.16);
+          }
+
+          ctx.beginPath();
+          ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = rgbaQ(0.95);
+          ctx.fill();
+        }
+
+        if (config.fxAim) {
+          const dirX = Math.sin(yawR);
+          const dirY = -Math.sin(pitchR) * Math.cos(yawR);
+          const len = Math.max(viewW, viewH) * 0.5;
+
+          ctx.setLineDash([6, 5]);
+          ctx.strokeStyle = rgbaQ(0.30);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + dirX * len, cy + dirY * len);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.strokeStyle = rgbaQ(0.65);
+          ctx.lineWidth = 1;
+          drawBracket(cx + dirX * len * 0.9, cy + dirY * len * 0.9, 15, 6);
+        }
+
+        if (config.poseLabels) {
+          const fore = pts[10];
+          if (!fore) return;
+
+          const bw = 106, bh = 52;
+          let bx = fore.x - bw * 0.5;
+          let by = fore.y - bh - 20;
+          bx = clamp(bx, 8, Math.max(8, viewW - bw - 8));
+          if (by < 8) by = fore.y + 26;
+
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          ctx.fillRect(bx, by, bw, bh);
+          ctx.strokeStyle = rgbaQ(0.28);
+          ctx.lineWidth = 1;
+          ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+
+          ctx.font = '7px ui-monospace, Menlo, monospace';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = rgbaQ(0.40);
+          ctx.fillText('HEAD POSE', bx + 8, by + 9);
+
+          const rows = [['YAW', M.yaw], ['PIT', M.pitch], ['ROL', M.roll]];
+          ctx.font = '9px ui-monospace, Menlo, monospace';
+          for (let i = 0; i < rows.length; i++) {
+            const ry = by + 23 + i * 10;
+            ctx.textAlign = 'left';
+            ctx.fillStyle = rgbaQ(0.42);
+            ctx.fillText(rows[i][0], bx + 8, ry);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = rgbaQ(0.92);
+            ctx.fillText(rows[i][1].toFixed(1) + '\u00B0', bx + bw - 8, ry);
+          }
+          ctx.restore();
+        }
+      }
+
+      // ============================================================
+      //  RENDER — BIOMETRICS
+      // ============================================================
+      function drawEarGraph() {
+        if (!config.fxEarGraph || !state.active) return;
+
+        const w = 240;
+        const h = 54;
+        const x0 = 22;
+        const y0 = viewH - 92 - h;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.48)';
+        ctx.fillRect(x0, y0, w, h);
+        ctx.strokeStyle = rgbaQ(0.15);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
+
+        const padL = 28, padR = 9, padT = 17, padB = 11;
+        const gw = w - padL - padR;
+        const gh = h - padT - padB;
+        const gx = x0 + padL;
+        const gy = y0 + padT;
+
+        const earMin = 0.05;
+        const earMax = 0.45;
+        const yOf = v => gy + gh - clamp((v - earMin) / (earMax - earMin), 0, 1) * gh;
+
+        // Horizontal ruling
+        ctx.strokeStyle = rgbaQ(0.07);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) {
+          const y = gy + (gh / 4) * i;
+          ctx.moveTo(gx, y);
+          ctx.lineTo(gx + gw, y);
+        }
+        ctx.stroke();
+
+        // Axis labels
+        ctx.font = '7px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = rgbaQ(0.32);
+        ctx.fillText('0.45', gx - 5, gy);
+        ctx.fillText('0.25', gx - 5, gy + gh * 0.5);
+        ctx.fillText('0.05', gx - 5, gy + gh);
+
+        // Threshold guides
+        ctx.setLineDash([2, 4]);
+        ctx.strokeStyle = rgbaQ(0.32);
+        ctx.beginPath();
+        ctx.moveTo(gx, yOf(config.earOpen));
+        ctx.lineTo(gx + gw, yOf(config.earOpen));
+        ctx.stroke();
+        ctx.strokeStyle = rgbaQ(0.48);
+        ctx.beginPath();
+        ctx.moveTo(gx, yOf(config.earClosed));
+        ctx.lineTo(gx + gw, yOf(config.earClosed));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Waveform
+        const n = Math.min(config.earGraphLen | 0, earHistCount);
+        if (n > 1) {
+          ctx.strokeStyle = rgbaQ(0.92);
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          for (let i = 0; i < n; i++) {
+            const idx = (earHistIdx - n + i + EAR_RING * 2) % EAR_RING;
+            const px = gx + (i / (n - 1)) * gw;
+            const py = yOf(earHist[idx]);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+
+          // Live head
+          const lastIdx = (earHistIdx - 1 + EAR_RING) % EAR_RING;
+          ctx.fillStyle = rgbaQ(0.95);
+          ctx.beginPath();
+          ctx.arc(gx + gw, yOf(earHist[lastIdx]), 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Header
+        ctx.font = '7px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = rgbaQ(0.40);
+        ctx.fillText('EAR / OCULAR APERTURE', x0 + 8, y0 + 9);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = rgbaQ(0.9);
+        ctx.fillText(M.ear.toFixed(3), x0 + w - 8, y0 + 9);
+
+        ctx.restore();
+      }
+
+      function drawBlinkBar(pts) {
+        if (!config.fxBlinkBar) return;
+        const chin = pts[152];
+        if (!chin) return;
+
+        const w = 120;
+        const x0 = chin.x - w * 0.5;
+        const y0 = chin.y + 26;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(x0, y0, w, 10);
+        ctx.strokeStyle = rgbaQ(0.32);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, 9);
+
+        const p = clamp(M.eyeOpenL > M.eyeOpenR ? M.eyeOpenL : M.eyeOpenR, 0, 1);
+        ctx.fillStyle = M.ear < config.earClosed ? rgbaQ(0.95) : rgbaQ(0.42);
+        ctx.fillRect(x0 + 1, y0 + 1, (w - 2) * p, 8);
+
+        ctx.font = '8px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillStyle = rgbaQ(0.6);
+        ctx.fillText(M.ear < config.earClosed ? 'APERTURE · CLOSED' : 'APERTURE · OPEN', x0, y0 - 3);
+        ctx.restore();
+      }
+
+      function drawPerclosMeter(pts) {
+        if (!config.fxPerclos) return;
+        const chin = pts[152];
+        if (!chin) return;
+
+        const h = 64;
+        const x0 = chin.x + 78;
+        const y0 = chin.y - h * 0.5;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(x0, y0, 12, h);
+        ctx.strokeStyle = rgbaQ(0.32);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0 + 0.5, y0 + 0.5, 11, h - 1);
+
+        const p = clamp(M.perclos, 0, 1);
+        const fh = h * p;
+        ctx.fillStyle = rgbaQ(0.85);
+        ctx.fillRect(x0 + 1, y0 + h - fh, 10, fh);
+
+        // Scale ticks
+        ctx.strokeStyle = rgbaQ(0.25);
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) {
+          const y = y0 + (h / 4) * i;
+          ctx.moveTo(x0 + 12, y);
+          ctx.lineTo(x0 + 16, y);
+        }
+        ctx.stroke();
+
+        ctx.font = '8px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillStyle = rgbaQ(0.7);
+        ctx.fillText((M.perclos * 100).toFixed(0) + '%', x0 + 6, y0 - 4);
+        ctx.restore();
+      }
+
+      function drawAttentionGauge(pts, now) {
+        if (!config.fxAttention) return;
+        const fore = pts[10];
+        if (!fore) return;
+
+        const cx = fore.x;
+        const cy = fore.y - 96;
+        const r = 22;
+
+        ctx.save();
+        ctx.strokeStyle = rgbaQ(0.18);
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 2.25);
+        ctx.stroke();
+
+        // Dial ticks
+        ctx.strokeStyle = rgbaQ(0.22);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i <= 10; i++) {
+          const ang = Math.PI * 0.75 + (i / 10) * Math.PI * 1.5;
+          const major = (i % 5 === 0);
+          const r0 = r + 4;
+          const r1 = r + (major ? 9 : 6);
+          ctx.moveTo(cx + Math.cos(ang) * r0, cy + Math.sin(ang) * r0);
+          ctx.lineTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+        }
+        ctx.stroke();
+
+        const p = clamp(M.attention / 100, 0, 1);
+        ctx.strokeStyle = rgbaQ(0.95);
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 0.75 + p * Math.PI * 1.5);
+        ctx.stroke();
+
+        ctx.font = '11px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = rgbaQ(0.95);
+        ctx.fillText(M.attention.toFixed(0), cx, cy);
+        ctx.font = '7px ui-monospace, Menlo, monospace';
+        ctx.fillStyle = rgbaQ(0.5);
+        ctx.fillText('ATT', cx, cy + 13);
+        ctx.restore();
+      }
+
+      function drawDistanceReadout(pts) {
+        if (!config.fxDistance) return;
+        const chin = pts[152];
+        if (!chin) return;
+
+        ctx.save();
+        ctx.font = '9px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = rgbaQ(0.85);
+        ctx.fillText(`${M.distanceCm.toFixed(0)} CM`, chin.x, chin.y + 44);
+        ctx.fillStyle = rgbaQ(0.42);
+        ctx.fillText('EST', chin.x, chin.y + 56);
+        ctx.restore();
+      }
+
+      function drawPulseRings(irisInfo, now) {
+        if (!config.fxPulse) return;
+        const { rIris, lIris } = irisInfo;
+        const targets = [];
+        if (rIris) targets.push(rIris);
+        if (lIris) targets.push(lIris);
+        if (!targets.length) return;
+
+        const period = 1100;
+        const phase = (now % period) / period;
+
+        for (let t = 0; t < targets.length; t++) {
+          const target = targets[t];
+          for (let k = 0; k < 2; k++) {
+            const p = (phase + k * 0.5) % 1;
+            const r = target.r + p * target.r * 2.6;
+            const a = (1 - p) * 0.5;
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, r, 0, Math.PI * 2);
+            ctx.strokeStyle = rgbaQ(a);
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // ============================================================
+      //  RENDER — OVERLAYS
+      // ============================================================
+      function drawCorners() {
+        if (!config.fxCorners) return;
+
+        const m = 26;
+        const L = 22;
+
+        // Corner brackets
+        ctx.strokeStyle = rgbaQ(0.32);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(m, m + L); ctx.lineTo(m, m); ctx.lineTo(m + L, m);
+        ctx.moveTo(viewW - m - L, m); ctx.lineTo(viewW - m, m); ctx.lineTo(viewW - m, m + L);
+        ctx.moveTo(m, viewH - m - L); ctx.lineTo(m, viewH - m); ctx.lineTo(m + L, viewH - m);
+        ctx.moveTo(viewW - m - L, viewH - m); ctx.lineTo(viewW - m, viewH - m); ctx.lineTo(viewW - m, viewH - m - L);
+        ctx.stroke();
+
+        // Inner hairline frame
+        const i = m + 7;
+        ctx.strokeStyle = rgbaQ(0.055);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(i + 0.5, i + 0.5, viewW - i * 2 - 1, viewH - i * 2 - 1);
+
+        // Edge graduations
+        ctx.strokeStyle = rgbaQ(0.13);
+        ctx.beginPath();
+        const step = 34;
+        for (let x = i + step; x < viewW - i - step * 0.5; x += step) {
+          const major = (Math.round(x / step) % 4 === 0);
+          ctx.moveTo(x, i);
+          ctx.lineTo(x, i + (major ? 9 : 5));
+        }
+        for (let y = i + step; y < viewH - i - step * 0.5; y += step) {
+          const major = (Math.round(y / step) % 4 === 0);
+          ctx.moveTo(i, y);
+          ctx.lineTo(i + (major ? 9 : 5), y);
+        }
+        ctx.stroke();
+      }
+
+      function drawCrosshair() {
+        if (!config.fxCrosshair) return;
+        const cx = viewW * 0.5;
+        const cy = viewH * 0.5;
+
+        ctx.strokeStyle = rgbaQ(0.20);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - 22, cy); ctx.lineTo(cx - 6, cy);
+        ctx.moveTo(cx + 6, cy); ctx.lineTo(cx + 22, cy);
+        ctx.moveTo(cx, cy - 22); ctx.lineTo(cx, cy - 6);
+        ctx.moveTo(cx, cy + 6); ctx.lineTo(cx, cy + 22);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = rgbaQ(0.13);
+        ctx.beginPath();
+        for (let i = 0; i < 12; i++) {
+          const ang = (i / 12) * Math.PI * 2;
+          ctx.moveTo(cx + Math.cos(ang) * 26, cy + Math.sin(ang) * 26);
+          ctx.lineTo(cx + Math.cos(ang) * 31, cy + Math.sin(ang) * 31);
+        }
+        ctx.stroke();
+      }
+
+      function drawScan(pts, now) {
+        if (!config.fxScan) return;
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        const n = state.hasIris ? 478 : 468;
+        for (let i = 0; i < n; i += 4) {
+          const p = pts[i];
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y;
+          if (p.y > maxY) maxY = p.y;
+        }
+        if (!isFinite(minX)) return;
+
+        const span = Math.max(1, maxY - minY);
+        const phase = (now % 2200) / 2200;
+        const y = minY + phase * span;
+
+        const grad = ctx.createLinearGradient(minX - 30, y, maxX + 30, y);
+        grad.addColorStop(0, rgbaQ(0));
+        grad.addColorStop(0.5, rgbaQ(0.78));
+        grad.addColorStop(1, rgbaQ(0));
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(minX - 30, y);
+        ctx.lineTo(maxX + 30, y);
+        ctx.stroke();
+      }
+
+      function drawLock(irisInfo, pts) {
+        if (!config.fxLock) return;
+        const { rIris, lIris } = irisInfo;
+        const pairs = [[rIris, 'L-EYE'], [lIris, 'R-EYE']];
+
+        ctx.font = '8px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+
+        for (let i = 0; i < pairs.length; i++) {
+          const info = pairs[i][0];
+          const name = pairs[i][1];
+          if (!info) continue;
+
+          const r = Math.max(18, info.r * 1.9);
+          const L = 8;
+          ctx.strokeStyle = rgbaQ(0.72);
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          for (let sx = -1; sx <= 1; sx += 2) {
+            for (let sy = -1; sy <= 1; sy += 2) {
+              ctx.moveTo(info.x + sx * r - sx * L, info.y + sy * r);
+              ctx.lineTo(info.x + sx * r, info.y + sy * r);
+              ctx.lineTo(info.x + sx * r, info.y + sy * r - sy * L);
+            }
+          }
+          ctx.stroke();
+
+          const ear = name === 'L-EYE' ? M.earL : M.earR;
+          ctx.fillStyle = rgbaQ(0.72);
+          ctx.fillText(`${name} ${ear.toFixed(3)}`, info.x - r, info.y - r - 10);
+        }
+      }
+
+      function drawGrid(pts) {
+        if (!config.fxGrid) return;
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        const n = state.hasIris ? 478 : 468;
+        for (let i = 0; i < n; i += 2) {
+          const p = pts[i];
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y;
+          if (p.y > maxY) maxY = p.y;
+        }
+        if (!isFinite(minX)) return;
+
+        const cols = 8, rows = 10;
+        const w = maxX - minX;
+        const h = maxY - minY;
+        ctx.save();
+        ctx.strokeStyle = rgbaQ(0.12);
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        for (let i = 1; i < cols; i++) {
+          const x = minX + (w / cols) * i;
+          ctx.moveTo(x, minY);
+          ctx.lineTo(x, maxY);
+        }
+        for (let i = 1; i < rows; i++) {
+          const y = minY + (h / rows) * i;
+          ctx.moveTo(minX, y);
+          ctx.lineTo(maxX, y);
+        }
+        ctx.stroke();
+
+        // Ruled border with tick marks
+        ctx.strokeStyle = rgbaQ(0.35);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(minX, minY, w, h);
+
+        ctx.strokeStyle = rgbaQ(0.22);
+        ctx.beginPath();
+        for (let i = 0; i <= cols; i++) {
+          const x = minX + (w / cols) * i;
+          ctx.moveTo(x, minY);
+          ctx.lineTo(x, minY - 5);
+        }
+        for (let i = 0; i <= rows; i++) {
+          const y = minY + (h / rows) * i;
+          ctx.moveTo(minX, y);
+          ctx.lineTo(minX - 5, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawTicker(now) {
+        if (!config.fxTicker) return;
+
+        const y = viewH - 30;
+        ctx.save();
+        ctx.font = '9px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+
+        const parts = [
+          ['EAR', M.ear.toFixed(3)],
+          ['BLINK', String(M.blinkCount)],
+          ['RATE', M.blinkRate.toFixed(1)],
+          ['PERCLOS', (M.perclos * 100).toFixed(1) + '%'],
+          ['ZONE', M.zone],
+          ['FIX', String(M.fixationCount)],
+          ['ATT', M.attention.toFixed(0) + '%'],
+          ['DIST', M.distanceCm > 0 ? M.distanceCm.toFixed(0) + 'CM' : '—'],
+        ];
+
+        let tw = 0;
+        for (let i = 0; i < parts.length; i++) {
+          tw += ctx.measureText(parts[i][0]).width + 6 + ctx.measureText(parts[i][1]).width + 20;
+        }
+        const bw = Math.min(tw + 20, viewW - 40);
+
+        ctx.fillStyle = 'rgba(0,0,0,0.44)';
+        ctx.fillRect(20, y - 13, bw, 26);
+        ctx.strokeStyle = rgbaQ(0.14);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(20, y - 13.5);
+        ctx.lineTo(20 + bw, y - 13.5);
+        ctx.moveTo(20, y + 12.5);
+        ctx.lineTo(20 + bw, y + 12.5);
+        ctx.stroke();
+
+        let x = 32;
+        for (let i = 0; i < parts.length; i++) {
+          const label = parts[i][0];
+          const value = parts[i][1];
+          ctx.fillStyle = rgbaQ(0.34);
+          ctx.fillText(label, x, y);
+          x += ctx.measureText(label).width + 6;
+          ctx.fillStyle = rgbaQ(0.88);
+          ctx.fillText(value, x, y);
+          x += ctx.measureText(value).width;
+          if (i < parts.length - 1) {
+            x += 10;
+            ctx.fillStyle = rgbaQ(0.16);
+            ctx.fillText('|', x, y);
+            x += 10;
+          }
+        }
+
+        // Live indicator
+        if ((now % 1200) < 700) {
+          ctx.fillStyle = rgbaQ(0.9);
+          ctx.fillRect(x + 6, y - 4, 5, 8);
+        }
+
+        ctx.restore();
+      }
+
+      // ============================================================
+      //  RENDER LOOP
+      // ============================================================
+      let lastRenderTime = 0;
+
+      function render() {
+        const now = performance.now();
+        lastRenderTime = now;
+
+        if (!cover.valid) updateCover();
+
+        ctx.clearRect(0, 0, viewW, viewH);
+
+        if (config.fxHeat) {
+          const H = ensureHeat();
+          if (H.ctx && !M.present) {
+            H.ctx.globalCompositeOperation = 'destination-out';
+            H.ctx.fillStyle = `rgba(0,0,0,${config.heatDecay})`;
+            H.ctx.fillRect(0, 0, H.w, H.h);
+            H.ctx.globalCompositeOperation = 'source-over';
+          }
+          drawHeat();
+        }
+
+        if (!state.active || !M.present) {
+          updateCalibration(now);
+          drawCalibration(now);
+          state.rafRender = requestAnimationFrame(render);
+          return;
+        }
+
+        const pts = state.screen;
+
+        drawGazeZoneGrid();
+        drawGrid(pts);
+
+        const irisInfo = drawReticle(pts);
+        drawGaze(irisInfo, pts, now);
+        drawPose(pts);
+        drawPulseRings(irisInfo, now);
+
+        drawBlinkBar(pts);
+        drawPerclosMeter(pts);
+        drawAttentionGauge(pts, now);
+        drawDistanceReadout(pts);
+
+        drawScan(pts, now);
+        drawLock(irisInfo, pts);
+
+        drawEarGraph();
+        drawTicker(now);
+
+        drawCrosshair();
+        drawCorners();
+
+        updateCalibration(now);
+        drawCalibration(now);
+
+        state.rafRender = requestAnimationFrame(render);
+      }
+
+      // ============================================================
+      //  MEDIAPIPE FACE MESH
       // ============================================================
       function ensureFaceMesh() {
         if (state.faceMesh) return state.faceMesh;
         if (typeof FaceMesh === 'undefined') return null;
+
         state.faceMesh = new FaceMesh({
           locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`,
         });
         state.faceMesh.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5,
+          refineLandmarks: config.refineLandmarks,
+          minDetectionConfidence: config.minDetection,
+          minTrackingConfidence: config.minTracking,
         });
         state.faceMesh.onResults(onFaceResults);
         return state.faceMesh;
+      }
+
+      function applyFaceOptions() {
+        const fm = state.faceMesh;
+        if (!fm) return;
+        fm.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: config.refineLandmarks,
+          minDetectionConfidence: config.minDetection,
+          minTrackingConfidence: config.minTracking,
+        });
+      }
+
+      function recreateFaceMesh() {
+        const wasActive = state.active;
+        if (state.faceMesh) {
+          try { state.faceMesh.close(); } catch (e) { /* ignore */ }
+          state.faceMesh = null;
+        }
+        state.initialized = false;
+        if (wasActive) ensureFaceMesh();
       }
 
       // ============================================================
       //  CAMERA
       // ============================================================
       async function startCamera() {
+        const [wStr, hStr] = config.resolution.split('x');
         const constraints = {
           video: {
-            facingMode: 'user',
-            width:  { ideal: 1280 },
-            height: { ideal: 720 },
+            facingMode: config.facingMode,
+            width: { ideal: parseInt(wStr, 10) },
+            height: { ideal: parseInt(hStr, 10) },
           },
           audio: false,
         };
@@ -982,6 +3759,16 @@
         video.srcObject = null;
       }
 
+      async function restartCamera() {
+        if (!state.active) return;
+        try {
+          stopCamera();
+          await startCamera();
+        } catch (e) {
+          console.warn('[OCULUS] camera restart failed', e);
+        }
+      }
+
       // ============================================================
       //  INFERENCE LOOP
       // ============================================================
@@ -993,14 +3780,20 @@
         if (state.inferenceInFlight) return;
 
         const now = performance.now();
+        const minInterval = 1000 / config.fpsCap;
         const dt = now - state.inferenceLast;
-        if (dt < 1000 / 60) return;
+        if (dt < minInterval) return;
         state.inferenceLast = now;
 
         const fps = 1000 / Math.max(1, dt);
         state.fpsSmooth = state.fpsSmooth ? state.fpsSmooth * 0.9 + fps * 0.1 : fps;
-        tFps.textContent = String(Math.min(999, Math.round(state.fpsSmooth)));
-        tFps.classList.remove('idle');
+        if (config.showFps) {
+          tFps.textContent = String(Math.min(999, Math.round(state.fpsSmooth)));
+          tFps.classList.remove('idle');
+        } else if (tFps.textContent !== '—') {
+          tFps.textContent = '—';
+          tFps.classList.add('idle');
+        }
 
         if (video.readyState < 2 || video.videoWidth === 0) return;
 
@@ -1013,7 +3806,6 @@
           sendErrorLogged = false;
         } catch (e) {
           if (!sendErrorLogged) {
-            // eslint-disable-next-line no-console
             console.warn('[OCULUS] faceMesh.send error', e);
             sendErrorLogged = true;
           }
@@ -1036,6 +3828,8 @@
           return;
         }
 
+        applyFaceOptions();
+
         activateBtn.disabled = true;
         activateBtn.textContent = 'STARTING';
 
@@ -1057,6 +3851,8 @@
         }
 
         state.active = true;
+        state.initialized = false;
+        state.startTime = performance.now();
         activateBtn.disabled = false;
         activateBtn.textContent = 'ACTIVE';
         activateBtn.classList.add('on');
@@ -1075,22 +3871,37 @@
         if (state.rafInfer) { cancelAnimationFrame(state.rafInfer); state.rafInfer = null; }
 
         stopCamera();
-        state.lastFace = null;
-        state.blinkState = false;
-        state.lostFrames = 0;
+        state.initialized = false;
+        M.present = false;
+        M.gazeValid = false;
+        M.zone = '—';
         state.inferenceInFlight = false;
-        ctx.clearRect(0, 0, viewW, viewH);
+        gazeTrail.length = 0;
+        fixations.length = 0;
 
         activateBtn.textContent = 'ACTIVATE';
         activateBtn.classList.remove('on');
 
         tFps.textContent = '—';
-        tFaces.textContent = '0';
+        tFace.textContent = '0';
         tEar.textContent = '—';
         tBlink.textContent = '0';
+        tRate.textContent = '—';
+        tPerclos.textContent = '—';
         tGaze.textContent = '—';
-        [tFps, tFaces, tEar, tBlink, tGaze].forEach(el => el.classList.add('idle'));
+        tFix.textContent = '0';
+        tPose.textContent = '—';
+        tAtt.textContent = '—';
+        [tFps, tFace, tEar, tBlink, tRate, tPerclos, tGaze, tFix, tPose, tAtt].forEach(el => el.classList.add('idle'));
+
         gazeDot.style.transform = 'translate(0px, 0px)';
+        mAttPct.textContent = '—';
+        barAtt.style.width = '0%';
+        mPerPct.textContent = '—';
+        barPer.style.width = '0%';
+        mDist.textContent = '—';
+
+        ctx.clearRect(0, 0, viewW, viewH);
       }
 
       activateBtn.addEventListener('click', () => {
@@ -1099,40 +3910,434 @@
       });
 
       // ============================================================
-      //  BACK NAVIGATION
+      //  PANEL
       // ============================================================
-      backBtn.addEventListener('click', () => {
-        if (state.active) deactivate();
-        window.location.href = 'index.html';
+      function openPanel() {
+        settingsPanel.classList.add('open');
+        settingsPanel.setAttribute('aria-hidden', 'false');
+        panelOverlay.classList.add('show');
+      }
+      function closePanel() {
+        settingsPanel.classList.remove('open');
+        settingsPanel.setAttribute('aria-hidden', 'true');
+        panelOverlay.classList.remove('show');
+      }
+      settingsToggle.addEventListener('click', openPanel);
+      settingsClose.addEventListener('click', closePanel);
+      panelOverlay.addEventListener('click', closePanel);
+
+      document.querySelectorAll('.section-head').forEach(h => {
+        h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
       });
+
+      // ============================================================
+      //  UI WIRING
+      // ============================================================
+      const FMT = {
+        minDetection: v => v.toFixed(2),
+        minTracking: v => v.toFixed(2),
+        stabilization: v => v.toFixed(2),
+        responsiveness: v => v.toFixed(2),
+        prediction: v => v.toFixed(1),
+        earClosed: v => v.toFixed(3),
+        earOpen: v => v.toFixed(3),
+        blinkMinMs: v => String(v | 0),
+        perclosWindow: v => String(v | 0),
+        gazeSmoothing: v => v.toFixed(2),
+        fixationRadius: v => v.toFixed(2),
+        fixationTime: v => String(v | 0),
+        saccadeThreshold: v => v.toFixed(1),
+        meshOpacity: v => v.toFixed(2),
+        irisScale: v => v.toFixed(2),
+        eyeStroke: v => v.toFixed(1),
+        gazeTrailLen: v => String(v | 0),
+        heatDecay: v => v.toFixed(3),
+        earGraphLen: v => String(v | 0),
+        videoBrightness: v => v.toFixed(2),
+        videoContrast: v => v.toFixed(2),
+        videoSaturate: v => v.toFixed(2),
+        graceFrames: v => String(v | 0),
+        fpsCap: v => String(v | 0),
+      };
+
+      const labelEls = {};
+      function cacheLabelEls() {
+        document.querySelectorAll('[data-value]').forEach(el => {
+          labelEls[el.dataset.value] = el;
+        });
+      }
+
+      function syncSliderLabel(key, val) {
+        const el = labelEls[key];
+        if (!el) return;
+        const f = FMT[key];
+        el.textContent = f ? f(parseFloat(val)) : String(val);
+      }
+
+      function updateSliderFill(input) {
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+        const val = parseFloat(input.value);
+        const pct = ((val - min) / (max - min)) * 100;
+        input.style.setProperty('--fill', pct.toFixed(2) + '%');
+      }
+
+      function updateSliderFillAll() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(updateSliderFill);
+      }
+
+      function wireInputs() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
+          const key = input.dataset.key;
+          input.value = config[key];
+          syncSliderLabel(key, input.value);
+          updateSliderFill(input);
+          input.addEventListener('input', () => {
+            const val = parseFloat(input.value);
+            config[key] = val;
+            syncSliderLabel(key, val);
+            updateSliderFill(input);
+            onConfigChange(key, val);
+          });
+        });
+
+        document.querySelectorAll('.toggle[data-key]').forEach(t => {
+          const key = t.dataset.key;
+          t.classList.toggle('on', !!config[key]);
+          t.addEventListener('click', (e) => {
+            e.preventDefault();
+            config[key] = !config[key];
+            t.classList.toggle('on', config[key]);
+            onConfigChange(key, config[key]);
+          });
+        });
+
+        document.querySelectorAll('select[data-key]').forEach(s => {
+          const key = s.dataset.key;
+          s.value = config[key];
+          s.addEventListener('change', () => {
+            config[key] = s.value;
+            onConfigChange(key, s.value);
+          });
+        });
+
+        document.querySelectorAll('.color-swatch').forEach(sw => {
+          const hex = sw.dataset.accent;
+          sw.classList.toggle('active', hex === config.accent);
+          sw.addEventListener('click', () => {
+            document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+            sw.classList.add('active');
+            config.accent = hex;
+            const nameMap = {
+              '#ffffff': 'WHITE', '#00e0b8': 'TEAL', '#5fc9ff': 'BLUE',
+              '#ff5c5c': 'RED', '#ffd166': 'AMBER', '#b28dff': 'VIOLET',
+              '#7dff8a': 'LIME',
+            };
+            config.accentName = nameMap[hex] || 'CUSTOM';
+            if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
+            accentCustom.value = hex;
+            updateAccentRGB();
+            saveConfig();
+          });
+        });
+
+        accentCustom.addEventListener('input', () => {
+          config.accent = accentCustom.value;
+          config.accentName = 'CUSTOM';
+          if (labelEls.accentName) labelEls.accentName.textContent = 'CUSTOM';
+          document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+          updateAccentRGB();
+          saveConfig();
+        });
+        accentCustom.addEventListener('change', () => {
+          config.accent = accentCustom.value;
+          saveConfig();
+        });
+
+        glowCustom.addEventListener('input', () => {
+          config.glowColor = glowCustom.value;
+          updateGlowRGB();
+          saveConfig();
+        });
+        glowCustom.addEventListener('change', () => {
+          config.glowColor = glowCustom.value;
+          saveConfig();
+        });
+
+        presetSelect.addEventListener('change', () => {
+          const v = presetSelect.value;
+          if (v) {
+            applyPreset(v);
+            presetSelect.value = '';
+          }
+        });
+
+        document.getElementById('calibrateBtn').addEventListener('click', startCalibration);
+        document.getElementById('clearCalibBtn').addEventListener('click', clearCalibration);
+      }
+
+      function onConfigChange(key, val) {
+        if (key === 'showTelemetry') telemetryEl.style.display = val ? '' : 'none';
+        if (key === 'showClock') clockEl.style.display = val ? '' : 'none';
+        if (key === 'showGazeWidget') {
+          const gw = document.getElementById('gazeWidget');
+          if (gw) gw.style.display = val ? '' : 'none';
+        }
+        if (key === 'showFps' && !val) {
+          tFps.textContent = '—';
+          tFps.classList.add('idle');
+        }
+        if (key === 'videoGrayscale' || key === 'videoMirror' ||
+          key === 'videoBrightness' || key === 'videoContrast' || key === 'videoSaturate') {
+          applyVideoFilter();
+        }
+        if (key === 'refineLandmarks') {
+          recreateFaceMesh();
+        }
+        if (key === 'minDetection' || key === 'minTracking') {
+          applyFaceOptions();
+        }
+        if ((key === 'facingMode' || key === 'resolution') && state.active) {
+          restartCamera();
+        }
+
+        saveConfig();
+      }
+
+      function applyVideoFilter() {
+        const b = config.videoBrightness;
+        const c = config.videoContrast;
+        const s = config.videoGrayscale ? 0.15 : config.videoSaturate;
+        video.style.filter = `contrast(${c}) brightness(${b}) saturate(${s})`;
+        video.style.transform = config.videoMirror ? 'scaleX(-1)' : 'none';
+      }
+
+      function syncAllInputs() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(i => {
+          const k = i.dataset.key;
+          i.value = config[k];
+          syncSliderLabel(k, config[k]);
+          updateSliderFill(i);
+        });
+        document.querySelectorAll('.toggle[data-key]').forEach(t => {
+          t.classList.toggle('on', !!config[t.dataset.key]);
+        });
+        document.querySelectorAll('select[data-key]').forEach(s => {
+          s.value = config[s.dataset.key];
+        });
+        document.querySelectorAll('.color-swatch').forEach(x => {
+          x.classList.toggle('active', x.dataset.accent === config.accent);
+        });
+        if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
+        accentCustom.value = config.accent;
+        glowCustom.value = config.glowColor;
+      }
+
+      // ============================================================
+      //  ACTIONS
+      // ============================================================
+      document.getElementById('resetDefaults').addEventListener('click', () => {
+        Object.assign(config, DEFAULTS);
+        updateAccentRGB();
+        updateGlowRGB();
+        applyVideoFilter();
+        syncAllInputs();
+        Object.keys(config).forEach(k => onConfigChange(k, config[k]));
+        recreateFaceMesh();
+        saveConfig();
+        showToast('Defaults restored');
+      });
+
+      document.getElementById('exportConfig').addEventListener('click', async () => {
+        const data = JSON.stringify(config, null, 2);
+        try {
+          await navigator.clipboard.writeText(data);
+          showToast('Config copied');
+        } catch (e) {
+          window.prompt('Config JSON:', data);
+        }
+      });
+
+      document.getElementById('importConfig').addEventListener('click', () => {
+        const data = window.prompt('Paste config JSON:');
+        if (!data) return;
+        try {
+          const parsed = JSON.parse(data);
+          Object.assign(config, DEFAULTS, parsed);
+          updateAccentRGB();
+          updateGlowRGB();
+          applyVideoFilter();
+          syncAllInputs();
+          Object.keys(config).forEach(k => onConfigChange(k, config[k]));
+          recreateFaceMesh();
+          saveConfig();
+          showToast('Config loaded');
+        } catch (e) {
+          showToast('Invalid config');
+        }
+      });
+
+      function toggleFullscreen() {
+        const el = document.getElementById('stage');
+        if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => { });
+        else document.exitFullscreen?.();
+      }
+      document.getElementById('toggleFullscreen').addEventListener('click', toggleFullscreen);
+
+      function saveFrame() {
+        try {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const outW = Math.round(viewW * dpr);
+          const outH = Math.round(viewH * dpr);
+          const tmp = document.createElement('canvas');
+          tmp.width = outW;
+          tmp.height = outH;
+          const tc = tmp.getContext('2d');
+
+          if (cover.valid && video.videoWidth) {
+            tc.save();
+            const s = config.videoGrayscale ? 0.15 : config.videoSaturate;
+            if ('filter' in tc) {
+              tc.filter = `contrast(${config.videoContrast}) brightness(${config.videoBrightness}) saturate(${s})`;
+            }
+            if (config.videoMirror) {
+              tc.translate(outW, 0);
+              tc.scale(-1, 1);
+              tc.drawImage(
+                video,
+                cover.offsetX * dpr, cover.offsetY * dpr,
+                cover.drawW * dpr, cover.drawH * dpr
+              );
+            } else {
+              tc.drawImage(
+                video,
+                cover.offsetX * dpr, cover.offsetY * dpr,
+                cover.drawW * dpr, cover.drawH * dpr
+              );
+            }
+            tc.restore();
+          }
+          tc.drawImage(canvas, 0, 0, outW, outH);
+
+          const url = tmp.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `oculus_${Date.now()}.png`;
+          a.click();
+          showToast('Frame saved');
+        } catch (e) {
+          console.warn('save failed', e);
+          showToast('Save failed');
+        }
+      }
+      document.getElementById('screenshotBtn').addEventListener('click', saveFrame);
 
       // ============================================================
       //  KEYBOARD
       // ============================================================
       document.addEventListener('keydown', (e) => {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
         const k = e.key.toLowerCase();
-        if (k === 'a') { if (state.active) deactivate(); else activate(); }
-        else if (k === 'escape') { if (state.active) deactivate(); }
-        else if (k === 'b') { window.location.href = 'index.html'; }
+        if (k === 'a') {
+          if (state.active) deactivate(); else activate();
+        } else if (k === 's') {
+          if (settingsPanel.classList.contains('open')) closePanel();
+          else openPanel();
+        } else if (k === 'h') {
+          hudEl.classList.toggle('hidden');
+        } else if (k === 'f') {
+          toggleFullscreen();
+        } else if (k === 'p') {
+          saveFrame();
+        } else if (k === 'c') {
+          startCalibration();
+        } else if (e.key === 'Escape') {
+          if (settingsPanel.classList.contains('open')) closePanel();
+          else if (state.active) deactivate();
+        }
+      });
+
+      // ============================================================
+      //  VISIBILITY
+      // ============================================================
+      document.addEventListener('visibilitychange', () => {
+        if (!state.active) return;
+        if (document.hidden) {
+          if (config.pauseOnHide && state.rafInfer) {
+            cancelAnimationFrame(state.rafInfer);
+            state.rafInfer = null;
+          }
+        } else {
+          if (config.pauseOnHide && !state.rafInfer) {
+            state.inferenceLast = performance.now();
+            frameLoop();
+          }
+        }
       });
 
       // ============================================================
       //  BOOT
       // ============================================================
+      function bootFail(reason) {
+        bootEl.classList.remove('hidden');
+        bootEl.classList.add('error');
+        bootMsg.textContent = reason;
+        activateBtn.disabled = true;
+      }
+
+      function bootOk() {
+        bootEl.classList.remove('error');
+        bootEl.classList.add('hidden');
+        activateBtn.disabled = false;
+      }
+
       function init() {
+        loadConfig();
+        cacheLabelEls();
+        updateAccentRGB();
+        updateGlowRGB();
+        applyVideoFilter();
+        wireInputs();
+        syncAllInputs();
+        resize();
+
+        onConfigChange('showTelemetry', config.showTelemetry);
+        onConfigChange('showClock', config.showClock);
+        onConfigChange('showGazeWidget', config.showGazeWidget);
+
         render();
       }
 
-      setTimeout(() => {
+      function boot() {
         init();
-        if (typeof FaceMesh === 'undefined') {
-          bootEl.classList.add('error');
-          bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
-          setTimeout(() => bootEl.classList.add('hidden'), 2200);
-        } else {
-          bootEl.classList.add('hidden');
+
+        if (window.__oculusLibError) {
+          bootFail('CDN UNREACHABLE · CHECK NETWORK / ADBLOCK');
+          return;
         }
-      }, 300);
+        if (!window.__oculusLibReady && typeof FaceMesh === 'undefined') {
+          // Give the CDN one more microtask cycle, then decide.
+          setTimeout(() => {
+            if (typeof FaceMesh === 'undefined') {
+              bootFail('TRACKING LIBRARY UNAVAILABLE');
+            } else {
+              bootOk();
+            }
+          }, 900);
+          return;
+        }
+        bootOk();
+      }
+
+      bootRetry.addEventListener('click', () => window.location.reload());
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot, { once: true });
+      } else {
+        boot();
+      }
 
     })();
   </script>
