@@ -39,7 +39,6 @@
       overflow-x: hidden;
     }
 
-    /* faint depth — kept restrained */
     body::before {
       content: "";
       position: fixed;
@@ -84,7 +83,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      height: 54px;
       padding: 0 24px;
       border-bottom: 1px solid var(--line);
       background: rgba(8, 8, 10, .86);
@@ -141,7 +140,7 @@
       width: 100%;
       max-width: 880px;
       margin: 0 auto;
-      padding: 56px 24px 80px
+      padding: clamp(40px, 7vh, 64px) 24px 72px
     }
 
     .section-head {
@@ -149,7 +148,7 @@
       align-items: baseline;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       font-size: 11px;
       color: var(--fg-3);
       text-transform: uppercase;
@@ -163,19 +162,28 @@
 
     .list {
       display: grid;
-      gap: 12px
+      gap: 10px
     }
 
     /* ─────────────────────── module row ─────────────────────── */
     .module {
       position: relative;
       display: grid;
-      grid-template-columns: 44px minmax(0, 1fr) auto 22px;
+      grid-template-columns: 40px minmax(0, 1fr) auto 20px;
       align-items: center;
-      gap: 20px;
-      padding: 20px 18px;
+      gap: 18px;
+      padding: 18px;
       outline: none;
       isolation: isolate;
+      animation: rise .55s var(--ease) backwards;
+      animation-delay: calc(var(--i, 0) * 45ms);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(9px)
+      }
     }
 
     /* outline, split into two halves that drift apart on hover */
@@ -200,13 +208,13 @@
 
     .module:hover::before,
     .module:focus-visible::before {
-      transform: translateY(-7px);
+      transform: translateY(-6px);
       border-color: rgba(var(--m), .55)
     }
 
     .module:hover::after,
     .module:focus-visible::after {
-      transform: translateY(7px);
+      transform: translateY(6px);
       border-color: rgba(var(--m), .55)
     }
 
@@ -316,11 +324,8 @@
     }
 
     footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      margin-top: 56px;
-      padding-top: 20px;
+      margin-top: 48px;
+      padding-top: 18px;
       border-top: 1px solid var(--line);
       font-size: 11px;
       color: var(--fg-3)
@@ -390,7 +395,19 @@
       padding: 22px;
       font-size: 12px;
       line-height: 1.7;
-      color: var(--fg-2)
+      color: var(--fg-2);
+      scrollbar-width: thin;
+      scrollbar-color: #23232a transparent
+    }
+
+    .panel-body::-webkit-scrollbar {
+      width: 10px
+    }
+
+    .panel-body::-webkit-scrollbar-thumb {
+      background: #1d1d24;
+      border: 3px solid var(--panel-bg);
+      border-radius: 6px
     }
 
     .panel-body p+p {
@@ -445,6 +462,91 @@
       color: var(--fg-3)
     }
 
+    /* ─────────────────────── live preview ─────────────────────── */
+    #preview {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 30;
+      width: 302px;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      will-change: transform;
+      transition: opacity .18s ease, visibility .18s
+    }
+
+    #preview.on {
+      opacity: 1;
+      visibility: visible
+    }
+
+    .preview-card {
+      border: 1px solid #24242c;
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--panel-bg);
+      box-shadow: 0 30px 70px -24px rgba(0, 0, 0, .9);
+      transform: scale(.96);
+      transition: transform .32s var(--ease)
+    }
+
+    #preview.on .preview-card {
+      transform: scale(1)
+    }
+
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 26px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: #0e0e12
+    }
+
+    .preview-dot {
+      flex: none;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgb(var(--pm, 0, 224, 184))
+    }
+
+    .preview-name {
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .preview-view {
+      position: relative;
+      width: 100%;
+      height: 188px;
+      overflow: hidden;
+      background: #08080a
+    }
+
+    #preview-frame {
+      display: block;
+      width: 1200px;
+      height: 752px;
+      border: 0;
+      transform: scale(.25);
+      transform-origin: 0 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s ease
+    }
+
+    #preview.ready #preview-frame {
+      opacity: 1
+    }
+
     /* ─────────────────────── responsive ─────────────────────── */
     @media (max-width:640px) {
       header {
@@ -452,13 +554,13 @@
       }
 
       main {
-        padding: 40px 16px 64px
+        padding: 36px 16px 56px
       }
 
       .module {
-        grid-template-columns: 32px minmax(0, 1fr) auto 18px;
-        gap: 14px;
-        padding: 18px 14px
+        grid-template-columns: 30px minmax(0, 1fr) auto 16px;
+        gap: 13px;
+        padding: 16px 14px
       }
 
       .compute-k {
@@ -474,19 +576,14 @@
       }
     }
 
-    @media (max-width:520px) {
-      .desc {
+    @media (max-width:560px) {
+      .module {
+        grid-template-columns: 26px minmax(0, 1fr) 16px;
+        gap: 12px
+      }
+
+      .compute {
         display: none
-      }
-
-      .module:hover::before,
-      .module:focus-visible::before {
-        transform: translateY(-5px)
-      }
-
-      .module:hover::after,
-      .module:focus-visible::after {
-        transform: translateY(5px)
       }
     }
 
@@ -521,10 +618,7 @@
 
       <nav class="list" id="pages" aria-label="Modules"></nav>
 
-      <footer>
-        <span>Local · static registry</span>
-        <span>index.html</span>
-      </footer>
+      <footer>Add entries to the <code>PAGES</code> array in index.html.</footer>
     </main>
   </div>
 
@@ -537,53 +631,60 @@
     </div>
 
     <div class="panel-body">
-      <p>The registry is the <code>PAGES</code> array near the top of the script in
-        <code>index.html</code>. Add an entry there and it appears in the list.
-      </p>
+      <p>Modules come from the <code>PAGES</code> array at the top of the script in <code>index.html</code>.</p>
 
       <dl>
         <dt>file</dt>
-        <dd>Required. Path relative to this page.</dd>
+        <dd>Path relative to this page.</dd>
 
         <dt>name</dt>
-        <dd>Required. Display name.</dd>
+        <dd>Display name.</dd>
 
         <dt>description</dt>
-        <dd>Optional. One line, shown under the name.</dd>
+        <dd>One line under the name.</dd>
 
         <dt>accent</dt>
-        <dd>Optional. Hex colour — <code>#0f8</code> or <code>#00e0b8</code>. Drives the row indicator,
-          index, compute readout and arrow.</dd>
+        <dd>Hex colour — <code>#0f8</code> or <code>#00e0b8</code>. Sets the row indicator, index, compute
+          readout and arrow.</dd>
 
         <dt>compute</dt>
-        <dd>Optional. Shown at the right of the row. A string or number is printed as-is. A function is
-          called with the page object and re-evaluated every second — use it for live readouts.</dd>
+        <dd>Right-hand readout. A string or number prints as-is; a function is re-evaluated every second.</dd>
       </dl>
 
-      <pre><span class="c">/* ── MODULE REGISTRY ─────────────────────────── */</span>
+      <pre><span class="c">/* module registry — index.html */</span>
 <span class="k">const</span> PAGES = [
   {
     <span class="k">file</span>: <span class="s">"hands.html"</span>,
     <span class="k">name</span>: <span class="s">"Hands"</span>,
-    <span class="k">description</span>: <span class="s">"Hand tracking module"</span>,
+    <span class="k">description</span>: <span class="s">"Hand tracking"</span>,
     <span class="k">accent</span>: <span class="s">"#00e0b8"</span>,
     <span class="k">compute</span>: <span class="s">"1.8 ms"</span>
   },
   {
     <span class="k">file</span>: <span class="s">"eyes.html"</span>,
     <span class="k">name</span>: <span class="s">"Eyes"</span>,
-    <span class="k">description</span>: <span class="s">"Eye / vision module"</span>,
     <span class="k">accent</span>: <span class="s">"#5fc9ff"</span>,
-    <span class="c">// live value — re-evaluated each second</span>
+    <span class="c">// re-evaluated every second</span>
     <span class="k">compute</span>: () =&gt; <span class="s">`${(Math.random() * 4).toFixed(1)} ms`</span>
   }
 ];</pre>
 
-      <p>The <code>accent</code> colour is converted to RGB at render time and exposed to the row as
-        <code>--m</code>. The outline halves, the swept wash and the readouts all key off it.
-      </p>
+      <p>Hovering a row loads the target page into a small live frame. Pages that refuse to be embedded simply
+        stay blank.</p>
     </div>
   </aside>
+
+  <div id="preview" aria-hidden="true">
+    <div class="preview-card">
+      <div class="preview-bar">
+        <span class="preview-dot"></span>
+        <span class="preview-name" id="preview-name"></span>
+      </div>
+      <div class="preview-view">
+        <iframe id="preview-frame" title="Module preview" scrolling="no" tabindex="-1"></iframe>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -604,14 +705,14 @@
         {
           file: "simpler.html",
           name: "simpler hand",
-          description: "A very simplified version of hands. (better performance)",
+          description: "Reduced hand tracking, lower overhead",
           accent: "#7316BA",
           compute: "4.3 ms"
         },
         {
           file: "object.html",
           name: "Objects (Beta)",
-          description: "A very very cool object thingie",
+          description: "Object tracking module",
           accent: "#BDB3B1",
           compute: "2 ms"
         },
@@ -680,14 +781,16 @@
       /* ---------- render ---------- */
       function render() {
         if (!PAGES.length) {
-          listEl.innerHTML = '<p class="empty">No modules registered. Add one in the PAGES array.</p>';
+          listEl.innerHTML = '<p class="empty">No modules registered.</p>';
           countEl.textContent = "0 modules";
           return;
         }
 
         listEl.innerHTML = PAGES.map(function (p, i) {
           const live = typeof p.compute === "function";
-          return '<a class="module" href="' + esc(encodeURI(p.file)) + '" style="--m:' + hexRgb(p.accent) + '">' +
+          const file = esc(encodeURI(p.file));
+          return '<a class="module" href="' + file + '" data-file="' + file + '" data-index="' + i +
+            '" style="--m:' + hexRgb(p.accent) + ';--i:' + i + '">' +
             '<span class="wash" aria-hidden="true"></span>' +
             '<span class="idx">' + String(i + 1).padStart(2, "0") + '</span>' +
             '<span class="body">' +
@@ -720,6 +823,7 @@
 
       /* ---------- panel ---------- */
       function openPanel() {
+        closePreview();
         panel.classList.add("open");
         shade.classList.add("open");
         panel.setAttribute("aria-hidden", "false");
@@ -735,8 +839,171 @@
       document.getElementById("close").addEventListener("click", closePanel);
       shade.addEventListener("click", closePanel);
       document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") closePanel();
+        if (e.key === "Escape") {
+          closePanel();
+          closePreview();
+        }
       });
+
+      /* ══════════════════════════════════════════════════════════════════
+         LIVE PREVIEW
+         On hover, the target page is loaded into a scaled-down iframe that
+         follows the pointer. Nothing is captured or stored — it is the real
+         page running live. Pages that block framing never become "ready",
+         are marked as failed and are not retried.
+         ══════════════════════════════════════════════════════════════════ */
+      const previewEl = document.getElementById("preview");
+      const previewFrame = document.getElementById("preview-frame");
+      const previewName = document.getElementById("preview-name");
+
+      const PW = 302;      /* card width  */
+      const PH = 216;      /* card height */
+      const GAP = 22;      /* distance from pointer */
+      const PAD = 14;      /* viewport margin */
+      const DELAY = 200;   /* hover delay before loading */
+      const LOAD_TIMEOUT = 4500;
+
+      const canPreview = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      const failed = Object.create(null);
+
+      let hoverRow = null;
+      let openTimer = 0;
+      let closeTimer = 0;
+      let failTimer = 0;
+      let blankTimer = 0;
+      let active = false;
+
+      let pointerX = window.innerWidth / 2;
+      let pointerY = window.innerHeight / 2;
+      let curX = 0, curY = 0, dstX = 0, dstY = 0, rafId = 0;
+
+      function setTarget(x, y) {
+        let nx = x + GAP;
+        if (nx + PW + PAD > window.innerWidth) nx = x - GAP - PW;
+        nx = Math.max(PAD, Math.min(nx, window.innerWidth - PW - PAD));
+        dstX = nx;
+        dstY = Math.max(PAD, Math.min(y - PH / 2, window.innerHeight - PH - PAD));
+      }
+
+      function placeNow() {
+        curX = dstX;
+        curY = dstY;
+        previewEl.style.transform = "translate3d(" + curX.toFixed(1) + "px," + curY.toFixed(1) + "px,0)";
+      }
+
+      function frameLoop() {
+        curX += (dstX - curX) * 0.25;
+        curY += (dstY - curY) * 0.25;
+        previewEl.style.transform = "translate3d(" + curX.toFixed(1) + "px," + curY.toFixed(1) + "px,0)";
+        rafId = requestAnimationFrame(frameLoop);
+      }
+
+      function startLoop() {
+        if (!rafId) rafId = requestAnimationFrame(frameLoop);
+      }
+
+      function stopLoop() {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+
+      function openPreview(row) {
+        const file = row.dataset.file;
+        if (!file || failed[file]) return;
+
+        const page = PAGES[Number(row.dataset.index)] || {};
+        previewEl.style.setProperty("--pm", row.style.getPropertyValue("--m") || "0,224,184");
+        previewName.textContent = page.name || file;
+        previewEl.classList.remove("ready");
+
+        clearTimeout(blankTimer);
+        clearTimeout(failTimer);
+
+        if (!active) {
+          active = true;
+          setTarget(pointerX, pointerY);
+          placeNow();
+          startLoop();
+        } else {
+          setTarget(pointerX, pointerY);
+        }
+
+        previewEl.classList.add("on");
+
+        if (previewFrame.getAttribute("src") !== file) {
+          previewFrame.setAttribute("src", file);
+        }
+
+        failTimer = setTimeout(function () {
+          if (!previewEl.classList.contains("ready")) {
+            failed[file] = true;
+            closePreview();
+          }
+        }, LOAD_TIMEOUT);
+      }
+
+      function closePreview() {
+        clearTimeout(openTimer);
+        clearTimeout(closeTimer);
+        clearTimeout(failTimer);
+
+        active = false;
+        hoverRow = null;
+        stopLoop();
+        previewEl.classList.remove("on", "ready");
+
+        clearTimeout(blankTimer);
+        blankTimer = setTimeout(function () {
+          if (!active) previewFrame.setAttribute("src", "about:blank");
+        }, 220);
+      }
+
+      previewFrame.addEventListener("load", function () {
+        if (!active) return;
+        clearTimeout(failTimer);
+        previewEl.classList.add("ready");
+      });
+
+      if (canPreview) {
+        listEl.addEventListener("pointerover", function (e) {
+          const row = e.target.closest(".module");
+          if (!row || row === hoverRow) return;
+
+          hoverRow = row;
+          clearTimeout(closeTimer);
+          clearTimeout(openTimer);
+          openTimer = setTimeout(function () { openPreview(row); }, DELAY);
+        });
+
+        listEl.addEventListener("pointerout", function (e) {
+          const row = e.target.closest(".module");
+          if (!row || row !== hoverRow) return;
+
+          const to = e.relatedTarget && e.relatedTarget.closest
+            ? e.relatedTarget.closest(".module")
+            : null;
+          if (to === row) return;
+
+          hoverRow = null;
+          clearTimeout(openTimer);
+          clearTimeout(closeTimer);
+          closeTimer = setTimeout(closePreview, 140);
+        });
+
+        document.addEventListener("pointermove", function (e) {
+          pointerX = e.clientX;
+          pointerY = e.clientY;
+          if (active) setTarget(pointerX, pointerY);
+        }, { passive: true });
+
+        window.addEventListener("scroll", function () {
+          if (active) closePreview();
+        }, { passive: true });
+
+        window.addEventListener("blur", closePreview);
+      } else {
+        previewEl.remove();
+      }
 
       /* ---------- boot ---------- */
       render();
