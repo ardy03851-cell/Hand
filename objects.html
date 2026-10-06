@@ -1,0 +1,2611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>OBJECT RECOGNITION SYSTEM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+      color: #e8e8e8;
+      user-select: none;
+      -webkit-user-select: none;
+      font-feature-settings: "tnum";
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :root {
+      --accent: #f2f2f2;
+      --accent-rgb: 242, 242, 242;
+      --bg: #000;
+      --fg: #e8e8e8;
+      --fg-dim: rgba(255, 255, 255, 0.55);
+      --fg-faint: rgba(255, 255, 255, 0.32);
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.18);
+      --panel: rgba(8, 9, 11, 0.96);
+      --ok: #5fe3a1;
+      --warn: #ffb454;
+      --err: #ff5c5c;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #video,
+    #overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #video {
+      object-fit: cover;
+      transform-origin: 50% 50%;
+      will-change: transform, filter;
+    }
+
+    #overlay {
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ---------- TOP BAR ---------- */
+    #topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      padding: max(16px, env(safe-area-inset-top)) 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      pointer-events: auto;
+    }
+
+    .brand-name {
+      font-size: 11px;
+      letter-spacing: 0.34em;
+      color: var(--fg);
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+    }
+
+    .topright {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      pointer-events: auto;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--fg-dim);
+    }
+
+    .status-mark {
+      width: 6px;
+      height: 6px;
+      background: var(--fg-faint);
+      transition: background .3s;
+    }
+
+    .status.live .status-mark {
+      background: var(--ok);
+      box-shadow: 0 0 6px rgba(95, 227, 161, 0.6);
+    }
+
+    .status.live {
+      color: var(--ok);
+    }
+
+    .status.err .status-mark {
+      background: var(--err);
+    }
+
+    .status.err {
+      color: var(--err);
+    }
+
+    #clock {
+      color: var(--fg-dim);
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--fg-dim);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      padding: 7px 12px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .18s, color .18s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--fg);
+      color: var(--fg);
+    }
+
+    .icon-btn svg {
+      width: 11px;
+      height: 11px;
+      vertical-align: -1px;
+      margin-right: 7px;
+    }
+
+    /* ---------- SIDE PANEL ---------- */
+    #telemetry {
+      position: absolute;
+      left: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      min-width: 176px;
+      padding: 14px 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    #telemetry.hidden {
+      opacity: 0;
+    }
+
+    .t-section {
+      padding: 8px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .t-section:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .t-section:last-child {
+      padding-bottom: 0;
+    }
+
+    .t-section-label {
+      font-size: 8.5px;
+      letter-spacing: 0.3em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .t-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      padding: 2.5px 0;
+    }
+
+    .t-row .k {
+      font-size: 9.5px;
+      letter-spacing: 0.18em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+    }
+
+    .t-row .v {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
+    .t-row .v.dim {
+      color: var(--fg-faint);
+      font-weight: 400;
+    }
+
+    .t-bar {
+      display: block;
+      height: 1px;
+      background: var(--line);
+      margin: 6px 0 3px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .t-bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width .14s linear;
+    }
+
+    /* ---------- BOTTOM BAR ---------- */
+    #bottombar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 15;
+      padding: 0 24px max(20px, env(safe-area-inset-bottom)) 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    #bottombar .sep {
+      color: rgba(255, 255, 255, 0.10);
+    }
+
+    #bottombar .spacer {
+      flex: 1;
+    }
+
+    #bottombar.hidden {
+      display: none;
+    }
+
+    #activateBtn {
+      pointer-events: auto;
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 10.5px;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      font-weight: 500;
+      padding: 13px 34px;
+      cursor: pointer;
+      transition: background .18s, border-color .18s, color .18s;
+      position: relative;
+    }
+
+    #activateBtn:hover {
+      border-color: var(--fg);
+    }
+
+    #activateBtn.on {
+      border-color: var(--fg);
+      background: var(--fg);
+      color: #000;
+    }
+
+    #activateBtn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ---------- TOAST ---------- */
+    #toast {
+      position: absolute;
+      left: 50%;
+      top: 8%;
+      transform: translate(-50%, -6px);
+      z-index: 60;
+      padding: 8px 20px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid var(--line-strong);
+      color: var(--fg);
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* ---------- PANEL ---------- */
+    #panelOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+
+    #panelOverlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #settingsPanel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: min(440px, 92vw);
+      background: var(--panel);
+      border-left: 1px solid var(--line);
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform .32s cubic-bezier(.22, 1, .36, 1);
+      display: flex;
+      flex-direction: column;
+      font-size: 11px;
+    }
+
+    #settingsPanel.open {
+      transform: translateX(0);
+    }
+
+    .panel-head {
+      padding: max(20px, env(safe-area-inset-top)) 24px 16px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .panel-head .title {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--fg);
+    }
+
+    .panel-head .title small {
+      display: block;
+      color: var(--fg-faint);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      margin-top: 5px;
+      font-weight: 400;
+    }
+
+    .panel-head .close {
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--fg-dim);
+      font-family: inherit;
+      font-size: 9.5px;
+      padding: 6px 12px;
+      letter-spacing: 0.22em;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .18s, color .18s;
+    }
+
+    .panel-head .close:hover {
+      border-color: var(--fg);
+      color: var(--fg);
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+      padding-bottom: 40px;
+    }
+
+    .panel-body::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .panel-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .section {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head {
+      padding: 14px 24px;
+      color: var(--fg-dim);
+      font-size: 9.5px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: color .18s;
+    }
+
+    .section-head:hover {
+      color: var(--fg);
+    }
+
+    .section-head .chev {
+      color: var(--fg-faint);
+      font-size: 8px;
+      line-height: 1;
+      transition: transform .2s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .section.collapsed .chev {
+      transform: rotate(-90deg);
+    }
+
+    .section.collapsed .section-content {
+      display: none;
+    }
+
+    .section-content {
+      padding: 2px 24px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      color: var(--fg-dim);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .field .label .value {
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      font-size: 10px;
+    }
+
+    .field input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right,
+          var(--accent) var(--fill, 0%),
+          rgba(255, 255, 255, 0.10) var(--fill, 0%));
+      outline: none;
+      cursor: pointer;
+    }
+
+    .field input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 11px;
+      height: 11px;
+      background: #fff;
+      border-radius: 0;
+      cursor: pointer;
+      border: none;
+    }
+
+    .field input[type="range"]::-moz-range-thumb {
+      width: 11px;
+      height: 11px;
+      background: #fff;
+      border-radius: 0;
+      cursor: pointer;
+      border: none;
+    }
+
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+      cursor: pointer;
+      color: var(--fg-dim);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    .toggle:hover {
+      color: var(--fg);
+    }
+
+    .toggle .switch {
+      width: 24px;
+      height: 12px;
+      border: 1px solid var(--line-strong);
+      position: relative;
+      transition: border-color .2s;
+      flex-shrink: 0;
+    }
+
+    .toggle .switch::after {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 8px;
+      height: 8px;
+      background: var(--fg-faint);
+      transition: left .2s cubic-bezier(.22, 1, .36, 1), background .2s;
+    }
+
+    .toggle.on {
+      color: var(--fg);
+    }
+
+    .toggle.on .switch {
+      border-color: var(--fg);
+    }
+
+    .toggle.on .switch::after {
+      left: 13px;
+      background: var(--fg);
+    }
+
+    .select {
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      padding: 8px 11px;
+      width: 100%;
+      cursor: pointer;
+      text-transform: uppercase;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--fg-faint) 50%),
+        linear-gradient(135deg, var(--fg-faint) 50%, transparent 50%);
+      background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      transition: border-color .15s;
+    }
+
+    .select:hover {
+      border-color: var(--fg-dim);
+    }
+
+    .select:focus {
+      outline: none;
+      border-color: var(--fg);
+    }
+
+    .select option {
+      background: #0a0c0f;
+      color: #fff;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-row button {
+      flex: 1;
+      min-width: 90px;
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--fg-dim);
+      font-family: inherit;
+      font-size: 9.5px;
+      letter-spacing: 0.2em;
+      padding: 9px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .15s, color .15s;
+    }
+
+    .btn-row button:hover {
+      border-color: var(--fg);
+      color: var(--fg);
+    }
+
+    .color-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--line-strong);
+      cursor: pointer;
+      transition: border-color .12s;
+    }
+
+    .color-swatch:hover {
+      border-color: var(--fg-dim);
+    }
+
+    .color-swatch.active {
+      border-color: var(--fg);
+      box-shadow: 0 0 0 1px var(--fg);
+    }
+
+    .hint {
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: var(--fg-faint);
+      line-height: 1.75;
+      text-transform: uppercase;
+    }
+
+    /* ---------- BOOT ---------- */
+    #boot {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 32px;
+      text-align: left;
+      transition: opacity .5s ease;
+    }
+
+    #boot.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #boot .b-mark {
+      font-size: 11px;
+      letter-spacing: 0.5em;
+      color: var(--fg);
+      font-weight: 500;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    #boot .b-sub {
+      font-size: 9px;
+      letter-spacing: 0.32em;
+      color: var(--fg-faint);
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: -14px;
+    }
+
+    #boot .b-log {
+      width: min(360px, 90vw);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--fg-dim);
+      line-height: 2.1;
+      text-transform: uppercase;
+      min-height: 88px;
+      border-left: 1px solid var(--line);
+      padding-left: 18px;
+    }
+
+    #boot .b-log .ln {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    #boot .b-log .ln .ok {
+      color: var(--ok);
+    }
+
+    #boot.error .b-sub {
+      color: var(--err);
+    }
+
+    @media (max-width: 560px) {
+      #telemetry {
+        left: 14px;
+        min-width: 140px;
+      }
+
+      #topbar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      #bottombar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .brand-sub {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="stage">
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="overlay"></canvas>
+
+    <header id="topbar">
+      <div class="brand">
+        <span class="brand-name">Object Recognition</span>
+        <span class="brand-sub">Pipeline v3.0</span>
+      </div>
+      <div class="topright">
+        <span id="status" class="status">
+          <span class="status-mark"></span>
+        <span id="statusText">STANDBY</span>
+        </span>
+        <span id="clock">--:--:--</span>
+        <button class="icon-btn" id="settingsToggle" type="button" title="Configuration">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+          </svg>
+          Config
+        </button>
+      </div>
+    </header>
+
+    <aside id="telemetry">
+      <div class="t-section">
+        <div class="t-section-label">Performance</div>
+        <div class="t-row"><span class="k">FPS</span><span class="v dim" id="tFps">—</span></div>
+        <div class="t-row"><span class="k">Latency</span><span class="v dim" id="tLat">—</span></div>
+        <div class="t-row"><span class="k">Resolution</span><span class="v dim" id="tRes">—</span></div>
+      </div>
+      <div class="t-section">
+        <div class="t-section-label">Detections</div>
+        <div class="t-row"><span class="k">Tracks</span><span class="v dim" id="tTracks">0</span></div>
+        <div class="t-row"><span class="k">Confirmed</span><span class="v dim" id="tConfirmed">0</span></div>
+        <div class="t-row"><span class="k">Quality</span><span class="v dim" id="tConf">—</span></div>
+        <div class="t-bar"><i id="tConfBar"></i></div>
+      </div>
+      <div class="t-section">
+        <div class="t-section-label">Session</div>
+        <div class="t-row"><span class="k">Uptime</span><span class="v dim" id="tUptime">00:00:00</span></div>
+        <div class="t-row"><span class="k">Cumulative</span><span class="v dim" id="tCumulative">0</span></div>
+      </div>
+    </aside>
+
+    <footer id="bottombar">
+      <button id="activateBtn" type="button">Activate</button>
+      <span class="spacer"></span>
+      <span id="hintText">Press A to toggle · S for config</span>
+    </footer>
+
+    <div id="toast"></div>
+    <div id="panelOverlay"></div>
+
+    <aside id="settingsPanel" aria-hidden="true">
+      <div class="panel-head">
+        <div class="title">
+          Configuration
+          <small>Object Recognition Pipeline</small>
+        </div>
+        <button class="close" id="settingsClose" type="button">Close</button>
+      </div>
+      <div class="panel-body">
+
+        <div class="section" data-section="profiles">
+          <div class="section-head"><span>Profiles</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <select class="select" id="presetSelect">
+                <option value="">— Select profile —</option>
+                <option value="default">Balanced</option>
+                <option value="precision">Precision</option>
+                <option value="wide">Wide Range</option>
+                <option value="realtime">Low Latency</option>
+                <option value="stealth">Stealth</option>
+                <option value="forensic">Forensic Detail</option>
+              </select>
+            </div>
+            <div class="hint">Profiles overwrite all pipeline parameters. Reset restores defaults.</div>
+          </div>
+        </div>
+
+        <div class="section" data-section="sensor">
+          <div class="section-head"><span>Sensor</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Facing</span></div>
+              <select class="select" data-key="facingMode">
+                <option value="environment">Rear</option>
+                <option value="user">Front</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Resolution</span></div>
+              <select class="select" data-key="resolution">
+                <option value="640x480">640 × 480</option>
+                <option value="1280x720">1280 × 720</option>
+                <option value="1920x1080">1920 × 1080</option>
+              </select>
+            </div>
+            <label class="toggle" data-key="mirrorView"><span>Mirror View</span><span class="switch"></span></label>
+            <label class="toggle" data-key="pauseOnHide"><span>Pause When Hidden</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <div class="section" data-section="preproc">
+          <div class="section-head"><span>Preprocessing</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Processing Width</span><span class="value" data-value="procWidth">320</span>
+              </div>
+              <input type="range" min="160" max="640" step="16" data-key="procWidth">
+            </div>
+            <div class="field">
+              <div class="label"><span>Blur Passes</span><span class="value" data-value="blurPasses">2</span></div>
+              <input type="range" min="0" max="4" step="1" data-key="blurPasses">
+            </div>
+            <div class="field">
+              <div class="label"><span>Brightness</span><span class="value" data-value="videoBrightness">0.95</span>
+              </div>
+              <input type="range" min="0.3" max="1.6" step="0.02" data-key="videoBrightness">
+            </div>
+            <div class="field">
+              <div class="label"><span>Contrast</span><span class="value" data-value="videoContrast">1.06</span></div>
+              <input type="range" min="0.5" max="2" step="0.02" data-key="videoContrast">
+            </div>
+            <div class="field">
+              <div class="label"><span>Saturation</span><span class="value" data-value="videoSaturate">0.60</span></div>
+              <input type="range" min="0" max="2" step="0.05" data-key="videoSaturate">
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="threshold">
+          <div class="section-head"><span>Edge Threshold</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Local Window</span><span class="value" data-value="localRadius">0.035</span>
+              </div>
+              <input type="range" min="0.010" max="0.100" step="0.002" data-key="localRadius">
+            </div>
+            <div class="field">
+              <div class="label"><span>Sensitivity</span><span class="value" data-value="threshK">0.60</span></div>
+              <input type="range" min="0.20" max="1.60" step="0.02" data-key="threshK">
+            </div>
+            <div class="field">
+              <div class="label"><span>Min Delta</span><span class="value" data-value="threshMinDelta">8</span></div>
+              <input type="range" min="2" max="40" step="1" data-key="threshMinDelta">
+            </div>
+            <div class="field">
+              <div class="label"><span>Polarity</span></div>
+              <select class="select" data-key="polarity">
+                <option value="auto">Auto</option>
+                <option value="dark">Dark Objects</option>
+                <option value="bright">Bright Objects</option>
+                <option value="union">Union</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Cleanup Passes</span><span class="value" data-value="morphPasses">2</span></div>
+              <input type="range" min="0" max="3" step="1" data-key="morphPasses">
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="shape">
+          <div class="section-head"><span>Shape Filter</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Min Area ×10⁻⁴</span><span class="value" data-value="minAreaFrac">5.5</span>
+              </div>
+              <input type="range" min="0.5" max="40" step="0.5" data-key="minAreaFrac">
+            </div>
+            <div class="field">
+              <div class="label"><span>Max Area %</span><span class="value" data-value="maxAreaPct">10.0</span></div>
+              <input type="range" min="1" max="40" step="0.5" data-key="maxAreaPct">
+            </div>
+            <div class="field">
+              <div class="label"><span>Min Length</span><span class="value" data-value="minLenFrac">0.060</span></div>
+              <input type="range" min="0.020" max="0.30" step="0.005" data-key="minLenFrac">
+            </div>
+            <div class="field">
+              <div class="label"><span>Max Width</span><span class="value" data-value="maxWidFrac">0.055</span></div>
+              <input type="range" min="0.020" max="0.20" step="0.005" data-key="maxWidFrac">
+            </div>
+            <div class="field">
+              <div class="label"><span>Min Elongation</span><span class="value" data-value="minElong">2.2</span></div>
+              <input type="range" min="1.2" max="8" step="0.1" data-key="minElong">
+            </div>
+            <div class="field">
+              <div class="label"><span>Min Fill Ratio</span><span class="value" data-value="minFill">0.45</span></div>
+              <input type="range" min="0.10" max="0.95" step="0.02" data-key="minFill">
+            </div>
+            <div class="field">
+              <div class="label"><span>Max Detections</span><span class="value" data-value="maxDets">6</span></div>
+              <input type="range" min="1" max="16" step="1" data-key="maxDets">
+            </div>
+            <div class="field">
+              <div class="label"><span>NMS Distance</span><span class="value" data-value="nmsDist">0.40</span></div>
+              <input type="range" min="0.05" max="1" step="0.05" data-key="nmsDist">
+            </div>
+            <div class="field">
+              <div class="label"><span>NMS Angle</span><span class="value" data-value="nmsAngle">0.90</span></div>
+              <input type="range" min="0.50" max="0.99" step="0.01" data-key="nmsAngle">
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="tracking">
+          <div class="section-head"><span>Tracking</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Detection Rate (Hz)</span><span class="value" data-value="detectHz">24</span>
+              </div>
+              <input type="range" min="6" max="60" step="1" data-key="detectHz">
+            </div>
+            <div class="field">
+              <div class="label"><span>Association Gate</span><span class="value" data-value="gateFrac">0.160</span>
+              </div>
+              <input type="range" min="0.03" max="0.40" step="0.005" data-key="gateFrac">
+            </div>
+            <div class="field">
+              <div class="label"><span>Angle Gate</span><span class="value" data-value="angleMinDot">0.35</span></div>
+              <input type="range" min="-0.30" max="0.98" step="0.01" data-key="angleMinDot">
+            </div>
+            <div class="field">
+              <div class="label"><span>Confirmation Hits</span><span class="value" data-value="confirmHits">3</span>
+              </div>
+              <input type="range" min="1" max="12" step="1" data-key="confirmHits">
+            </div>
+            <div class="field">
+              <div class="label"><span>Tentative Miss Limit</span><span class="value" data-value="tentMiss">3</span>
+              </div>
+              <input type="range" min="0" max="12" step="1" data-key="tentMiss">
+            </div>
+            <div class="field">
+              <div class="label"><span>Confirmed Miss Limit</span><span class="value" data-value="confMiss">8</span>
+              </div>
+              <input type="range" min="1" max="30" step="1" data-key="confMiss">
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="smoothing">
+          <div class="section-head"><span>Smoothing</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Position Cutoff</span><span class="value" data-value="posFcmin">1.10</span></div>
+              <input type="range" min="0.20" max="4.00" step="0.05" data-key="posFcmin">
+            </div>
+            <div class="field">
+              <div class="label"><span>Position Reactivity</span><span class="value" data-value="posBeta">0.020</span>
+              </div>
+              <input type="range" min="0" max="0.20" step="0.002" data-key="posBeta">
+            </div>
+            <div class="field">
+              <div class="label"><span>Angle Cutoff</span><span class="value" data-value="angFcmin">0.80</span></div>
+              <input type="range" min="0.10" max="4.00" step="0.05" data-key="angFcmin">
+            </div>
+            <div class="field">
+              <div class="label"><span>Angle Reactivity</span><span class="value" data-value="angBeta">0.012</span>
+              </div>
+              <input type="range" min="0" max="0.20" step="0.002" data-key="angBeta">
+            </div>
+            <div class="field">
+              <div class="label"><span>Size Cutoff</span><span class="value" data-value="sizeFcmin">0.60</span></div>
+              <input type="range" min="0.10" max="3.00" step="0.05" data-key="sizeFcmin">
+            </div>
+            <div class="field">
+              <div class="label"><span>Size Reactivity</span><span class="value" data-value="sizeBeta">0.008</span>
+              </div>
+              <input type="range" min="0" max="0.20" step="0.002" data-key="sizeBeta">
+            </div>
+            <div class="hint">Lower cutoff = smoother, higher latency. Higher reactivity = quicker tracking response.
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="render">
+          <div class="section-head"><span>Rendering</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Accent</span><span class="value" data-value="accentName">NEUTRAL</span></div>
+              <div class="color-row" id="accentSwatches">
+                <div class="color-swatch" data-accent="#f2f2f2" style="background:#f2f2f2"></div>
+                <div class="color-swatch" data-accent="#7dffd6" style="background:#7dffd6"></div>
+                <div class="color-swatch" data-accent="#5fc9ff" style="background:#5fc9ff"></div>
+                <div class="color-swatch" data-accent="#ffd166" style="background:#ffd166"></div>
+                <div class="color-swatch" data-accent="#ff5c5c" style="background:#ff5c5c"></div>
+                <div class="color-swatch" data-accent="#b28dff" style="background:#b28dff"></div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="label"><span>Line Width</span><span class="value" data-value="lineWidth">1.4</span></div>
+              <input type="range" min="0.4" max="4" step="0.1" data-key="lineWidth">
+            </div>
+            <div class="field">
+              <div class="label"><span>Corner Tick Length</span><span class="value" data-value="cornerTick">14</span>
+              </div>
+              <input type="range" min="0" max="40" step="1" data-key="cornerTick">
+            </div>
+            <label class="toggle" data-key="showIds"><span>Track IDs</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showAngle"><span>Angle Readout</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showLength"><span>Length Readout</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showQuality"><span>Quality Bar</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showCenter"><span>Center Marker</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <div class="section" data-section="interface">
+          <div class="section-head"><span>Interface</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="showTelemetry"><span>Telemetry Panel</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showClock"><span>Clock</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showFps"><span>FPS Readout</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showUptime"><span>Session Uptime</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showHints"><span>Keyboard Hints</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <div class="section" data-section="system">
+          <div class="section-head"><span>System</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="btn-row">
+              <button id="resetDefaults" type="button">Reset</button>
+              <button id="exportConfig" type="button">Export</button>
+            </div>
+            <div class="btn-row">
+              <button id="importConfig" type="button">Import</button>
+              <button id="toggleFullscreen" type="button">Fullscreen</button>
+            </div>
+            <div class="btn-row">
+              <button id="saveFrame" type="button">Save Frame</button>
+            </div>
+            <div class="hint">Shortcuts — A activate · S config · H telemetry · F fullscreen · Esc close</div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <div id="boot">
+      <div class="b-mark">Object Recognition System</div>
+      <div class="b-sub" id="bootSub">Initializing</div>
+      <div class="b-log" id="bootLog"></div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      /* ==================================================================
+         ELEMENTS
+         ================================================================== */
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('overlay');
+      const ctx = canvas.getContext('2d');
+      const proc = document.createElement('canvas');
+      const pctx = proc.getContext('2d', { willReadFrequently: true });
+
+      const bootEl = document.getElementById('boot');
+      const bootSub = document.getElementById('bootSub');
+      const bootLog = document.getElementById('bootLog');
+
+      const activateBtn = document.getElementById('activateBtn');
+      const statusEl = document.getElementById('status');
+      const statusText = document.getElementById('statusText');
+      const clockEl = document.getElementById('clock');
+      const toastEl = document.getElementById('toast');
+      const hintText = document.getElementById('hintText');
+
+      const tFps = document.getElementById('tFps');
+      const tLat = document.getElementById('tLat');
+      const tRes = document.getElementById('tRes');
+      const tTracks = document.getElementById('tTracks');
+      const tConfirmed = document.getElementById('tConfirmed');
+      const tConf = document.getElementById('tConf');
+      const tConfBar = document.getElementById('tConfBar');
+      const tUptime = document.getElementById('tUptime');
+      const tCumulative = document.getElementById('tCumulative');
+      const telemetryEl = document.getElementById('telemetry');
+      const bottombarEl = document.getElementById('bottombar');
+
+      const settingsPanel = document.getElementById('settingsPanel');
+      const settingsToggle = document.getElementById('settingsToggle');
+      const settingsClose = document.getElementById('settingsClose');
+      const panelOverlay = document.getElementById('panelOverlay');
+      const presetSelect = document.getElementById('presetSelect');
+
+      window.addEventListener('error', e => {
+        console.error('[ORS]', e.message, e.error && e.error.stack);
+      });
+
+      /* ==================================================================
+         CONFIG
+         ================================================================== */
+      const DEFAULTS = {
+        facingMode: 'environment',
+        resolution: '1280x720',
+        mirrorView: false,
+        pauseOnHide: true,
+
+        procWidth: 320,
+        blurPasses: 2,
+        videoBrightness: 0.95,
+        videoContrast: 1.06,
+        videoSaturate: 0.60,
+
+        localRadius: 0.035,
+        threshK: 0.60,
+        threshMinDelta: 8,
+        polarity: 'auto',
+        morphPasses: 2,
+
+        minAreaFrac: 5.5,
+        maxAreaPct: 10.0,
+        minLenFrac: 0.060,
+        maxWidFrac: 0.055,
+        minElong: 2.2,
+        minFill: 0.45,
+        maxDets: 6,
+        nmsDist: 0.40,
+        nmsAngle: 0.90,
+
+        detectHz: 24,
+        gateFrac: 0.16,
+        angleMinDot: 0.35,
+        confirmHits: 3,
+        tentMiss: 3,
+        confMiss: 8,
+
+        posFcmin: 1.10,
+        posBeta: 0.020,
+        angFcmin: 0.80,
+        angBeta: 0.012,
+        sizeFcmin: 0.60,
+        sizeBeta: 0.008,
+
+        accent: '#f2f2f2',
+        accentName: 'NEUTRAL',
+        lineWidth: 1.4,
+        cornerTick: 14,
+        showIds: true,
+        showAngle: true,
+        showLength: false,
+        showQuality: true,
+        showCenter: false,
+
+        showTelemetry: true,
+        showClock: true,
+        showFps: true,
+        showUptime: true,
+        showHints: true,
+      };
+
+      const STORAGE_KEY = 'ors.config.v3';
+      const config = { ...DEFAULTS };
+
+      function loadConfig() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) Object.assign(config, DEFAULTS, JSON.parse(raw));
+        } catch (e) { /* ignore */ }
+      }
+      function saveConfig() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch (e) { /* ignore */ }
+      }
+
+      /* ==================================================================
+         PRESETS
+         ================================================================== */
+      const PRESETS = {
+        default: {},
+        precision: {
+          procWidth: 384, blurPasses: 2,
+          localRadius: 0.030, threshK: 0.70, threshMinDelta: 10,
+          minAreaFrac: 4.0, minElong: 2.8, minFill: 0.55,
+          confirmHits: 4, tentMiss: 3, confMiss: 10,
+          posFcmin: 0.9, posBeta: 0.015,
+          angFcmin: 0.7, angBeta: 0.010,
+          detectHz: 22,
+        },
+        wide: {
+          procWidth: 384, blurPasses: 1,
+          localRadius: 0.045, threshK: 0.45, threshMinDelta: 6,
+          minAreaFrac: 2.0, minLenFrac: 0.040, maxWidFrac: 0.075,
+          minElong: 1.8, minFill: 0.35, maxDets: 10,
+          confirmHits: 3, tentMiss: 4, confMiss: 10,
+          posFcmin: 1.3, posBeta: 0.028,
+        },
+        realtime: {
+          procWidth: 224, blurPasses: 1,
+          detectHz: 34,
+          confirmHits: 2, tentMiss: 2, confMiss: 6,
+          posFcmin: 1.6, posBeta: 0.030,
+          angFcmin: 1.1, angBeta: 0.018,
+          showQuality: false, showAngle: false,
+        },
+        stealth: {
+          procWidth: 288, detectHz: 20,
+          showTelemetry: false, showClock: false,
+          showIds: false, showAngle: false, showQuality: false,
+          showHints: false, showCenter: false,
+        },
+        forensic: {
+          procWidth: 512, blurPasses: 3,
+          localRadius: 0.028, threshK: 0.75, threshMinDelta: 11,
+          morphPasses: 3,
+          minAreaFrac: 3.0, minElong: 3.0, minFill: 0.60,
+          confirmHits: 5, tentMiss: 2, confMiss: 14,
+          posFcmin: 0.7, posBeta: 0.010,
+          angFcmin: 0.5, angBeta: 0.008,
+          sizeFcmin: 0.4, sizeBeta: 0.005,
+          showAngle: true, showLength: true, showQuality: true,
+          detectHz: 18,
+        },
+      };
+
+      /* ==================================================================
+         UTIL
+         ================================================================== */
+      const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+
+      function hexToRgb(hex) {
+        const h = (hex || '#ffffff').replace('#', '');
+        const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+        return {
+          r: parseInt(full.substring(0, 2), 16) || 0,
+          g: parseInt(full.substring(2, 4), 16) || 0,
+          b: parseInt(full.substring(4, 6), 16) || 0,
+        };
+      }
+
+      const ACCENT = { r: 242, g: 242, b: 242 };
+
+      function applyAccent() {
+        const c = hexToRgb(config.accent);
+        ACCENT.r = c.r; ACCENT.g = c.g; ACCENT.b = c.b;
+        document.documentElement.style.setProperty('--accent', config.accent);
+        document.documentElement.style.setProperty('--accent-rgb', `${c.r},${c.g},${c.b}`);
+      }
+
+      let toastTimer = 0;
+      function showToast(text, ms) {
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 1200);
+      }
+
+      function tickClock() {
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+      setInterval(tickClock, 1000); tickClock();
+
+      /* ==================================================================
+         BUFFERS
+         ================================================================== */
+      let PW = 0, PH = 0, N = 0;
+      let gray, blurA, blurB;
+      let maskA, maskB, maskC;
+      let labels, stack, comp;
+      let intSum, intSq;
+
+      function allocBuffers(w, h) {
+        PW = w; PH = h; N = w * h;
+        proc.width = w; proc.height = h;
+        gray = new Float32Array(N);
+        blurA = new Float32Array(N);
+        blurB = new Float32Array(N);
+        maskA = new Uint8Array(N);
+        maskB = new Uint8Array(N);
+        maskC = new Uint8Array(N);
+        labels = new Int32Array(N);
+        stack = new Int32Array(N);
+        comp = new Int32Array(N);
+        const iw = (w + 1) * (h + 1);
+        intSum = new Float64Array(iw);
+        intSq = new Float64Array(iw);
+      }
+
+      function setupProcessingSize() {
+        const vw = video.videoWidth | 0;
+        const vh = video.videoHeight | 0;
+        if (!vw || !vh) return false;
+        let h = Math.round(config.procWidth * vh / vw);
+        h = Math.max(120, Math.min(480, h));
+        if (h & 1) h++;
+        if (PW === config.procWidth && PH === h && gray) return true;
+        allocBuffers(config.procWidth, h);
+        return true;
+      }
+
+      /* ==================================================================
+         COVER MAPPING
+         ================================================================== */
+      let viewW = window.innerWidth;
+      let viewH = window.innerHeight;
+      const cover = { drawW: 0, drawH: 0, ox: 0, oy: 0, valid: false };
+
+      function updateCover() {
+        const vw = video.videoWidth | 0;
+        const vh = video.videoHeight | 0;
+        if (!vw || !vh || !viewW || !viewH) { cover.valid = false; return; }
+        const cA = viewW / viewH;
+        const vA = vw / vh;
+        let dW, dH;
+        if (vA > cA) { dH = viewH; dW = viewH * vA; }
+        else { dW = viewW; dH = viewW / vA; }
+        cover.drawW = dW;
+        cover.drawH = dH;
+        cover.ox = (viewW - dW) / 2;
+        cover.oy = (viewH - dH) / 2;
+        cover.valid = true;
+      }
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        viewW = window.innerWidth;
+        viewH = window.innerHeight;
+        canvas.width = Math.round(viewW * dpr);
+        canvas.height = Math.round(viewH * dpr);
+        canvas.style.width = viewW + 'px';
+        canvas.style.height = viewH + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        updateCover();
+      }
+      window.addEventListener('resize', resize);
+      window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+      video.addEventListener('loadedmetadata', () => { setupProcessingSize(); updateCover(); });
+      video.addEventListener('loadeddata', updateCover);
+      resize();
+
+      /* ==================================================================
+         IMAGE OPS
+         ================================================================== */
+      function boxBlur3(src, dst, tmp, w, h) {
+        for (let y = 0; y < h; y++) {
+          const o = y * w;
+          for (let x = 0; x < w; x++) {
+            const x0 = x > 0 ? x - 1 : 0;
+            const x1 = x < w - 1 ? x + 1 : w - 1;
+            tmp[o + x] = (src[o + x0] + src[o + x] + src[o + x1]) * (1 / 3);
+          }
+        }
+        for (let x = 0; x < w; x++) {
+          for (let y = 0; y < h; y++) {
+            const y0 = y > 0 ? y - 1 : 0;
+            const y1 = y < h - 1 ? y + 1 : h - 1;
+            dst[y * w + x] = (tmp[y0 * w + x] + tmp[y * w + x] + tmp[y1 * w + x]) * (1 / 3);
+          }
+        }
+      }
+
+      function buildIntegral(src, w, h) {
+        const iw = w + 1;
+        for (let y = 0; y < h; y++) {
+          const rowOff = (y + 1) * iw;
+          const prevOff = y * iw;
+          const srcOff = y * w;
+          let rs = 0, rsq = 0;
+          for (let x = 0; x < w; x++) {
+            const v = src[srcOff + x];
+            rs += v;
+            rsq += v * v;
+            intSum[rowOff + x + 1] = intSum[prevOff + x + 1] + rs;
+            intSq[rowOff + x + 1] = intSq[prevOff + x + 1] + rsq;
+          }
+        }
+      }
+
+      function adaptiveThreshold(src, w, h, dst, radius, k, minDelta, dark) {
+        const iw = w + 1;
+        for (let y = 0; y < h; y++) {
+          const y0 = y - radius < 0 ? 0 : y - radius;
+          const y1 = y + radius >= h ? h - 1 : y + radius;
+          const r0 = y0 * iw, r1 = (y1 + 1) * iw;
+          const off = y * w;
+          for (let x = 0; x < w; x++) {
+            const x0 = x - radius < 0 ? 0 : x - radius;
+            const x1 = x + radius >= w ? w - 1 : x + radius;
+            const cL = x0, cR = x1 + 1;
+            const area = (x1 - x0 + 1) * (y1 - y0 + 1);
+            const s = intSum[r1 + cR] - intSum[r0 + cR] - intSum[r1 + cL] + intSum[r0 + cL];
+            const sq = intSq[r1 + cR] - intSq[r0 + cR] - intSq[r1 + cL] + intSq[r0 + cL];
+            const mean = s / area;
+            let varr = sq / area - mean * mean;
+            if (varr < 0) varr = 0;
+            const std = Math.sqrt(varr);
+            const kStd = k * std;
+            const delta = kStd > minDelta ? kStd : minDelta;
+            const v = src[off + x];
+            dst[off + x] = dark
+              ? (v < mean - delta ? 1 : 0)
+              : (v > mean + delta ? 1 : 0);
+          }
+        }
+      }
+
+      function majority3(src, dst, w, h) {
+        for (let y = 0; y < h; y++) {
+          const y0 = y > 0 ? y - 1 : 0;
+          const y1 = y < h - 1 ? y + 1 : h - 1;
+          const off = y * w;
+          for (let x = 0; x < w; x++) {
+            const x0 = x > 0 ? x - 1 : 0;
+            const x1 = x < w - 1 ? x + 1 : w - 1;
+            let c = 0;
+            for (let yy = y0; yy <= y1; yy++) {
+              const o = yy * w;
+              for (let xx = x0; xx <= x1; xx++) c += src[o + xx];
+            }
+            dst[off + x] = c >= 5 ? 1 : 0;
+          }
+        }
+      }
+
+      /* ==================================================================
+         DETECTION
+         ================================================================== */
+      const detections = [];
+
+      function detect() {
+        detections.length = 0;
+        if (!gray || !N) return detections;
+        if (video.readyState < 2 || !video.videoWidth) return detections;
+
+        const w = PW, h = PH, n = N;
+
+        pctx.drawImage(video, 0, 0, w, h);
+        const img = pctx.getImageData(0, 0, w, h).data;
+        for (let i = 0, j = 0; i < n; i++, j += 4) {
+          gray[i] = img[j] * 0.299 + img[j + 1] * 0.587 + img[j + 2] * 0.114;
+        }
+
+        const bp = config.blurPasses | 0;
+        if (bp > 0) {
+          let src = gray, dst = blurA, tmp = blurB;
+          for (let i = 0; i < bp; i++) {
+            boxBlur3(src, dst, tmp, w, h);
+            src = dst;
+            if (dst === blurA) dst = blurB; else dst = blurA;
+          }
+          if (src !== blurA) blurA.set(src);
+        } else {
+          blurA.set(gray);
+        }
+
+        const R = Math.max(4, Math.round(config.procWidth * config.localRadius));
+        buildIntegral(blurA, w, h);
+
+        let nDark = 0, nBright = 0;
+        adaptiveThreshold(blurA, w, h, maskB, R, config.threshK, config.threshMinDelta, true);
+        for (let i = 0; i < n; i++) nDark += maskB[i];
+        adaptiveThreshold(blurA, w, h, maskC, R, config.threshK, config.threshMinDelta, false);
+        for (let i = 0; i < n; i++) nBright += maskC[i];
+
+        switch (config.polarity) {
+          case 'dark': maskA.set(maskB); break;
+          case 'bright': maskA.set(maskC); break;
+          case 'union':
+            for (let i = 0; i < n; i++) maskA[i] = maskB[i] | maskC[i];
+            break;
+          default:
+            if (nBright < nDark * 0.6) maskA.set(maskC);
+            else maskA.set(maskB);
+        }
+
+        const mp = config.morphPasses | 0;
+        for (let i = 0; i < mp; i++) {
+          if (i & 1) majority3(maskB, maskA, w, h);
+          else majority3(maskA, maskB, w, h);
+        }
+        const finalMask = (mp & 1) ? maskB : maskA;
+
+        analyze(finalMask, w, h);
+        return detections;
+      }
+
+      function analyze(mask, w, h) {
+        labels.fill(0);
+
+        const totalPx = N;
+        const minArea = Math.max(18, totalPx * config.minAreaFrac * 1e-4);
+        const maxArea = totalPx * config.maxAreaPct * 0.01;
+        const minLen = config.procWidth * config.minLenFrac;
+        const maxWid = config.procWidth * config.maxWidFrac;
+        const minElong = config.minElong;
+        const minFill = config.minFill;
+
+        let lbl = 0;
+
+        for (let s = 0; s < N; s++) {
+          if (!mask[s] || labels[s]) continue;
+          lbl++;
+
+          let sp = 0;
+          stack[sp++] = s;
+          labels[s] = lbl;
+
+          let cnt = 0;
+          let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+
+          while (sp > 0) {
+            const p = stack[--sp];
+            comp[cnt++] = p;
+            const px = p % w;
+            const py = (p / w) | 0;
+            sx += px; sy += py;
+            sxx += px * px; sxy += px * py; syy += py * py;
+
+            for (let dy = -1; dy <= 1; dy++) {
+              const yy = py + dy;
+              if (yy < 0 || yy >= h) continue;
+              const base = yy * w;
+              for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const xx = px + dx;
+                if (xx < 0 || xx >= w) continue;
+                const q = base + xx;
+                if (mask[q] && !labels[q]) {
+                  labels[q] = lbl;
+                  stack[sp++] = q;
+                }
+              }
+            }
+          }
+
+          if (cnt < minArea || cnt > maxArea) continue;
+
+          const mx = sx / cnt;
+          const my = sy / cnt;
+          const vxx = sxx / cnt - mx * mx;
+          const vxy = sxy / cnt - mx * my;
+          const vyy = syy / cnt - my * my;
+
+          const tr = vxx + vyy;
+          const dt = vxx * vyy - vxy * vxy;
+          const disc = Math.sqrt(Math.max(0, tr * tr * 0.25 - dt));
+          const l1 = tr * 0.5 + disc;
+          const l2 = tr * 0.5 - disc;
+
+          if (l2 < 0.25) continue;
+          if (l1 / l2 < minElong * minElong * 0.7) continue;
+
+          let ax, ay;
+          if (Math.abs(vxy) > 1e-6) {
+            ax = l1 - vyy;
+            ay = vxy;
+          } else if (vxx >= vyy) {
+            ax = 1; ay = 0;
+          } else {
+            ax = 0; ay = 1;
+          }
+          const al = Math.sqrt(ax * ax + ay * ay) || 1;
+          ax /= al; ay /= al;
+
+          const bx = -ay, by = ax;
+
+          let minA = Infinity, maxA = -Infinity;
+          let minB = Infinity, maxB = -Infinity;
+
+          for (let k = 0; k < cnt; k++) {
+            const p = comp[k];
+            const px = p % w;
+            const py = (p / w) | 0;
+            const dx = px - mx;
+            const dy = py - my;
+            const a = dx * ax + dy * ay;
+            const b = dx * bx + dy * by;
+            if (a < minA) minA = a;
+            if (a > maxA) maxA = a;
+            if (b < minB) minB = b;
+            if (b > maxB) maxB = b;
+          }
+
+          const len = maxA - minA + 1;
+          const wid = maxB - minB + 1;
+
+          if (len < minLen) continue;
+          if (wid > maxWid) continue;
+          if (len / wid < minElong) continue;
+
+          const fill = cnt / (len * wid);
+          if (fill < minFill) continue;
+
+          const cA = (minA + maxA) * 0.5;
+          const cB = (minB + maxB) * 0.5;
+          const cx = mx + ax * cA + bx * cB;
+          const cy = my + ay * cA + by * cB;
+
+          const angle = Math.atan2(ay, ax);
+          const score = fill * Math.min(len / wid, 8) * Math.sqrt(cnt);
+
+          detections.push({ cx, cy, angle, len, wid, fill, score });
+        }
+
+        if (detections.length > 1) {
+          detections.sort((a, b) => b.score - a.score);
+          const keep = [];
+          const nmsD = config.nmsDist;
+          const nmsA = config.nmsAngle;
+          for (let i = 0; i < detections.length; i++) {
+            const d = detections[i];
+            let dup = false;
+            for (let j = 0; j < keep.length; j++) {
+              const k = keep[j];
+              const dx = d.cx - k.cx;
+              const dy = d.cy - k.cy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist > (d.len + k.len) * nmsD * 0.5) continue;
+              let dot = Math.cos(d.angle) * Math.cos(k.angle) + Math.sin(d.angle) * Math.sin(k.angle);
+              if (dot < 0) dot = -dot;
+              if (dot > nmsA) { dup = true; break; }
+            }
+            if (!dup) keep.push(d);
+          }
+          detections.length = 0;
+          for (let i = 0; i < keep.length && i < config.maxDets; i++) detections.push(keep[i]);
+        }
+      }
+
+      /* ==================================================================
+         ONE-EURO FILTER
+         ================================================================== */
+      class OneEuro {
+        constructor() {
+          this.fcmin = 1.0; this.beta = 0.02; this.dcut = 1.0;
+          this.y = 0; this.vel = 0; this.rawPrev = 0;
+          this.tPrev = 0; this.ready = false;
+        }
+        setParams(fcmin, beta) { this.fcmin = fcmin; this.beta = beta; }
+        _alpha(cutoff, dt) {
+          const tau = 1 / (2 * Math.PI * cutoff);
+          return 1 / (1 + tau / dt);
+        }
+        snap(x, t) {
+          this.y = x; this.vel = 0;
+          this.rawPrev = x; this.tPrev = t;
+          this.ready = true;
+          return x;
+        }
+        filter(x, t) {
+          if (!this.ready) return this.snap(x, t);
+          let dt = t - this.tPrev;
+          if (dt <= 0) dt = 1 / 60;
+          if (dt > 0.5) return this.snap(x, t);
+          this.tPrev = t;
+          const dxRaw = (x - this.rawPrev) / dt;
+          this.rawPrev = x;
+          const aD = this._alpha(this.dcut, dt);
+          this.vel += aD * (dxRaw - this.vel);
+          const cutoff = this.fcmin + this.beta * Math.abs(this.vel);
+          const a = this._alpha(cutoff, dt);
+          this.y += a * (x - this.y);
+          return this.y;
+        }
+      }
+
+      /* ==================================================================
+         TRACKER
+         ================================================================== */
+      let tracks = [];
+      let nextTrackId = 1;
+
+      class Track {
+        constructor(id, det, tNow) {
+          this.id = id;
+          this.fx = new OneEuro();
+          this.fy = new OneEuro();
+          this.fc = new OneEuro();
+          this.fs = new OneEuro();
+          this.fl = new OneEuro();
+          this.fw = new OneEuro();
+          this.fq = new OneEuro();
+
+          this.hits = 1;
+          this.miss = 0;
+          this.confirmed = false;
+          this.age = 0;
+          this.lastT = tNow;
+
+          const c2 = Math.cos(2 * det.angle);
+          const s2 = Math.sin(2 * det.angle);
+
+          this.fx.snap(det.cx, tNow);
+          this.fy.snap(det.cy, tNow);
+          this.fc.snap(c2, tNow);
+          this.fs.snap(s2, tNow);
+          this.fl.snap(det.len, tNow);
+          this.fw.snap(det.wid, tNow);
+          this.fq.snap(det.fill, tNow);
+        }
+        get x() { return this.fx.y; }
+        get y() { return this.fy.y; }
+        get len() { return this.fl.y; }
+        get wid() { return this.fw.y; }
+        get angle() { return 0.5 * Math.atan2(this.fs.y, this.fc.y); }
+        get quality() { return clamp(this.fq.y, 0, 1); }
+        get confidence() {
+          const persistence = clamp(this.hits / (config.confirmHits + 4), 0, 1);
+          return clamp(this.quality * 0.6 + persistence * 0.4, 0, 1);
+        }
+
+        predict(tNow) {
+          const dt = Math.min(0.2, (tNow - this.lastT) / 1000);
+          return {
+            x: this.x + this.fx.vel * dt,
+            y: this.y + this.fy.vel * dt,
+          };
+        }
+
+        update(det, tNow) {
+          const c2 = Math.cos(2 * det.angle);
+          const s2 = Math.sin(2 * det.angle);
+          this.fx.filter(det.cx, tNow);
+          this.fy.filter(det.cy, tNow);
+          this.fc.filter(c2, tNow);
+          this.fs.filter(s2, tNow);
+          this.fl.filter(det.len, tNow);
+          this.fw.filter(det.wid, tNow);
+          this.fq.filter(det.fill, tNow);
+          this.lastT = tNow;
+        }
+
+        setSmoothing() {
+          this.fx.setParams(config.posFcmin, config.posBeta);
+          this.fy.setParams(config.posFcmin, config.posBeta);
+          this.fc.setParams(config.angFcmin, config.angBeta);
+          this.fs.setParams(config.angFcmin, config.angBeta);
+          this.fl.setParams(config.sizeFcmin, config.sizeBeta);
+          this.fw.setParams(config.sizeFcmin, config.sizeBeta);
+          this.fq.setParams(0.6, 0.008);
+        }
+      }
+
+      function stepTracker(dets, tNow) {
+        const gate = PW * config.gateFrac;
+        const nD = dets.length;
+        const nT = tracks.length;
+
+        const pairs = [];
+        for (let i = 0; i < nD; i++) {
+          const d = dets[i];
+          const dc2 = Math.cos(2 * d.angle);
+          const ds2 = Math.sin(2 * d.angle);
+
+          for (let j = 0; j < nT; j++) {
+            const tr = tracks[j];
+            const pred = tr.predict(tNow);
+            const dx = pred.x - d.cx;
+            const dy = pred.y - d.cy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > gate) continue;
+
+            const dot = tr.fc.y * dc2 + tr.fs.y * ds2;
+            if (dot < config.angleMinDot) continue;
+
+            const cost = dist / gate + (1 - dot) * 0.4;
+            pairs.push({ i, j, cost });
+          }
+        }
+
+        pairs.sort((a, b) => a.cost - b.cost);
+
+        const usedD = new Uint8Array(nD);
+        const usedT = new Uint8Array(nT);
+
+        for (let k = 0; k < pairs.length; k++) {
+          const p = pairs[k];
+          if (usedD[p.i] || usedT[p.j]) continue;
+          usedD[p.i] = 1;
+          usedT[p.j] = 1;
+
+          const tr = tracks[p.j];
+          tr.update(dets[p.i], tNow);
+          tr.hits++;
+          tr.miss = 0;
+          if (!tr.confirmed && tr.hits >= config.confirmHits) tr.confirmed = true;
+        }
+
+        for (let j = 0; j < nT; j++) if (!usedT[j]) tracks[j].miss++;
+
+        for (let i = 0; i < nD; i++) {
+          if (!usedD[i]) {
+            const tr = new Track(nextTrackId++, dets[i], tNow);
+            tr.setSmoothing();
+            tracks.push(tr);
+          }
+        }
+
+        for (let j = tracks.length - 1; j >= 0; j--) {
+          const tr = tracks[j];
+          const lim = tr.confirmed ? config.confMiss : config.tentMiss;
+          if (tr.miss > lim) tracks.splice(j, 1);
+        }
+
+        for (let j = 0; j < tracks.length; j++) tracks[j].age++;
+      }
+
+      /* ==================================================================
+         RENDER — clean, professional geometry
+         ================================================================== */
+      function drawTrack(tr) {
+        const s = cover.drawW / PW;
+        const ox = cover.ox, oy = cover.oy;
+
+        const missMax = tr.confirmed ? config.confMiss : config.tentMiss;
+        const fade = tr.miss > 0 ? Math.max(0, 1 - tr.miss / (missMax + 1)) : 1;
+        const grow = Math.min(1, tr.hits / Math.max(1, config.confirmHits));
+        const alpha = fade * grow;
+        if (alpha < 0.05) return;
+
+        const pred = tr.predict(performance.now());
+        const cx = ox + pred.x * s;
+        const cy = oy + pred.y * s;
+
+        const L = Math.max(8, tr.len * s);
+        const W = Math.max(6, tr.wid * s);
+        const hx = L * 0.5;
+        const hy = W * 0.5;
+
+        const R = ACCENT.r, G = ACCENT.g, B = ACCENT.b;
+        const lw = config.lineWidth;
+
+        // corner-tick only "bracket" outline, screen-axis-aligned for legibility
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(tr.angle);
+
+        ctx.strokeStyle = `rgba(${R},${G},${B},${0.92 * alpha})`;
+        ctx.lineWidth = lw;
+        ctx.lineCap = 'butt';
+
+        const tick = Math.min(config.cornerTick, Math.min(hx * 0.7, hy * 1.6));
+
+        if (tick > 1) {
+          // four corner L-ticks
+          ctx.beginPath();
+          // top-left
+          ctx.moveTo(-hx, -hy + tick);
+          ctx.lineTo(-hx, -hy);
+          ctx.lineTo(-hx + tick, -hy);
+          // top-right
+          ctx.moveTo(hx - tick, -hy);
+          ctx.lineTo(hx, -hy);
+          ctx.lineTo(hx, -hy + tick);
+          // bottom-right
+          ctx.moveTo(hx, hy - tick);
+          ctx.lineTo(hx, hy);
+          ctx.lineTo(hx - tick, hy);
+          // bottom-left
+          ctx.moveTo(-hx + tick, hy);
+          ctx.lineTo(-hx, hy);
+          ctx.lineTo(-hx, hy - tick);
+          ctx.stroke();
+        } else {
+          // fallback: solid rectangle
+          ctx.strokeRect(-hx, -hy, L, W);
+        }
+
+        // center marker (small dot)
+        if (config.showCenter) {
+          ctx.fillStyle = `rgba(${R},${G},${B},${0.95 * alpha})`;
+          ctx.beginPath();
+          ctx.arc(0, 0, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+
+        // ---------- labels & readouts ----------
+        const topY = cy - hy;
+
+        if (config.showIds) {
+          ctx.font = '10px ui-monospace, Menlo, monospace';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          const idText = 'OBJ-' + String(tr.id).padStart(3, '0');
+          const conf = Math.round(tr.confidence * 100);
+          const label = `${idText}  ${conf}%`;
+
+          const tw = ctx.measureText(label).width;
+          const padX = 6, padY = 4;
+          const bx = cx - hx;
+          const by = topY - (10 + padY * 2);
+
+          ctx.fillStyle = `rgba(0,0,0,${0.72 * alpha})`;
+          ctx.fillRect(bx, by, tw + padX * 2, 10 + padY * 2);
+          ctx.strokeStyle = `rgba(${R},${G},${B},${0.35 * alpha})`;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(bx + 0.5, by + 0.5, tw + padX * 2 - 1, 10 + padY * 2 - 1);
+
+          ctx.fillStyle = `rgba(${R},${G},${B},${0.96 * alpha})`;
+          ctx.fillText(label, bx + padX, by + padY + 9);
+        }
+
+        // side readouts (angle + length) — minimal, no boxes
+        ctx.font = '9.5px ui-monospace, Menlo, monospace';
+        ctx.textBaseline = 'middle';
+
+        if (config.showAngle) {
+          let deg = tr.angle * 180 / Math.PI;
+          if (deg < 0) deg += 180;
+          ctx.textAlign = 'left';
+          ctx.fillStyle = `rgba(${R},${G},${B},${0.7 * alpha})`;
+          ctx.fillText(deg.toFixed(1) + '°', cx + hx + 8, cy);
+        }
+
+        if (config.showLength) {
+          const txt = Math.round(tr.len) + 'px';
+          ctx.textAlign = 'right';
+          ctx.fillStyle = `rgba(${R},${G},${B},${0.7 * alpha})`;
+          ctx.fillText(txt, cx - hx - 8, cy);
+        }
+
+        // quality bar under box — subtle
+        if (config.showQuality) {
+          const qw = L * 0.6;
+          const qh = 1;
+          const qx = cx - qw * 0.5;
+          const qy = cy + hy + 5;
+          ctx.fillStyle = `rgba(255,255,255,${0.10 * alpha})`;
+          ctx.fillRect(qx, qy, qw, qh);
+          ctx.fillStyle = `rgba(${R},${G},${B},${0.75 * alpha})`;
+          ctx.fillRect(qx, qy, qw * tr.confidence, qh);
+        }
+      }
+
+      /* ==================================================================
+         TELEMETRY UPDATE
+         ================================================================== */
+      let fpsSmooth = 0;
+      let frameDt = 0;
+      let lastFrameT = 0;
+      let detectLatency = 0;
+
+      function render() {
+        ctx.clearRect(0, 0, viewW, viewH);
+        if (!cover.valid || !active) return;
+
+        let drawCount = 0;
+        let confirmedCount = 0;
+        let bestConf = 0;
+
+        for (let i = 0; i < tracks.length; i++) {
+          const tr = tracks[i];
+          if (!tr.confirmed && tr.hits < 2) continue;
+          drawTrack(tr);
+          drawCount++;
+          if (tr.confirmed) confirmedCount++;
+          if (tr.confidence > bestConf) bestConf = tr.confidence;
+        }
+
+        // telemetry
+        if (config.showFps && frameDt > 0) {
+          const fps = 1000 / frameDt;
+          fpsSmooth = fpsSmooth ? fpsSmooth * 0.9 + fps * 0.1 : fps;
+          tFps.textContent = String(Math.min(999, Math.round(fpsSmooth)));
+          tFps.classList.remove('dim');
+        } else if (!config.showFps) {
+          tFps.textContent = '—';
+          tFps.classList.add('dim');
+        }
+
+        if (detectLatency > 0) {
+          tLat.textContent = detectLatency.toFixed(1) + ' ms';
+          tLat.classList.remove('dim');
+        } else {
+          tLat.textContent = '—';
+          tLat.classList.add('dim');
+        }
+
+        if (video.videoWidth) {
+          tRes.textContent = video.videoWidth + '×' + video.videoHeight;
+          tRes.classList.remove('dim');
+        } else {
+          tRes.textContent = '—';
+          tRes.classList.add('dim');
+        }
+
+        tTracks.textContent = String(drawCount);
+        tTracks.classList.toggle('dim', drawCount === 0);
+
+        tConfirmed.textContent = String(confirmedCount);
+        tConfirmed.classList.toggle('dim', confirmedCount === 0);
+
+        if (drawCount > 0) {
+          tConf.textContent = Math.round(bestConf * 100) + '%';
+          tConf.classList.remove('dim');
+          tConfBar.style.width = (bestConf * 100).toFixed(0) + '%';
+        } else {
+          tConf.textContent = '—';
+          tConf.classList.add('dim');
+          tConfBar.style.width = '0%';
+        }
+
+        if (config.showUptime && missionStart) {
+          const s = Math.floor((performance.now() - missionStart) / 1000);
+          const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+          const mm = String(Math.floor(s / 60) % 60).padStart(2, '0');
+          const ss = String(s % 60).padStart(2, '0');
+          tUptime.textContent = `${hh}:${mm}:${ss}`;
+          tUptime.classList.remove('dim');
+        } else if (!config.showUptime) {
+          tUptime.textContent = '—';
+          tUptime.classList.add('dim');
+        }
+
+        tCumulative.textContent = String(cumulativeDetections);
+        tCumulative.classList.toggle('dim', cumulativeDetections === 0);
+      }
+
+      /* ==================================================================
+         CAMERA / SESSION
+         ================================================================== */
+      let active = false;
+      let mediaStream = null;
+      let rafMain = null;
+      let lastDetT = 0;
+      let missionStart = 0;
+      let cumulativeDetections = 0;
+
+      async function startCamera() {
+        const [wStr, hStr] = config.resolution.split('x');
+        const constraints = {
+          video: {
+            facingMode: config.facingMode,
+            width: { ideal: parseInt(wStr, 10) },
+            height: { ideal: parseInt(hStr, 10) },
+          },
+          audio: false,
+        };
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = mediaStream;
+        await video.play();
+        setTimeout(() => { setupProcessingSize(); updateCover(); }, 80);
+      }
+
+      function stopCamera() {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(t => t.stop());
+          mediaStream = null;
+        }
+        video.srcObject = null;
+      }
+
+      async function restartCamera() {
+        if (!active) return;
+        try { stopCamera(); await startCamera(); }
+        catch (e) { console.warn('[ORS] camera restart', e); }
+      }
+
+      function setStatus(text, cls) {
+        statusText.textContent = text;
+        statusEl.className = 'status' + (cls ? ' ' + cls : '');
+      }
+
+      async function activate() {
+        if (active) return;
+        activateBtn.disabled = true;
+        activateBtn.textContent = 'Starting';
+        setStatus('INIT', null);
+
+        try {
+          await startCamera();
+        } catch (e) {
+          console.error(e);
+          let msg = 'Camera access denied';
+          if (e && e.name === 'NotAllowedError') msg = 'Permission denied';
+          else if (e && e.name === 'NotFoundError') msg = 'No camera found';
+          else if (e && e.name === 'NotReadableError') msg = 'Camera busy';
+          activateBtn.disabled = false;
+          activateBtn.textContent = 'Activate';
+          setStatus('ERROR', 'err');
+          showToast(msg, 2200);
+          return;
+        }
+
+        active = true;
+        activateBtn.disabled = false;
+        activateBtn.textContent = 'Deactivate';
+        activateBtn.classList.add('on');
+        setStatus('LIVE', 'live');
+        missionStart = performance.now();
+        cumulativeDetections = 0;
+        tracks = []; nextTrackId = 1;
+
+        lastDetT = 0;
+        lastFrameT = performance.now();
+
+        if (rafMain) cancelAnimationFrame(rafMain);
+        rafMain = requestAnimationFrame(loop);
+      }
+
+      function deactivate() {
+        if (!active) return;
+        active = false;
+        if (rafMain) { cancelAnimationFrame(rafMain); rafMain = null; }
+        stopCamera();
+        tracks = [];
+        ctx.clearRect(0, 0, viewW, viewH);
+        activateBtn.textContent = 'Activate';
+        activateBtn.classList.remove('on');
+        setStatus('STANDBY', null);
+        tFps.textContent = '—'; tFps.classList.add('dim');
+        tLat.textContent = '—'; tLat.classList.add('dim');
+        tRes.textContent = '—'; tRes.classList.add('dim');
+        tTracks.textContent = '0'; tTracks.classList.add('dim');
+        tConfirmed.textContent = '0'; tConfirmed.classList.add('dim');
+        tConf.textContent = '—'; tConf.classList.add('dim');
+        tConfBar.style.width = '0%';
+        tUptime.textContent = '—'; tUptime.classList.add('dim');
+        tCumulative.textContent = '0'; tCumulative.classList.add('dim');
+        fpsSmooth = 0;
+      }
+
+      activateBtn.addEventListener('click', () => { if (active) deactivate(); else activate(); });
+
+      /* ==================================================================
+         MAIN LOOP
+         ================================================================== */
+      function loop(now) {
+        rafMain = requestAnimationFrame(loop);
+
+        if (lastFrameT) frameDt = now - lastFrameT;
+        lastFrameT = now;
+
+        if (!cover.valid) updateCover();
+
+        if (video.readyState >= 2 && video.videoWidth) {
+          const minInterval = 1000 / config.detectHz;
+          if (now - lastDetT >= minInterval) {
+            lastDetT = now;
+            const t0 = performance.now();
+            const dets = detect();
+            detectLatency = performance.now() - t0;
+            cumulativeDetections += dets.length;
+            stepTracker(dets, now);
+          }
+          render();
+        }
+      }
+
+      /* ==================================================================
+         UI WIRING
+         ================================================================== */
+      const labelEls = {};
+      function cacheLabels() {
+        document.querySelectorAll('[data-value]').forEach(el => {
+          labelEls[el.dataset.value] = el;
+        });
+      }
+
+      const FMT = {
+        procWidth: v => String(v | 0),
+        blurPasses: v => String(v | 0),
+        videoBrightness: v => v.toFixed(2),
+        videoContrast: v => v.toFixed(2),
+        videoSaturate: v => v.toFixed(2),
+        localRadius: v => v.toFixed(3),
+        threshK: v => v.toFixed(2),
+        threshMinDelta: v => String(v | 0),
+        morphPasses: v => String(v | 0),
+        minAreaFrac: v => v.toFixed(1),
+        maxAreaPct: v => v.toFixed(1),
+        minLenFrac: v => v.toFixed(3),
+        maxWidFrac: v => v.toFixed(3),
+        minElong: v => v.toFixed(1),
+        minFill: v => v.toFixed(2),
+        maxDets: v => String(v | 0),
+        nmsDist: v => v.toFixed(2),
+        nmsAngle: v => v.toFixed(2),
+        detectHz: v => String(v | 0),
+        gateFrac: v => v.toFixed(3),
+        angleMinDot: v => v.toFixed(2),
+        confirmHits: v => String(v | 0),
+        tentMiss: v => String(v | 0),
+        confMiss: v => String(v | 0),
+        posFcmin: v => v.toFixed(2),
+        posBeta: v => v.toFixed(3),
+        angFcmin: v => v.toFixed(2),
+        angBeta: v => v.toFixed(3),
+        sizeFcmin: v => v.toFixed(2),
+        sizeBeta: v => v.toFixed(3),
+        lineWidth: v => v.toFixed(1),
+        cornerTick: v => String(v | 0),
+      };
+
+      function updateSliderFill(input) {
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+        const val = parseFloat(input.value);
+        const pct = ((val - min) / (max - min)) * 100;
+        input.style.setProperty('--fill', pct.toFixed(2) + '%');
+      }
+
+      function syncLabel(key, val) {
+        const el = labelEls[key];
+        if (!el) return;
+        const f = FMT[key];
+        el.textContent = f ? f(parseFloat(val)) : String(val);
+      }
+
+      function wireInputs() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
+          const key = input.dataset.key;
+          input.value = config[key];
+          syncLabel(key, input.value);
+          updateSliderFill(input);
+          input.addEventListener('input', () => {
+            const v = parseFloat(input.value);
+            config[key] = v;
+            syncLabel(key, v);
+            updateSliderFill(input);
+            onConfigChange(key, v);
+          });
+        });
+
+        document.querySelectorAll('.toggle[data-key]').forEach(t => {
+          const key = t.dataset.key;
+          t.classList.toggle('on', !!config[key]);
+          t.addEventListener('click', e => {
+            e.preventDefault();
+            config[key] = !config[key];
+            t.classList.toggle('on', config[key]);
+            onConfigChange(key, config[key]);
+          });
+        });
+
+        document.querySelectorAll('select[data-key]').forEach(s => {
+          const key = s.dataset.key;
+          s.value = config[key];
+          s.addEventListener('change', () => {
+            config[key] = s.value;
+            onConfigChange(key, s.value);
+          });
+        });
+
+        document.querySelectorAll('.color-swatch').forEach(sw => {
+          const hex = sw.dataset.accent;
+          sw.classList.toggle('active', hex === config.accent);
+          sw.addEventListener('click', () => {
+            document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+            sw.classList.add('active');
+            config.accent = hex;
+            const nameMap = {
+              '#f2f2f2': 'NEUTRAL', '#7dffd6': 'TEAL', '#5fc9ff': 'BLUE',
+              '#ffd166': 'AMBER', '#ff5c5c': 'RED', '#b28dff': 'VIOLET',
+            };
+            config.accentName = nameMap[hex] || 'CUSTOM';
+            if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
+            applyAccent();
+            saveConfig();
+          });
+        });
+
+        presetSelect.addEventListener('change', () => {
+          const v = presetSelect.value;
+          if (v) { applyPreset(v); presetSelect.value = ''; }
+        });
+
+        document.querySelectorAll('.section-head').forEach(h => {
+          h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
+        });
+      }
+
+      function syncAllInputs() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(i => {
+          const k = i.dataset.key;
+          i.value = config[k];
+          syncLabel(k, config[k]);
+          updateSliderFill(i);
+        });
+        document.querySelectorAll('.toggle[data-key]').forEach(t => {
+          t.classList.toggle('on', !!config[t.dataset.key]);
+        });
+        document.querySelectorAll('select[data-key]').forEach(s => {
+          s.value = config[s.dataset.key];
+        });
+        document.querySelectorAll('.color-swatch').forEach(x => {
+          x.classList.toggle('active', x.dataset.accent === config.accent);
+        });
+        if (labelEls.accentName) labelEls.accentName.textContent = config.accentName;
+      }
+
+      function onConfigChange(key, val) {
+        if (key === 'showTelemetry') telemetryEl.classList.toggle('hidden', !val);
+        if (key === 'showClock') clockEl.style.display = val ? '' : 'none';
+        if (key === 'showFps' && !val) { tFps.textContent = '—'; tFps.classList.add('dim'); }
+        if (key === 'showUptime' && !val) { tUptime.textContent = '—'; tUptime.classList.add('dim'); }
+        if (key === 'showHints') {
+          hintText.style.display = val ? '' : 'none';
+        }
+        if ((key === 'facingMode' || key === 'resolution') && active) restartCamera();
+        if (key === 'mirrorView') {
+          video.style.transform = val ? 'scaleX(-1)' : 'none';
+        }
+        if (key === 'videoBrightness' || key === 'videoContrast' || key === 'videoSaturate') {
+          applyVideoFilter();
+        }
+        if (key === 'procWidth') setupProcessingSize();
+        if (key === 'accent') applyAccent();
+        if (['posFcmin', 'posBeta', 'angFcmin', 'angBeta', 'sizeFcmin', 'sizeBeta'].includes(key)) {
+          for (const tr of tracks) tr.setSmoothing();
+        }
+        saveConfig();
+      }
+
+      function applyVideoFilter() {
+        video.style.filter = `contrast(${config.videoContrast}) brightness(${config.videoBrightness}) saturate(${config.videoSaturate})`;
+      }
+
+      function applyPreset(name) {
+        const p = PRESETS[name];
+        if (!p) return;
+        Object.assign(config, DEFAULTS, p);
+        applyAccent();
+        applyVideoFilter();
+        video.style.transform = config.mirrorView ? 'scaleX(-1)' : 'none';
+        telemetryEl.classList.toggle('hidden', !config.showTelemetry);
+        clockEl.style.display = config.showClock ? '' : 'none';
+        hintText.style.display = config.showHints ? '' : 'none';
+        syncAllInputs();
+        for (const tr of tracks) tr.setSmoothing();
+        saveConfig();
+        showToast('Profile · ' + name.toUpperCase());
+      }
+
+      /* ==================================================================
+         SYSTEM ACTIONS
+         ================================================================== */
+      document.getElementById('resetDefaults').addEventListener('click', () => {
+        Object.assign(config, DEFAULTS);
+        applyAccent();
+        applyVideoFilter();
+        video.style.transform = config.mirrorView ? 'scaleX(-1)' : 'none';
+        telemetryEl.classList.toggle('hidden', !config.showTelemetry);
+        clockEl.style.display = config.showClock ? '' : 'none';
+        hintText.style.display = config.showHints ? '' : 'none';
+        syncAllInputs();
+        for (const tr of tracks) tr.setSmoothing();
+        saveConfig();
+        showToast('Defaults restored');
+      });
+
+      document.getElementById('exportConfig').addEventListener('click', async () => {
+        const data = JSON.stringify(config, null, 2);
+        try {
+          await navigator.clipboard.writeText(data);
+          showToast('Config copied');
+        } catch (e) {
+          window.prompt('Config JSON:', data);
+        }
+      });
+
+      document.getElementById('importConfig').addEventListener('click', () => {
+        const data = window.prompt('Paste config JSON:');
+        if (!data) return;
+        try {
+          const parsed = JSON.parse(data);
+          Object.assign(config, DEFAULTS, parsed);
+          applyAccent();
+          applyVideoFilter();
+          video.style.transform = config.mirrorView ? 'scaleX(-1)' : 'none';
+          telemetryEl.classList.toggle('hidden', !config.showTelemetry);
+          clockEl.style.display = config.showClock ? '' : 'none';
+          hintText.style.display = config.showHints ? '' : 'none';
+          syncAllInputs();
+          for (const tr of tracks) tr.setSmoothing();
+          saveConfig();
+          showToast('Config loaded');
+        } catch (e) { showToast('Invalid config'); }
+      });
+
+      function toggleFullscreen() {
+        const el = document.getElementById('stage');
+        if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => { });
+        else document.exitFullscreen?.();
+      }
+      document.getElementById('toggleFullscreen').addEventListener('click', toggleFullscreen);
+
+      function saveFrame() {
+        try {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const outW = Math.round(viewW * dpr);
+          const outH = Math.round(viewH * dpr);
+          const tmp = document.createElement('canvas');
+          tmp.width = outW; tmp.height = outH;
+          const tc = tmp.getContext('2d');
+
+          if (cover.valid && video.videoWidth) {
+            tc.save();
+            if ('filter' in tc) {
+              tc.filter = `contrast(${config.videoContrast}) brightness(${config.videoBrightness}) saturate(${config.videoSaturate})`;
+            }
+            if (config.mirrorView) {
+              tc.translate(outW, 0);
+              tc.scale(-1, 1);
+              tc.drawImage(video, cover.ox * dpr, cover.oy * dpr, cover.drawW * dpr, cover.drawH * dpr);
+            } else {
+              tc.drawImage(video, cover.ox * dpr, cover.oy * dpr, cover.drawW * dpr, cover.drawH * dpr);
+            }
+            tc.restore();
+          }
+          tc.drawImage(canvas, 0, 0, outW, outH);
+
+          const url = tmp.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ors_${Date.now()}.png`;
+          a.click();
+          showToast('Frame saved');
+        } catch (e) { showToast('Save failed'); }
+      }
+      document.getElementById('saveFrame').addEventListener('click', saveFrame);
+
+      /* ==================================================================
+         PANEL / KEYBOARD
+         ================================================================== */
+      function openPanel() {
+        settingsPanel.classList.add('open');
+        settingsPanel.setAttribute('aria-hidden', 'false');
+        panelOverlay.classList.add('show');
+      }
+      function closePanel() {
+        settingsPanel.classList.remove('open');
+        settingsPanel.setAttribute('aria-hidden', 'true');
+        panelOverlay.classList.remove('show');
+      }
+      settingsToggle.addEventListener('click', openPanel);
+      settingsClose.addEventListener('click', closePanel);
+      panelOverlay.addEventListener('click', closePanel);
+
+      document.addEventListener('keydown', e => {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+        const k = e.key.toLowerCase();
+        if (k === 's') { settingsPanel.classList.contains('open') ? closePanel() : openPanel(); }
+        else if (e.key === 'Escape') closePanel();
+        else if (k === 'a') { active ? deactivate() : activate(); }
+        else if (k === 'h') telemetryEl.classList.toggle('hidden');
+        else if (k === 'f') toggleFullscreen();
+      });
+
+      /* ==================================================================
+         VISIBILITY
+         ================================================================== */
+      document.addEventListener('visibilitychange', () => {
+        if (!active || !config.pauseOnHide) return;
+        if (document.hidden) {
+          if (rafMain) { cancelAnimationFrame(rafMain); rafMain = null; }
+        } else if (!rafMain) {
+          lastDetT = 0;
+          lastFrameT = performance.now();
+          rafMain = requestAnimationFrame(loop);
+        }
+      });
+
+      /* ==================================================================
+         BOOT
+         ================================================================== */
+      function bootLine(text) {
+        const line = document.createElement('div');
+        line.className = 'ln';
+        line.innerHTML = `<span>${text}</span><span class="ok">OK</span>`;
+        bootLog.appendChild(line);
+      }
+
+      const BOOT_STEPS = [
+        'Loading configuration',
+        'Initializing buffers',
+        'Calibrating edge detector',
+        'Requesting camera access',
+      ];
+
+      async function boot() {
+        loadConfig();
+        cacheLabels();
+        applyAccent();
+        applyVideoFilter();
+        wireInputs();
+        syncAllInputs();
+        onConfigChange('showTelemetry', config.showTelemetry);
+        onConfigChange('showClock', config.showClock);
+        onConfigChange('showUptime', config.showUptime);
+        onConfigChange('showHints', config.showHints);
+        onConfigChange('mirrorView', config.mirrorView);
+
+        bootLog.innerHTML = '';
+        let i = 0;
+        const runStep = () => {
+          if (i >= BOOT_STEPS.length) return;
+          bootSub.textContent = BOOT_STEPS[i];
+          bootLine(BOOT_STEPS[i]);
+          i++;
+          setTimeout(runStep, 120);
+        };
+        runStep();
+
+        setTimeout(async () => {
+          try {
+            await activate();
+            setTimeout(() => bootEl.classList.add('hidden'), 280);
+          } catch (e) {
+            bootSub.textContent = 'TAP TO ENABLE CAMERA';
+            bootEl.addEventListener('click', async () => {
+              bootSub.textContent = 'REQUESTING CAMERA ACCESS';
+              try {
+                await activate();
+                setTimeout(() => bootEl.classList.add('hidden'), 280);
+              } catch (e2) { bootSub.textContent = 'TAP TO ENABLE CAMERA'; }
+            });
+          }
+        }, 720);
+      }
+
+      boot();
+
+    })();
+  </script>
+</body>
+
+</html>
