@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>SENTINEL · OCULUS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+      color: #e8e8e8;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    :root {
+      --accent-hex: #ffffff;
+      --hairline: rgba(255, 255, 255, 0.08);
+      --hairline-soft: rgba(255, 255, 255, 0.05);
+      --muted: rgba(255, 255, 255, 0.42);
+      --muted-2: rgba(255, 255, 255, 0.28);
+      --fg-bright: #f6f6f6;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #viewport {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    #video,
+    #overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #video {
+      object-fit: cover;
+      filter: contrast(1.10) brightness(0.92) saturate(0.55);
+      transform: scaleX(-1);
+      will-change: transform, filter;
+    }
+
+    #overlay {
+      pointer-events: none;
+      z-index: 2;
+      will-change: transform;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: max(14px, env(safe-area-inset-top)) 22px 0 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .clock {
+      color: rgba(255, 255, 255, 0.55);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+      font-size: 11px;
+      letter-spacing: 0.1em;
+    }
+
+    .icon-btn {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.78);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: border-color .18s, color .18s, background .18s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .icon-btn:hover {
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+    }
+
+    .icon-btn:focus-visible {
+      outline: 1px solid var(--accent-hex);
+      outline-offset: 1px;
+    }
+
+    .icon-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: opacity .25s ease;
+    }
+
+    .hud.hidden {
+      opacity: 0;
+    }
+
+    .telemetry {
+      position: absolute;
+      left: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      padding: 14px 16px;
+      border: 1px solid var(--hairline-soft);
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      min-width: 130px;
+    }
+
+    .telemetry .row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .telemetry .val {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .telemetry .val.idle {
+      color: rgba(255, 255, 255, 0.32);
+    }
+
+    .bottombar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0 22px max(20px, env(safe-area-inset-bottom)) 22px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+
+    #activateBtn {
+      pointer-events: auto;
+      background: rgba(10, 12, 16, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #e8e8e8;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      font-weight: 500;
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+      position: relative;
+      min-width: 200px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    #activateBtn::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      width: 4px;
+      height: 4px;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.25);
+      transition: background .2s, box-shadow .2s;
+    }
+
+    #activateBtn::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      pointer-events: none;
+      transition: border-color .2s;
+    }
+
+    #activateBtn:hover {
+      border-color: rgba(255, 255, 255, 0.45);
+      background: rgba(20, 24, 30, 0.8);
+    }
+
+    #activateBtn:active {
+      transform: translateY(1px);
+    }
+
+    #activateBtn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    #activateBtn.on {
+      border-color: var(--accent-hex);
+      background: rgba(10, 12, 16, 0.85);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 12px rgba(255, 255, 255, 0.08);
+    }
+
+    #activateBtn.on::before {
+      background: var(--accent-hex);
+      box-shadow: 0 0 6px var(--accent-hex);
+    }
+
+    #activateBtn.on::after {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    #toast {
+      position: absolute;
+      left: 50%;
+      top: 14%;
+      transform: translate(-50%, -6px);
+      padding: 8px 18px;
+      background: rgba(0, 0, 0, 0.72);
+      border: 1px solid var(--accent-hex);
+      color: #fff;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    #boot {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transition: opacity .5s ease;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #boot.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #boot .title {
+      font-size: 12px;
+      letter-spacing: 0.55em;
+      color: #f2f2f2;
+      font-weight: 600;
+    }
+
+    #boot .sub {
+      font-size: 10px;
+      letter-spacing: 0.26em;
+      color: rgba(255, 255, 255, 0.42);
+      max-width: 300px;
+    }
+
+    #boot .bar {
+      width: 220px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    #boot .bar i {
+      display: block;
+      height: 100%;
+      width: 40%;
+      background: rgba(255, 255, 255, 0.85);
+      animation: slide 1.2s infinite ease-in-out;
+    }
+
+    @keyframes slide {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(300%);
+      }
+    }
+
+    #boot.error .sub {
+      color: #ff3b30;
+    }
+
+    #boot.error .bar {
+      display: none;
+    }
+
+    /* Gaze crosshair widget */
+    #gazeWidget {
+      position: absolute;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 120px;
+      height: 120px;
+      border: 1px solid var(--hairline-soft);
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      pointer-events: none;
+    }
+
+    #gazeWidget .label {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      font-size: 8px;
+      letter-spacing: 0.24em;
+      color: var(--muted-2);
+      text-transform: uppercase;
+    }
+
+    #gazeWidget .crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    #gazeWidget .dot {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      margin-left: -4px;
+      margin-top: -4px;
+      background: var(--accent-hex);
+      box-shadow: 0 0 10px var(--accent-hex);
+      border-radius: 50%;
+      transition: transform .06s linear;
+      will-change: transform;
+    }
+
+    #gazeWidget .rings {
+      position: absolute;
+      inset: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="stage">
+    <div id="viewport">
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" id="backBtn" type="button" title="Back to SENTINEL">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          SENTINEL
+        </button>
+      </div>
+      <div class="topbar-right">
+        <div class="clock" id="clock">--:--:--</div>
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <div class="telemetry" id="telemetry">
+        <div class="row">
+          <div>FPS</div>
+          <div class="val idle" id="tFps">—</div>
+        </div>
+        <div class="row">
+          <div>FACES</div>
+          <div class="val idle" id="tFaces">0</div>
+        </div>
+        <div class="row">
+          <div>EAR</div>
+          <div class="val idle" id="tEar">—</div>
+        </div>
+        <div class="row">
+          <div>BLINKS</div>
+          <div class="val idle" id="tBlink">0</div>
+        </div>
+        <div class="row">
+          <div>GAZE</div>
+          <div class="val idle" id="tGaze">—</div>
+        </div>
+      </div>
+
+      <div id="gazeWidget">
+        <div class="label">GAZE VECTOR</div>
+        <div class="crosshair"></div>
+        <div class="dot" id="gazeDot"></div>
+      </div>
+
+      <div class="bottombar">
+        <button id="activateBtn" type="button">ACTIVATE</button>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <div id="boot">
+      <div class="title">SENTINEL · OCULUS</div>
+      <div class="sub" id="bootMsg">INITIALIZING</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous">
+  </script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      window.addEventListener('error', (e) => {
+        // eslint-disable-next-line no-console
+        console.error('[OCULUS]', e.message, e.error && e.error.stack);
+      });
+
+      // ============================================================
+      //  ELEMENTS
+      // ============================================================
+      const video       = document.getElementById('video');
+      const canvas      = document.getElementById('overlay');
+      const ctx         = canvas.getContext('2d', { alpha: true, desynchronized: true });
+      const bootEl      = document.getElementById('boot');
+      const bootMsg     = document.getElementById('bootMsg');
+      const activateBtn = document.getElementById('activateBtn');
+      const clockEl     = document.getElementById('clock');
+      const toastEl     = document.getElementById('toast');
+      const backBtn     = document.getElementById('backBtn');
+      const gazeDot     = document.getElementById('gazeDot');
+
+      const tFps   = document.getElementById('tFps');
+      const tFaces = document.getElementById('tFaces');
+      const tEar   = document.getElementById('tEar');
+      const tBlink = document.getElementById('tBlink');
+      const tGaze  = document.getElementById('tGaze');
+
+      // ============================================================
+      //  CONSTANTS — MediaPipe FaceMesh indices
+      // ============================================================
+      const RIGHT_EYE = { outer: 33,  inner: 133, top1: 160, top2: 158, bot1: 153, bot2: 144, iris: 468 };
+      const LEFT_EYE  = { outer: 362, inner: 263, top1: 385, top2: 387, bot1: 380, bot2: 373, iris: 473 };
+
+      // Closed contours (order matters — must be a loop)
+      const RIGHT_EYE_CONTOUR = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
+      const LEFT_EYE_CONTOUR  = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+
+      // Face oval outline
+      const FACE_OVAL = [
+        10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
+        397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
+        172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
+      ];
+
+      // Eyebrow contours (nice for context)
+      const RIGHT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
+      const LEFT_BROW  = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+
+      // ============================================================
+      //  STATE
+      // ============================================================
+      const state = {
+        active: false,
+        stream: null,
+        faceMesh: null,
+        rafRender: null,
+        rafInfer: null,
+        inferenceInFlight: false,
+        inferenceLast: 0,
+        fpsSmooth: 0,
+        lastFace: null,
+        lastEar: 0.3,
+        blinkCount: 0,
+        blinkState: false,
+        gaze: { x: 0, y: 0 },
+        lostFrames: 0,
+      };
+
+      // ============================================================
+      //  CANVAS SIZE + COVER MAPPING
+      // ============================================================
+      let viewW = window.innerWidth;
+      let viewH = window.innerHeight;
+      const cover = { valid: false, drawW: 0, drawH: 0, offsetX: 0, offsetY: 0 };
+
+      function updateCover() {
+        const vw = video.videoWidth | 0;
+        const vh = video.videoHeight | 0;
+        if (!vw || !vh || !viewW || !viewH) { cover.valid = false; return; }
+        const cA = viewW / viewH;
+        const vA = vw / vh;
+        let dW, dH;
+        if (vA > cA) { dH = viewH; dW = viewH * vA; }
+        else         { dW = viewW; dH = viewW / vA; }
+        cover.drawW = dW;
+        cover.drawH = dH;
+        cover.offsetX = (viewW - dW) / 2;
+        cover.offsetY = (viewH - dH) / 2;
+        cover.valid = true;
+      }
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        viewW = window.innerWidth;
+        viewH = window.innerHeight;
+        canvas.width = Math.round(viewW * dpr);
+        canvas.height = Math.round(viewH * dpr);
+        canvas.style.width = viewW + 'px';
+        canvas.style.height = viewH + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        updateCover();
+      }
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+      video.addEventListener('loadedmetadata', updateCover);
+      video.addEventListener('loadeddata', updateCover);
+      resize();
+
+      // ============================================================
+      //  PROJECTION (mirrored, matching video)
+      // ============================================================
+      function projectX(nx) { return cover.offsetX + (1 - nx) * cover.drawW; }
+      function projectY(ny) { return cover.offsetY + ny * cover.drawH; }
+
+      // ============================================================
+      //  MATH
+      // ============================================================
+      function dist2(ax, ay, bx, by) {
+        const dx = ax - bx, dy = ay - by;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      // ============================================================
+      //  COLOR
+      // ============================================================
+      function rgba(a) {
+        return `rgba(255,255,255,${a})`;
+      }
+
+      // ============================================================
+      //  CLOCK
+      // ============================================================
+      function tickClock() {
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+      setInterval(tickClock, 1000);
+      tickClock();
+
+      // ============================================================
+      //  TOAST
+      // ============================================================
+      let toastTimer = 0;
+      function showToast(text, ms) {
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 1100);
+      }
+
+      // ============================================================
+      //  EAR — Eye Aspect Ratio
+      // ============================================================
+      function computeEAR(lm, eye) {
+        const p1 = lm[eye.outer];
+        const p2 = lm[eye.top1];
+        const p3 = lm[eye.top2];
+        const p4 = lm[eye.inner];
+        const p5 = lm[eye.bot1];
+        const p6 = lm[eye.bot2];
+        const d1 = dist2(p2.x, p2.y, p6.x, p6.y);
+        const d2 = dist2(p3.x, p3.y, p5.x, p5.y);
+        const d3 = dist2(p1.x, p1.y, p4.x, p4.y) || 1;
+        return (d1 + d2) / (2 * d3);
+      }
+
+      // ============================================================
+      //  GAZE — normalized (-1..1) iris offset within eye bounds
+      // ============================================================
+      function computeGaze(lm, eye) {
+        if (lm.length <= eye.iris) return { x: 0, y: 0, valid: false };
+        const outer = lm[eye.outer];
+        const inner = lm[eye.inner];
+        const top   = lm[eye.top1];
+        const bot   = lm[eye.bot1];
+        const iris  = lm[eye.iris];
+
+        // Horizontal axis: outer -> inner
+        const hx = inner.x - outer.x;
+        const hy = inner.y - outer.y;
+        const hl2 = hx * hx + hy * hy || 1;
+        const hTx = iris.x - outer.x;
+        const hTy = iris.y - outer.y;
+        const hT = (hTx * hx + hTy * hy) / hl2;
+
+        // Vertical axis: top -> bottom
+        const vx = bot.x - top.x;
+        const vy = bot.y - top.y;
+        const vl2 = vx * vx + vy * vy || 1;
+        const vTx = iris.x - top.x;
+        const vTy = iris.y - top.y;
+        const vT = (vTx * vx + vTy * vy) / vl2;
+
+        // 0.5 = center; scale to -1..1 (clamped)
+        let gx = (hT - 0.5) * 2;
+        let gy = (vT - 0.5) * 2;
+        if (gx > 1) gx = 1; else if (gx < -1) gx = -1;
+        if (gy > 1) gy = 1; else if (gy < -1) gy = -1;
+
+        return { x: gx, y: gy, valid: true };
+      }
+
+      function gazeLabel(g) {
+        const ax = Math.abs(g.x), ay = Math.abs(g.y);
+        if (ax < 0.18 && ay < 0.18) return 'CENTER';
+        if (ax > ay) return g.x < 0 ? 'LEFT' : 'RIGHT';
+        return g.y < 0 ? 'UP' : 'DOWN';
+      }
+
+      // ============================================================
+      //  DRAW HELPERS
+      // ============================================================
+      function drawPolyline(lm, indices, stroke, width, closed) {
+        if (!indices.length) return;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (let i = 0; i < indices.length; i++) {
+          const p = lm[indices[i]];
+          if (!p) continue;
+          const x = projectX(p.x);
+          const y = projectY(p.y);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        if (closed) ctx.closePath();
+        ctx.stroke();
+      }
+
+      function drawIris(lm, eye, bright) {
+        if (lm.length <= eye.iris) return;
+        const iris = lm[eye.iris];
+        const cx = projectX(iris.x);
+        const cy = projectY(iris.y);
+
+        const outer = lm[eye.outer];
+        const inner = lm[eye.inner];
+        const eyeW = Math.abs(projectX(inner.x) - projectX(outer.x));
+        const r = Math.max(5, eyeW * 0.20);
+
+        // Outer glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 3);
+        grad.addColorStop(0, rgba(0.20));
+        grad.addColorStop(0.5, rgba(0.06));
+        grad.addColorStop(1, rgba(0));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Iris ring
+        ctx.strokeStyle = rgba(0.85);
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Inner dot
+        ctx.fillStyle = rgba(0.95 + bright * 0.05);
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(1.6, r * 0.35), 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crosshair ticks
+        const L = r * 1.6;
+        ctx.strokeStyle = rgba(0.55);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - L, cy); ctx.lineTo(cx - r - 2, cy);
+        ctx.moveTo(cx + r + 2, cy); ctx.lineTo(cx + L, cy);
+        ctx.moveTo(cx, cy - L); ctx.lineTo(cx, cy - r - 2);
+        ctx.moveTo(cx, cy + r + 2); ctx.lineTo(cx, cy + L);
+        ctx.stroke();
+
+        return { x: cx, y: cy, r };
+      }
+
+      // ============================================================
+      //  RENDER
+      // ============================================================
+      function render() {
+        ctx.clearRect(0, 0, viewW, viewH);
+
+        const lm = state.lastFace;
+
+        if (!lm || !state.active) {
+          state.rafRender = requestAnimationFrame(render);
+          return;
+        }
+
+        // Subtle reticle frame corners (top-left, bottom-right)
+        ctx.strokeStyle = rgba(0.35);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const m = 30, L = 14;
+        ctx.moveTo(m, m + L); ctx.lineTo(m, m); ctx.lineTo(m + L, m);
+        ctx.moveTo(viewW - m - L, viewH - m); ctx.lineTo(viewW - m, viewH - m); ctx.lineTo(viewW - m, viewH - m - L);
+        ctx.stroke();
+
+        // Face oval (dashed, subtle)
+        ctx.setLineDash([4, 5]);
+        drawPolyline(lm, FACE_OVAL, rgba(0.22), 1, true);
+        ctx.setLineDash([]);
+
+        // Eyebrows (thin lines)
+        drawPolyline(lm, RIGHT_BROW, rgba(0.35), 1, false);
+        drawPolyline(lm, LEFT_BROW,  rgba(0.35), 1, false);
+
+        // Eye contours (accent)
+        const blink = state.lastEar < 0.18;
+        const eyeStroke = blink ? rgba(0.35) : rgba(0.9);
+        drawPolyline(lm, RIGHT_EYE_CONTOUR, eyeStroke, 1.4, true);
+        drawPolyline(lm, LEFT_EYE_CONTOUR,  eyeStroke, 1.4, true);
+
+        // Irises
+        if (lm.length > 468) {
+          const rIris = drawIris(lm, RIGHT_EYE, blink ? 0 : 1);
+          const lIris = drawIris(lm, LEFT_EYE,  blink ? 0 : 1);
+
+          if (rIris && lIris && !blink) {
+            // Gaze ray from averaged iris outward
+            const g = state.gaze;
+            const cx = (rIris.x + lIris.x) * 0.5;
+            const cy = (rIris.y + lIris.y) * 0.5;
+            const len = Math.max(60, Math.abs(projectX(lm[LEFT_EYE.outer].x) - projectX(lm[RIGHT_EYE.outer].x)) * 0.7);
+            const ex = cx + g.x * len;
+            const ey = cy + g.y * len;
+
+            ctx.strokeStyle = rgba(0.75);
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+
+            // Arrow head
+            const a = Math.atan2(ey - cy, ex - cx);
+            const h = 8;
+            ctx.beginPath();
+            ctx.moveTo(ex, ey);
+            ctx.lineTo(ex - Math.cos(a - 0.4) * h, ey - Math.sin(a - 0.4) * h);
+            ctx.moveTo(ex, ey);
+            ctx.lineTo(ex - Math.cos(a + 0.4) * h, ey - Math.sin(a + 0.4) * h);
+            ctx.stroke();
+
+            // Head orientation tag on the forehead
+            const fore = lm[10];
+            const fx = projectX(fore.x);
+            const fy = projectY(fore.y) - 24;
+            ctx.font = '9px ui-monospace, Menlo, monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = rgba(0.85);
+            const tagW = 110, tagH = 38;
+            ctx.fillStyle = 'rgba(0,0,0,0.55)';
+            ctx.fillRect(fx - 4, fy - 4, tagW, tagH);
+            ctx.strokeStyle = rgba(0.5);
+            ctx.lineWidth = 1;
+            ctx.strokeRect(fx - 4, fy - 4, tagW, tagH);
+            ctx.fillStyle = rgba(0.92);
+            ctx.fillText(`GAZE  ${gazeLabel(g)}`, fx, fy);
+            ctx.fillStyle = rgba(0.6);
+            ctx.fillText(`EAR   ${state.lastEar.toFixed(3)}`, fx, fy + 13);
+            ctx.fillText(`BLINK ${state.blinkState ? 'CLOSED' : 'OPEN'}`, fx, fy + 26);
+          }
+        }
+
+        state.rafRender = requestAnimationFrame(render);
+      }
+
+      // ============================================================
+      //  UPDATE TELEMETRY / GAZE WIDGET
+      // ============================================================
+      function updateTelemetry() {
+        const face = state.lastFace;
+        const has = !!face;
+
+        tFaces.textContent = has ? '1' : '0';
+        tFaces.classList.toggle('idle', !has);
+
+        if (has) {
+          tEar.textContent = state.lastEar.toFixed(3);
+          tEar.classList.remove('idle');
+          tBlink.textContent = String(state.blinkCount);
+          tBlink.classList.remove('idle');
+          tGaze.textContent = gazeLabel(state.gaze);
+          tGaze.classList.remove('idle');
+
+          // Gaze widget — map (-1..1) into a 40px radius
+          const px = state.gaze.x * 40;
+          const py = state.gaze.y * 40;
+          gazeDot.style.transform = `translate(${px}px, ${py}px)`;
+        } else {
+          tEar.textContent = '—';
+          tBlink.textContent = '0';
+          tGaze.textContent = '—';
+          tEar.classList.add('idle');
+          tBlink.classList.add('idle');
+          tGaze.classList.add('idle');
+          gazeDot.style.transform = 'translate(0px, 0px)';
+        }
+      }
+
+      // ============================================================
+      //  FACE MESH RESULTS
+      // ============================================================
+      function onFaceResults(r) {
+        const faces = r.multiFaceLandmarks || [];
+        if (faces.length > 0) {
+          const lm = faces[0];
+          state.lastFace = lm;
+
+          // EAR = average of both eyes
+          const earR = computeEAR(lm, RIGHT_EYE);
+          const earL = computeEAR(lm, LEFT_EYE);
+          state.lastEar = (earR + earL) * 0.5;
+
+          // Blink detection with hysteresis
+          const nowClosed = state.lastEar < 0.18;
+          if (nowClosed && !state.blinkState) {
+            state.blinkState = true;
+            state.blinkCount++;
+          } else if (!nowClosed && state.blinkState && state.lastEar > 0.24) {
+            state.blinkState = false;
+          }
+
+          // Gaze = average of both eyes
+          const gR = computeGaze(lm, RIGHT_EYE);
+          const gL = computeGaze(lm, LEFT_EYE);
+          if (gR.valid && gL.valid) {
+            state.gaze.x = (gR.x + gL.x) * 0.5;
+            state.gaze.y = (gR.y + gL.y) * 0.5;
+          }
+          state.lostFrames = 0;
+        } else {
+          state.lostFrames++;
+          if (state.lostFrames > 6) {
+            state.lastFace = null;
+            state.blinkState = false;
+          }
+        }
+        updateTelemetry();
+      }
+
+      // ============================================================
+      //  MEDIAPIPE FACE MESH (lazy)
+      // ============================================================
+      function ensureFaceMesh() {
+        if (state.faceMesh) return state.faceMesh;
+        if (typeof FaceMesh === 'undefined') return null;
+        state.faceMesh = new FaceMesh({
+          locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`,
+        });
+        state.faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+        state.faceMesh.onResults(onFaceResults);
+        return state.faceMesh;
+      }
+
+      // ============================================================
+      //  CAMERA
+      // ============================================================
+      async function startCamera() {
+        const constraints = {
+          video: {
+            facingMode: 'user',
+            width:  { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        };
+        state.stream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = state.stream;
+        await video.play();
+        setTimeout(updateCover, 60);
+      }
+
+      function stopCamera() {
+        if (state.stream) {
+          state.stream.getTracks().forEach(t => t.stop());
+          state.stream = null;
+        }
+        video.srcObject = null;
+      }
+
+      // ============================================================
+      //  INFERENCE LOOP
+      // ============================================================
+      let sendErrorLogged = false;
+
+      async function frameLoop() {
+        if (!state.active) return;
+        state.rafInfer = requestAnimationFrame(frameLoop);
+        if (state.inferenceInFlight) return;
+
+        const now = performance.now();
+        const dt = now - state.inferenceLast;
+        if (dt < 1000 / 60) return;
+        state.inferenceLast = now;
+
+        const fps = 1000 / Math.max(1, dt);
+        state.fpsSmooth = state.fpsSmooth ? state.fpsSmooth * 0.9 + fps * 0.1 : fps;
+        tFps.textContent = String(Math.min(999, Math.round(state.fpsSmooth)));
+        tFps.classList.remove('idle');
+
+        if (video.readyState < 2 || video.videoWidth === 0) return;
+
+        const fm = ensureFaceMesh();
+        if (!fm) return;
+
+        state.inferenceInFlight = true;
+        try {
+          await fm.send({ image: video });
+          sendErrorLogged = false;
+        } catch (e) {
+          if (!sendErrorLogged) {
+            // eslint-disable-next-line no-console
+            console.warn('[OCULUS] faceMesh.send error', e);
+            sendErrorLogged = true;
+          }
+        }
+        state.inferenceInFlight = false;
+      }
+
+      // ============================================================
+      //  ACTIVATION
+      // ============================================================
+      async function activate() {
+        if (state.active) return;
+
+        if (!ensureFaceMesh()) {
+          activateBtn.disabled = false;
+          activateBtn.textContent = 'ACTIVATE';
+          bootEl.classList.remove('hidden');
+          bootEl.classList.add('error');
+          bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
+          return;
+        }
+
+        activateBtn.disabled = true;
+        activateBtn.textContent = 'STARTING';
+
+        try {
+          await startCamera();
+        } catch (e) {
+          console.error(e);
+          let msg = 'CAMERA ACCESS DENIED';
+          if (e && e.name === 'NotAllowedError') msg = 'PERMISSION DENIED';
+          else if (e && e.name === 'NotFoundError') msg = 'NO CAMERA FOUND';
+          else if (e && e.name === 'NotReadableError') msg = 'CAMERA BUSY';
+
+          activateBtn.disabled = false;
+          activateBtn.textContent = 'ACTIVATE';
+          bootEl.classList.remove('hidden');
+          bootEl.classList.add('error');
+          bootMsg.textContent = msg;
+          return;
+        }
+
+        state.active = true;
+        activateBtn.disabled = false;
+        activateBtn.textContent = 'ACTIVE';
+        activateBtn.classList.add('on');
+
+        bootEl.classList.add('hidden');
+        bootEl.classList.remove('error');
+
+        state.inferenceLast = performance.now();
+        frameLoop();
+      }
+
+      function deactivate() {
+        if (!state.active) return;
+        state.active = false;
+
+        if (state.rafInfer) { cancelAnimationFrame(state.rafInfer); state.rafInfer = null; }
+
+        stopCamera();
+        state.lastFace = null;
+        state.blinkState = false;
+        state.lostFrames = 0;
+        state.inferenceInFlight = false;
+        ctx.clearRect(0, 0, viewW, viewH);
+
+        activateBtn.textContent = 'ACTIVATE';
+        activateBtn.classList.remove('on');
+
+        tFps.textContent = '—';
+        tFaces.textContent = '0';
+        tEar.textContent = '—';
+        tBlink.textContent = '0';
+        tGaze.textContent = '—';
+        [tFps, tFaces, tEar, tBlink, tGaze].forEach(el => el.classList.add('idle'));
+        gazeDot.style.transform = 'translate(0px, 0px)';
+      }
+
+      activateBtn.addEventListener('click', () => {
+        if (state.active) deactivate();
+        else activate();
+      });
+
+      // ============================================================
+      //  BACK NAVIGATION
+      // ============================================================
+      backBtn.addEventListener('click', () => {
+        if (state.active) deactivate();
+        window.location.href = 'index.html';
+      });
+
+      // ============================================================
+      //  KEYBOARD
+      // ============================================================
+      document.addEventListener('keydown', (e) => {
+        const k = e.key.toLowerCase();
+        if (k === 'a') { if (state.active) deactivate(); else activate(); }
+        else if (k === 'escape') { if (state.active) deactivate(); }
+        else if (k === 'b') { window.location.href = 'index.html'; }
+      });
+
+      // ============================================================
+      //  BOOT
+      // ============================================================
+      function init() {
+        render();
+      }
+
+      setTimeout(() => {
+        init();
+        if (typeof FaceMesh === 'undefined') {
+          bootEl.classList.add('error');
+          bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
+          setTimeout(() => bootEl.classList.add('hidden'), 2200);
+        } else {
+          bootEl.classList.add('hidden');
+        }
+      }, 300);
+
+    })();
+  </script>
+</body>
+
+</html>
