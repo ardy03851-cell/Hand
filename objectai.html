@@ -29,12 +29,13 @@
 
     :root {
       --accent-hex: #ffffff;
-      --panel-bg: rgba(7, 8, 10, 0.94);
+      --panel-bg: rgba(6, 7, 9, 0.96);
       --hairline: rgba(255, 255, 255, 0.08);
-      --hairline-soft: rgba(255, 255, 255, 0.05);
+      --hairline-soft: rgba(255, 255, 255, 0.045);
       --muted: rgba(255, 255, 255, 0.42);
       --muted-2: rgba(255, 255, 255, 0.28);
       --fg-bright: #f6f6f6;
+      --danger: #ff4d4d;
     }
 
     #stage {
@@ -75,7 +76,51 @@
       z-index: 2;
     }
 
-    /* ============================ TOP BAR ============================ */
+    /* ===================== FRAME CORNER TICKS ===================== */
+    .frame-corners {
+      position: absolute;
+      inset: 14px;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.35;
+    }
+
+    .frame-corners span {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 0 solid #fff;
+    }
+
+    .frame-corners .tl {
+      top: 0;
+      left: 0;
+      border-top-width: 1px;
+      border-left-width: 1px;
+    }
+
+    .frame-corners .tr {
+      top: 0;
+      right: 0;
+      border-top-width: 1px;
+      border-right-width: 1px;
+    }
+
+    .frame-corners .bl {
+      bottom: 0;
+      left: 0;
+      border-bottom-width: 1px;
+      border-left-width: 1px;
+    }
+
+    .frame-corners .br {
+      bottom: 0;
+      right: 0;
+      border-bottom-width: 1px;
+      border-right-width: 1px;
+    }
+
+    /* ===================== TOP BAR ===================== */
     .topbar {
       position: absolute;
       top: 0;
@@ -83,25 +128,55 @@
       right: 0;
       padding: max(14px, env(safe-area-inset-top)) 20px 0 20px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: flex-start;
       z-index: 20;
       pointer-events: none;
     }
 
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .topbar-left .mark {
+      width: 8px;
+      height: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      position: relative;
+    }
+
+    .topbar-left .mark::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .topbar-left .id {
+      color: rgba(255, 255, 255, 0.92);
+      font-weight: 600;
+    }
+
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       pointer-events: auto;
     }
 
     .icon-btn {
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.42);
       border: 1px solid rgba(255, 255, 255, 0.22);
       color: rgba(255, 255, 255, 0.78);
       font-family: inherit;
-      font-size: 11px;
+      font-size: 10px;
       letter-spacing: 0.16em;
       padding: 7px 10px;
       cursor: pointer;
@@ -129,7 +204,7 @@
       height: 12px;
     }
 
-    /* ============================ HUD ============================ */
+    /* ===================== HUD ===================== */
     .hud {
       position: absolute;
       inset: 0;
@@ -147,9 +222,9 @@
       top: max(16px, env(safe-area-inset-top));
       left: 22px;
       display: flex;
-      gap: 18px;
+      gap: 22px;
       font-size: 9px;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
@@ -170,11 +245,11 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 34px;
-      height: 34px;
-      margin: -17px 0 0 -17px;
+      width: 42px;
+      height: 42px;
+      margin: -21px 0 0 -21px;
       pointer-events: none;
-      opacity: 0.14;
+      opacity: 0.18;
     }
 
     .hud-reticle::before,
@@ -202,11 +277,11 @@
 
     .hud-reticle span {
       position: absolute;
-      inset: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      inset: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
-    /* ============================ BOTTOM BAR ============================ */
+    /* ===================== BOTTOM BAR ===================== */
     .bottombar {
       position: absolute;
       left: 0;
@@ -214,15 +289,41 @@
       bottom: 0;
       padding: 0 22px max(20px, env(safe-area-inset-bottom)) 22px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: flex-end;
       pointer-events: none;
       z-index: 20;
     }
 
+    .status-chip {
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .status-chip .dot {
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .status-chip.live .dot {
+      background: #3ddc84;
+      box-shadow: 0 0 0 3px rgba(61, 220, 132, 0.14);
+    }
+
+    .status-chip.live {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
     #activateBtn {
       pointer-events: auto;
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.42);
       border: 1px solid rgba(255, 255, 255, 0.32);
       color: #f2f2f2;
       font-family: inherit;
@@ -284,7 +385,7 @@
       }
     }
 
-    /* ============================ TOAST ============================ */
+    /* ===================== TOAST ===================== */
     #toast {
       position: absolute;
       left: 50%;
@@ -310,13 +411,13 @@
       transform: translate(-50%, 0);
     }
 
-    /* ============================ PANEL ============================ */
+    /* ===================== PANEL ===================== */
     #settingsPanel {
       position: absolute;
       top: 0;
       right: 0;
       height: 100%;
-      width: min(420px, 92vw);
+      width: min(440px, 94vw);
       background: var(--panel-bg);
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
@@ -385,7 +486,6 @@
 
     .panel-body::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.14);
-      border-radius: 2px;
     }
 
     .section {
@@ -466,7 +566,6 @@
           rgba(255, 255, 255, 0.12) var(--fill, 0%));
       outline: none;
       cursor: pointer;
-      border-radius: 1px;
     }
 
     .field input[type="range"]::-webkit-slider-thumb {
@@ -475,7 +574,7 @@
       width: 12px;
       height: 12px;
       background: #fff;
-      border-radius: 50%;
+      border-radius: 0;
       cursor: pointer;
       border: 2px solid #000;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
@@ -490,7 +589,7 @@
       width: 12px;
       height: 12px;
       background: #fff;
-      border-radius: 50%;
+      border-radius: 0;
       cursor: pointer;
       border: 2px solid #000;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
@@ -547,10 +646,11 @@
       background: var(--accent-hex);
     }
 
-    .select {
+    .select,
+    .text-input {
       background: transparent;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.85);
+      color: rgba(255, 255, 255, 0.9);
       font-family: inherit;
       font-size: 10px;
       letter-spacing: 0.1em;
@@ -560,20 +660,37 @@
       text-transform: uppercase;
       -webkit-appearance: none;
       appearance: none;
+      transition: border-color .15s;
+    }
+
+    .text-input {
+      cursor: text;
+      text-transform: none;
+    }
+
+    .text-input::placeholder {
+      color: rgba(255, 255, 255, 0.22);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 9px;
+    }
+
+    .select {
       background-image:
         linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
         linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
       background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
       background-size: 5px 5px, 5px 5px;
       background-repeat: no-repeat;
-      transition: border-color .15s;
     }
 
-    .select:hover:not(:disabled) {
+    .select:hover:not(:disabled),
+    .text-input:hover {
       border-color: rgba(255, 255, 255, 0.4);
     }
 
-    .select:focus {
+    .select:focus,
+    .text-input:focus {
       outline: none;
       border-color: var(--accent-hex);
     }
@@ -592,11 +709,15 @@
       font-size: 8.5px;
       letter-spacing: 0.12em;
       color: rgba(255, 255, 255, 0.26);
-      line-height: 1.6;
+      line-height: 1.7;
       text-transform: uppercase;
     }
 
-    /* ============================ METRICS ============================ */
+    .hint.warn {
+      color: rgba(255, 120, 120, 0.65);
+    }
+
+    /* ===================== METRICS ===================== */
     .metric-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -632,7 +753,7 @@
       color: rgba(255, 255, 255, 0.28);
     }
 
-    /* ============================ DETECTIONS ============================ */
+    /* ===================== DETECTIONS ===================== */
     .det-list {
       display: flex;
       flex-direction: column;
@@ -701,7 +822,7 @@
       pointer-events: auto;
     }
 
-    /* ============================ BOOT ============================ */
+    /* ===================== BOOT ===================== */
     #boot {
       position: absolute;
       inset: 0;
@@ -763,7 +884,7 @@
     }
 
     #boot.error .sub {
-      color: #ff3b30;
+      color: var(--danger);
     }
 
     #boot.error .bar {
@@ -778,9 +899,18 @@
     <div id="viewport">
       <video id="video" playsinline autoplay muted></video>
       <canvas id="overlay"></canvas>
+      <div class="frame-corners">
+        <span class="tl"></span><span class="tr"></span>
+        <span class="bl"></span><span class="br"></span>
+      </div>
     </div>
 
     <div class="topbar">
+      <div class="topbar-left">
+        <span class="mark"></span>
+        <span class="id">SENTINEL</span>
+        <span>/ OBJDET</span>
+      </div>
       <div class="topbar-right">
         <button class="icon-btn" id="captureBtn" type="button" title="Capture (C)" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
@@ -810,11 +940,16 @@
         <div>FPS<span class="val idle" id="tFps">—</span></div>
         <div>OBJ<span class="val idle" id="tObjects">0</span></div>
         <div>INFER<span class="val idle" id="tLatency">—</span></div>
+        <div>CONF<span class="val idle" id="tAvgConf">—</span></div>
       </div>
       <div class="hud-reticle"><span></span></div>
     </div>
 
     <div class="bottombar">
+      <div class="status-chip" id="statusChip">
+        <span class="dot"></span>
+        <span id="statusText">STANDBY</span>
+      </div>
       <button id="activateBtn" type="button" disabled>INITIALIZING</button>
     </div>
 
@@ -828,6 +963,7 @@
       </div>
       <div class="panel-body">
 
+        <!-- SOURCE -->
         <div class="section" data-section="source">
           <div class="section-head"><span>Source</span><span class="chev">▼</span></div>
           <div class="section-content">
@@ -841,46 +977,137 @@
           </div>
         </div>
 
+        <!-- MODEL -->
         <div class="section" data-section="model">
           <div class="section-head"><span>Model</span><span class="chev">▼</span></div>
           <div class="section-content">
             <div class="field">
               <div class="label"><span>Network</span></div>
               <select class="select" id="modelSelect">
-                <option value="lite_mobilenet_v2">LITE MOBILENET V2</option>
-                <option value="mobilenet_v2">MOBILENET V2</option>
-                <option value="mobilenet_v1">MOBILENET V1</option>
+                <option value="lite_mobilenet_v2">LITE MOBILENET V2 · FAST</option>
+                <option value="mobilenet_v2">MOBILENET V2 · BALANCED</option>
+                <option value="mobilenet_v1">MOBILENET V1 · LEGACY</option>
               </select>
             </div>
             <div class="field">
-              <div class="label"><span>Confidence</span><span class="value" data-value="threshold">0.50</span></div>
-              <input type="range" min="0.10" max="0.90" step="0.05" data-key="threshold">
+              <div class="label"><span>Confidence Threshold</span><span class="value" data-value="threshold">0.50</span>
+              </div>
+              <input type="range" min="0.10" max="0.95" step="0.05" data-key="threshold">
             </div>
             <div class="field">
-              <div class="label"><span>Max Boxes</span><span class="value" data-value="maxBoxes">30</span></div>
+              <div class="label"><span>Max Detections</span><span class="value" data-value="maxBoxes">30</span></div>
               <input type="range" min="5" max="60" step="1" data-key="maxBoxes">
             </div>
+            <div class="field">
+              <div class="label"><span>NMS IoU Threshold</span><span class="value" data-value="nmsIou">0.45</span></div>
+              <input type="range" min="0.10" max="0.90" step="0.05" data-key="nmsIou">
+            </div>
+            <label class="toggle" data-key="nmsEnabled"><span>Apply NMS Suppression</span><span class="switch"></span></label>
           </div>
         </div>
 
-        <div class="section" data-section="overlay">
-          <div class="section-head"><span>Overlay</span><span class="chev">▼</span></div>
+        <!-- FILTERS -->
+        <div class="section" data-section="filters">
+          <div class="section-head"><span>Detection Filters</span><span class="chev">▼</span></div>
           <div class="section-content">
-            <label class="toggle" data-key="showBoxes"><span>Bounding Boxes</span><span class="switch"></span></label>
-            <label class="toggle" data-key="showLabels"><span>Class Labels</span><span class="switch"></span></label>
-            <label class="toggle" data-key="showScore"><span>Confidence Score</span><span class="switch"></span></label>
-            <label class="toggle" data-key="showReticle"><span>Center Reticle</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Class Whitelist</span></div>
+              <input type="text" class="text-input" id="classFilter" placeholder="person, car, dog (blank = all)">
+            </div>
+            <div class="field">
+              <div class="label"><span>Min Box Area %</span><span class="value" data-value="minArea">0.0</span></div>
+              <input type="range" min="0" max="20" step="0.5" data-key="minArea">
+            </div>
+            <div class="field">
+              <div class="label"><span>Max Box Area %</span><span class="value" data-value="maxArea">100</span></div>
+              <input type="range" min="5" max="100" step="1" data-key="maxArea">
+            </div>
+            <div class="field">
+              <div class="label"><span>Min Aspect Ratio</span><span class="value" data-value="minAspect">0.10</span>
+              </div>
+              <input type="range" min="0.05" max="3" step="0.05" data-key="minAspect">
+            </div>
+            <div class="field">
+              <div class="label"><span>Max Aspect Ratio</span><span class="value" data-value="maxAspect">10.0</span>
+              </div>
+              <input type="range" min="0.5" max="20" step="0.5" data-key="maxAspect">
+            </div>
+            <div class="hint">Filters applied post-inference. Area measured as % of frame.</div>
+          </div>
+        </div>
+
+        <!-- RENDER STYLE -->
+        <div class="section" data-section="render">
+          <div class="section-head"><span>Render Style</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Box Style</span></div>
+              <select class="select" id="boxStyleSelect">
+                <option value="standard">STANDARD RECT</option>
+                <option value="tactical">TACTICAL BRACKETS</option>
+                <option value="bracket">BRACKET + FRAME</option>
+                <option value="recon">RECON DASHED</option>
+                <option value="crosshair">CROSSHAIR</option>
+                <option value="bracketcross">BRACKET + CROSS</option>
+                <option value="minimal">MINIMAL LINE</option>
+                <option value="double">DOUBLE FRAME</option>
+                <option value="corneronly">CORNER TICKS ONLY</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Color Mode</span></div>
+              <select class="select" id="colorModeSelect">
+                <option value="mono">MONO WHITE</option>
+                <option value="confidence">CONFIDENCE SCALE</option>
+                <option value="class">CLASS HASH</option>
+                <option value="thermal">THERMAL</option>
+                <option value="amber">AMBER CRT</option>
+                <option value="cyan">CYAN RECON</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Label Content</span></div>
+              <select class="select" id="labelModeSelect">
+                <option value="class">CLASS ONLY</option>
+                <option value="classconf">CLASS + CONFIDENCE</option>
+                <option value="conf">CONFIDENCE ONLY</option>
+                <option value="index">INDEX + CLASS</option>
+                <option value="none">HIDDEN</option>
+              </select>
+            </div>
             <div class="field">
               <div class="label"><span>Box Weight</span><span class="value" data-value="boxWeight">1.50</span></div>
-              <input type="range" min="0.5" max="4" step="0.1" data-key="boxWeight">
+              <input type="range" min="0.5" max="5" step="0.1" data-key="boxWeight">
             </div>
             <div class="field">
               <div class="label"><span>Label Scale</span><span class="value" data-value="labelScale">1.00</span></div>
               <input type="range" min="0.6" max="2" step="0.05" data-key="labelScale">
             </div>
+            <div class="field">
+              <div class="label"><span>Overlay Opacity</span><span class="value" data-value="overlayAlpha">1.00</span>
+              </div>
+              <input type="range" min="0.2" max="1" step="0.05" data-key="overlayAlpha">
+            </div>
           </div>
         </div>
 
+        <!-- OVERLAY ELEMENTS -->
+        <div class="section" data-section="elements">
+          <div class="section-head"><span>Overlay Elements</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="showBoxes"><span>Bounding Boxes</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showLabels"><span>Class Labels</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showCenterDot"><span>Box Center Dot</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showCornerTicks"><span>Frame Corner Ticks</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showReticle"><span>Center Reticle</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showGrid"><span>Measurement Grid</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showScanline"><span>Scanline Sweep</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showHorizon"><span>Horizon Line</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showScaleBar"><span>Scale Bar</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <!-- TELEMETRY -->
         <div class="section" data-section="telemetry">
           <div class="section-head"><span>Telemetry</span><span class="chev">▼</span></div>
           <div class="section-content">
@@ -901,10 +1128,27 @@
                 <span class="k">Resolution</span>
                 <span class="v idle" id="mResolution">—</span>
               </div>
+              <div class="metric">
+                <span class="k">Avg Conf</span>
+                <span class="v idle" id="mAvgConf">—</span>
+              </div>
+              <div class="metric">
+                <span class="k">Classes</span>
+                <span class="v idle" id="mClasses">—</span>
+              </div>
+              <div class="metric">
+                <span class="k">Filtered</span>
+                <span class="v idle" id="mFiltered">—</span>
+              </div>
+              <div class="metric">
+                <span class="k">NMS Supp.</span>
+                <span class="v idle" id="mNms">—</span>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- DETECTIONS -->
         <div class="section" data-section="detections">
           <div class="section-head"><span>Detections</span><span class="chev">▼</span></div>
           <div class="section-content">
@@ -914,6 +1158,7 @@
           </div>
         </div>
 
+        <!-- SHORTCUTS -->
         <div class="section" data-section="shortcuts">
           <div class="section-head"><span>Shortcuts</span><span class="chev">▼</span></div>
           <div class="section-content">
@@ -924,6 +1169,7 @@
             <div class="hint">M · MIRROR PREVIEW</div>
             <div class="hint">H · TOGGLE HUD</div>
             <div class="hint">F · FULLSCREEN</div>
+            <div class="hint">SPACE · PAUSE / RESUME</div>
           </div>
         </div>
 
@@ -961,15 +1207,22 @@
       const exportBtn = document.getElementById('exportBtn');
       const toastEl = document.getElementById('toast');
       const hudEl = document.getElementById('hud');
+      const statusChip = document.getElementById('statusChip');
+      const statusText = document.getElementById('statusText');
 
       const tFps = document.getElementById('tFps');
       const tObjects = document.getElementById('tObjects');
       const tLatency = document.getElementById('tLatency');
+      const tAvgConf = document.getElementById('tAvgConf');
 
       const mFps = document.getElementById('mFps');
       const mLatency = document.getElementById('mLatency');
       const mObjects = document.getElementById('mObjects');
       const mResolution = document.getElementById('mResolution');
+      const mAvgConf = document.getElementById('mAvgConf');
+      const mClasses = document.getElementById('mClasses');
+      const mFiltered = document.getElementById('mFiltered');
+      const mNms = document.getElementById('mNms');
 
       const detList = document.getElementById('detList');
 
@@ -980,25 +1233,50 @@
 
       const cameraSelect = document.getElementById('cameraSelect');
       const modelSelect = document.getElementById('modelSelect');
+      const boxStyleSelect = document.getElementById('boxStyleSelect');
+      const colorModeSelect = document.getElementById('colorModeSelect');
+      const labelModeSelect = document.getElementById('labelModeSelect');
+      const classFilter = document.getElementById('classFilter');
 
       // ============================================================
       //  CONFIG
       // ============================================================
       const DEFAULTS = {
+        // source
         mirror: false,
+        model: 'lite_mobilenet_v2',
+        // detection
         threshold: 0.50,
         maxBoxes: 30,
-        showBoxes: true,
-        showLabels: true,
-        showScore: true,
-        showReticle: true,
+        nmsEnabled: true,
+        nmsIou: 0.45,
+        // filters
+        minArea: 0.0,
+        maxArea: 100,
+        minAspect: 0.10,
+        maxAspect: 10.0,
+        classWhitelist: '',
+        // render
+        boxStyle: 'tactical',
+        colorMode: 'mono',
+        labelMode: 'classconf',
         boxWeight: 1.50,
         labelScale: 1.00,
+        overlayAlpha: 1.00,
+        // elements
+        showBoxes: true,
+        showLabels: true,
+        showCenterDot: false,
+        showCornerTicks: true,
+        showReticle: true,
+        showGrid: false,
+        showScanline: false,
+        showHorizon: false,
+        showScaleBar: false,
       };
 
       const config = { ...DEFAULTS };
-
-      const LS_KEY = 'sentinel.objdetect.v1';
+      const LS_KEY = 'sentinel.objdetect.v3';
 
       function loadConfig() {
         try {
@@ -1025,6 +1303,9 @@
         fps: 0,
         latency: 0,
         predictions: [],
+        rawCount: 0,
+        filteredCount: 0,
+        suppressedCount: 0,
         lastPanelPaint: 0,
       };
 
@@ -1032,7 +1313,7 @@
       const PANEL_INTERVAL = 180;
 
       // ============================================================
-      //  CANVAS / COVER
+      //  CANVAS / COVER MAPPING
       // ============================================================
       let viewW = window.innerWidth;
       let viewH = window.innerHeight;
@@ -1072,52 +1353,627 @@
       resize();
 
       // ============================================================
-      //  UTIL
+      //  MATH UTILS
       // ============================================================
       const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
 
-      function stamp() {
-        const d = new Date();
-        const p = n => String(n).padStart(2, '0');
-        return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+      function iou(a, b) {
+        const [ax, ay, aw, ah] = a;
+        const [bx, by, bw, bh] = b;
+        const x1 = Math.max(ax, bx);
+        const y1 = Math.max(ay, by);
+        const x2 = Math.min(ax + aw, bx + bw);
+        const y2 = Math.min(ay + ah, by + bh);
+        const iw = Math.max(0, x2 - x1);
+        const ih = Math.max(0, y2 - y1);
+        const inter = iw * ih;
+        const union = aw * ah + bw * bh - inter;
+        return union > 0 ? inter / union : 0;
       }
 
-      function download(blob, filename) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      function applyNMS(preds, iouThresh) {
+        if (!preds.length) return preds;
+        const sorted = [...preds].sort((a, b) => b.score - a.score);
+        const suppressed = new Array(sorted.length).fill(false);
+        const out = [];
+        for (let i = 0; i < sorted.length; i++) {
+          if (suppressed[i]) continue;
+          out.push(sorted[i]);
+          for (let j = i + 1; j < sorted.length; j++) {
+            if (suppressed[j]) continue;
+            if (sorted[i].class !== sorted[j].class) continue;
+            if (iou(sorted[i].bbox, sorted[j].bbox) > iouThresh) suppressed[j] = true;
+          }
+        }
+        return out;
       }
 
-      function showToast(text, ms) {
-        toastEl.textContent = text;
-        toastEl.classList.add('show');
-        clearTimeout(showToast._t);
-        showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms || 1200);
+      function parseWhitelist(str) {
+        if (!str) return null;
+        const parts = str.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        return parts.length ? parts : null;
+      }
+
+      function passFilters(p, whitelist, frameArea) {
+        if (whitelist && !whitelist.includes(p.class.toLowerCase())) return false;
+
+        const [x, y, w, h] = p.bbox;
+        const areaPct = (w * h / frameArea) * 100;
+        if (areaPct < config.minArea) return false;
+        if (areaPct > config.maxArea) return false;
+
+        const aspect = w / Math.max(1, h);
+        if (aspect < config.minAspect) return false;
+        if (aspect > config.maxAspect) return false;
+
+        return true;
       }
 
       // ============================================================
-      //  BACKEND + MODEL
+      //  COLOR ENGINE
       // ============================================================
-      async function initBackend() {
-        try { await tf.setBackend('webgl'); } catch (_) { }
-        if (tf.getBackend() !== 'webgl') {
-          try { await tf.setBackend('cpu'); } catch (_) { }
+      function confColor(score) {
+        let r, g, b;
+        if (score < 0.5) {
+          const t = score / 0.5;
+          r = 255;
+          g = 60 + (180 - 60) * t;
+          b = 60 + (50 - 60) * t;
+        } else {
+          const t = (score - 0.5) / 0.5;
+          r = 255 + (80 - 255) * t;
+          g = 180 + (220 - 180) * t;
+          b = 50 + (120 - 50) * t;
         }
-        await tf.ready();
+        return `rgb(${r | 0},${g | 0},${b | 0})`;
       }
 
-      async function loadModel(name) {
-        if (state.model) {
-          try { state.model.dispose(); } catch (_) { }
-          state.model = null;
+      const classColorCache = new Map();
+      function classColor(name) {
+        let c = classColorCache.get(name);
+        if (c) return c;
+        let h = 0;
+        for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+        const hue = ((h % 360) + 360) % 360;
+        c = `hsl(${hue}, 68%, 66%)`;
+        classColorCache.set(name, c);
+        return c;
+      }
+
+      function thermalColor(score) {
+        // cold (blue) → hot (red)
+        const t = clamp(score, 0, 1);
+        let r, g, b;
+        if (t < 0.33) {
+          const u = t / 0.33;
+          r = 40 + 60 * u; g = 90 + 90 * u; b = 220;
+        } else if (t < 0.66) {
+          const u = (t - 0.33) / 0.33;
+          r = 100 + 155 * u; g = 180 + 40 * u; b = 220 - 140 * u;
+        } else {
+          const u = (t - 0.66) / 0.34;
+          r = 255; g = 220 - 180 * u; b = 80 - 60 * u;
         }
-        state.model = await cocoSsd.load({ base: name });
-        state.modelName = name;
+        return `rgb(${r | 0},${g | 0},${b | 0})`;
+      }
+
+      function pickColor(p) {
+        switch (config.colorMode) {
+          case 'confidence': return confColor(p.score);
+          case 'class': return classColor(p.class);
+          case 'thermal': return thermalColor(p.score);
+          case 'amber': return 'rgb(255,176,64)';
+          case 'cyan': return 'rgb(96,220,255)';
+          default: return 'rgb(255,255,255)';
+        }
+      }
+
+      function withAlpha(rgbStr, a) {
+        // accepts "rgb(r,g,b)" or "hsl(h,s%,l%)"
+        if (rgbStr.startsWith('rgb(')) {
+          return rgbStr.replace('rgb(', 'rgba(').replace(')', `,${a})`);
+        }
+        if (rgbStr.startsWith('hsl(')) {
+          return rgbStr.replace('hsl(', 'hsla(').replace(')', `,${a})`);
+        }
+        return rgbStr;
+      }
+
+      // ============================================================
+      //  BOX RENDERERS
+      // ============================================================
+      function drawBoxStyle(x, y, w, h, color, lineW) {
+        const A = config.overlayAlpha;
+        const c = withAlpha(color, A);
+        ctx.strokeStyle = c;
+        ctx.lineWidth = lineW;
+        ctx.setLineDash([]);
+
+        const style = config.boxStyle;
+        const cornerLen = clamp(Math.min(w, h) * 0.22, 8, 34);
+
+        if (style === 'tactical' || style === 'bracket' || style === 'bracketcross' || style === 'corneronly') {
+          const drawFull = style === 'bracket' || style === 'bracketcross';
+          if (drawFull) {
+            ctx.globalAlpha = 0.35;
+            ctx.strokeRect(x, y, w, h);
+            ctx.globalAlpha = 1;
+          }
+          ctx.beginPath();
+          // TL
+          ctx.moveTo(x, y + cornerLen); ctx.lineTo(x, y); ctx.lineTo(x + cornerLen, y);
+          // TR
+          ctx.moveTo(x + w - cornerLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + cornerLen);
+          // BR
+          ctx.moveTo(x + w, y + h - cornerLen); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w - cornerLen, y + h);
+          // BL
+          ctx.moveTo(x + cornerLen, y + h); ctx.lineTo(x, y + h); ctx.lineTo(x, y + h - cornerLen);
+          ctx.stroke();
+
+          if (style === 'bracketcross') {
+            const cx = x + w / 2, cy = y + h / 2;
+            const cs = clamp(Math.min(w, h) * 0.12, 4, 14);
+            ctx.beginPath();
+            ctx.moveTo(cx - cs, cy); ctx.lineTo(cx + cs, cy);
+            ctx.moveTo(cx, cy - cs); ctx.lineTo(cx, cy + cs);
+            ctx.stroke();
+          }
+        } else if (style === 'recon') {
+          ctx.setLineDash([lineW * 4, lineW * 3]);
+          ctx.strokeRect(x, y, w, h);
+          ctx.setLineDash([]);
+        } else if (style === 'crosshair') {
+          const cx = x + w / 2, cy = y + h / 2;
+          const ch = clamp(Math.min(w, h) * 0.18, 6, 22);
+          ctx.beginPath();
+          ctx.moveTo(x, cy); ctx.lineTo(x + ch, cy);
+          ctx.moveTo(x + w - ch, cy); ctx.lineTo(x + w, cy);
+          ctx.moveTo(cx, y); ctx.lineTo(cx, y + ch);
+          ctx.moveTo(cx, y + h - ch); ctx.lineTo(cx, y + h);
+          ctx.stroke();
+        } else if (style === 'minimal') {
+          ctx.lineWidth = Math.max(0.5, lineW * 0.5);
+          ctx.strokeRect(x, y, w, h);
+        } else if (style === 'double') {
+          ctx.strokeRect(x, y, w, h);
+          const off = Math.max(3, lineW * 2);
+          ctx.lineWidth = Math.max(0.5, lineW * 0.5);
+          ctx.globalAlpha = 0.55;
+          ctx.strokeRect(x - off, y - off, w + off * 2, h + off * 2);
+          ctx.globalAlpha = 1;
+        } else {
+          // standard
+          ctx.strokeRect(x, y, w, h);
+        }
+      }
+
+      // ============================================================
+      //  LABEL RENDERER
+      // ============================================================
+      function drawLabel(p, sx, sy, sw, color, fs) {
+        const mode = config.labelMode;
+        if (mode === 'none' || !config.showLabels) return;
+
+        const padX = Math.round(fs * 0.6);
+        const chipH = Math.round(fs * 1.7);
+        const gap = Math.round(fs * 0.5);
+
+        let mainText = '';
+        let subText = '';
+
+        if (mode === 'class') {
+          mainText = p.class;
+        } else if (mode === 'classconf') {
+          mainText = p.class;
+          subText = Math.round(p.score * 100) + '%';
+        } else if (mode === 'conf') {
+          mainText = Math.round(p.score * 100) + '%';
+        } else if (mode === 'index') {
+          mainText = '#' + (p._idx != null ? p._idx : 0) + ' ' + p.class;
+        }
+
+        ctx.textBaseline = 'middle';
+        ctx.font = `600 ${fs}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+
+        const mainW = ctx.measureText(mainText).width;
+        const subW = subText ? ctx.measureText(subText).width : 0;
+        const chipW = Math.min(viewW, mainW + (subW ? gap + subW : 0) + padX * 2);
+
+        // place label above box, inside if no room
+        let lx = clamp(sx, 0, Math.max(0, viewW - chipW));
+        let ly = sy - chipH - 3;
+        if (ly < 0) ly = sy + 3;
+        ly = clamp(ly, 0, Math.max(0, viewH - chipH));
+
+        // background
+        ctx.fillStyle = `rgba(6,7,9,${0.86 * config.overlayAlpha})`;
+        ctx.fillRect(lx, ly, chipW, chipH);
+
+        // left accent bar
+        ctx.fillStyle = withAlpha(color, config.overlayAlpha);
+        ctx.fillRect(lx, ly, 2, chipH);
+
+        // border
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(255,255,255,${0.16 * config.overlayAlpha})`;
+        ctx.strokeRect(lx + 0.5, ly + 0.5, chipW - 1, chipH - 1);
+
+        const ty = ly + chipH / 2 + 0.5;
+        ctx.fillStyle = `rgba(255,255,255,${0.96 * config.overlayAlpha})`;
+        ctx.fillText(mainText, lx + padX + 3, ty);
+
+        if (subText) {
+          ctx.fillStyle = withAlpha(color, 0.78 * config.overlayAlpha);
+          ctx.fillText(subText, lx + padX + 3 + mainW + gap, ty);
+        }
+      }
+
+      // ============================================================
+      //  OVERLAY EFFECTS
+      // ============================================================
+      let scanY = 0;
+
+      function drawGrid() {
+        const step = 64;
+        ctx.save();
+        ctx.strokeStyle = `rgba(255,255,255,${0.045 * config.overlayAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = 0; x < viewW; x += step) {
+          ctx.moveTo(x + 0.5, 0);
+          ctx.lineTo(x + 0.5, viewH);
+        }
+        for (let y = 0; y < viewH; y += step) {
+          ctx.moveTo(0, y + 0.5);
+          ctx.lineTo(viewW, y + 0.5);
+        }
+        ctx.stroke();
+
+        // center cross accent
+        ctx.strokeStyle = `rgba(255,255,255,${0.10 * config.overlayAlpha})`;
+        ctx.beginPath();
+        ctx.moveTo(viewW / 2 + 0.5, 0);
+        ctx.lineTo(viewW / 2 + 0.5, viewH);
+        ctx.moveTo(0, viewH / 2 + 0.5);
+        ctx.lineTo(viewW, viewH / 2 + 0.5);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawScanline(dt) {
+        scanY = (scanY + dt * 0.12) % (viewH + 80);
+        const y = scanY - 40;
+        const grad = ctx.createLinearGradient(0, y - 30, 0, y + 30);
+        grad.addColorStop(0, `rgba(255,255,255,0)`);
+        grad.addColorStop(0.5, `rgba(255,255,255,${0.10 * config.overlayAlpha})`);
+        grad.addColorStop(1, `rgba(255,255,255,0)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, y - 30, viewW, 60);
+
+        ctx.strokeStyle = `rgba(255,255,255,${0.22 * config.overlayAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(viewW, y + 0.5);
+        ctx.stroke();
+      }
+
+      function drawHorizon() {
+        const y = viewH / 2 + 0.5;
+        ctx.save();
+        ctx.setLineDash([10, 8]);
+        ctx.strokeStyle = `rgba(255,255,255,${0.18 * config.overlayAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(viewW, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = `rgba(255,255,255,${0.4 * config.overlayAlpha})`;
+        ctx.font = '500 9px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('HORIZON', 12, y - 8);
+        ctx.restore();
+      }
+
+      function drawScaleBar() {
+        // Reference bar; length chosen as 25% of view width
+        const barW = Math.round(viewW * 0.25);
+        const barH = 6;
+        const x = 22;
+        const y = viewH - 46;
+
+        ctx.save();
+        ctx.fillStyle = `rgba(0,0,0,${0.55 * config.overlayAlpha})`;
+        ctx.fillRect(x - 6, y - 14, barW + 12, barH + 28);
+
+        ctx.strokeStyle = `rgba(255,255,255,${0.16 * config.overlayAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - 6.5, y - 14.5, barW + 13, barH + 29);
+
+        // alternating segments
+        const segs = 5;
+        const segW = barW / segs;
+        for (let i = 0; i < segs; i++) {
+          ctx.fillStyle = i % 2 === 0
+            ? `rgba(255,255,255,${0.92 * config.overlayAlpha})`
+            : `rgba(0,0,0,${0.9 * config.overlayAlpha})`;
+          ctx.fillRect(x + i * segW, y, segW, barH);
+        }
+        ctx.strokeStyle = `rgba(255,255,255,${0.8 * config.overlayAlpha})`;
+        ctx.strokeRect(x + 0.5, y + 0.5, barW - 1, barH - 1);
+
+        ctx.fillStyle = `rgba(255,255,255,${0.7 * config.overlayAlpha})`;
+        ctx.font = '500 9px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText('0', x, y + barH + 12);
+        ctx.fillText('REF', x + barW - 16, y + barH + 12);
+        ctx.restore();
+      }
+
+      // ============================================================
+      //  DRAW OVERLAY
+      // ============================================================
+      let lastDrawTs = 0;
+
+      function boxToScreen(bbox) {
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        if (!vw || !vh || !cover.valid) return null;
+        const [x, y, w, h] = bbox;
+        const nx = x / vw;
+        const ny = y / vh;
+        const nw = w / vw;
+        const nh = h / vh;
+
+        let sx;
+        if (config.mirror) sx = cover.offsetX + (1 - nx - nw) * cover.drawW;
+        else sx = cover.offsetX + nx * cover.drawW;
+        const sy = cover.offsetY + ny * cover.drawH;
+        const sw = nw * cover.drawW;
+        const sh = nh * cover.drawH;
+        return [sx, sy, sw, sh];
+      }
+
+      function drawOverlay() {
+        const now = performance.now();
+        const dt = lastDrawTs ? now - lastDrawTs : 16;
+        lastDrawTs = now;
+
+        ctx.clearRect(0, 0, viewW, viewH);
+        if (!state.active) return;
+
+        // background overlays
+        if (config.showGrid) drawGrid();
+        if (config.showHorizon) drawHorizon();
+        if (config.showScanline) drawScanline(dt);
+
+        const preds = state.predictions;
+        const base = Math.min(viewW, viewH);
+        const lineW = clamp((base / 420) * config.boxWeight, 0.75, 8);
+        const fs = clamp(Math.round((base / 52) * config.labelScale), 9, 28);
+
+        for (let i = 0; i < preds.length; i++) {
+          const p = preds[i];
+          const rect = boxToScreen(p.bbox);
+          if (!rect) continue;
+          const [sx, sy, sw, sh] = rect;
+          const color = pickColor(p);
+
+          if (config.showBoxes) {
+            drawBoxStyle(sx, sy, sw, sh, color, lineW);
+          }
+
+          if (config.showCenterDot) {
+            const cx = sx + sw / 2;
+            const cy = sy + sh / 2;
+            ctx.fillStyle = withAlpha(color, config.overlayAlpha);
+            ctx.fillRect(cx - 2, cy - 2, 4, 4);
+            ctx.strokeStyle = withAlpha(color, 0.4 * config.overlayAlpha);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(cx - 6, cy); ctx.lineTo(cx - 3, cy);
+            ctx.moveTo(cx + 3, cy); ctx.lineTo(cx + 6, cy);
+            ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy - 3);
+            ctx.moveTo(cx, cy + 3); ctx.lineTo(cx, cy + 6);
+            ctx.stroke();
+          }
+
+          drawLabel(p, sx, sy, sw, color, fs);
+        }
+
+        if (config.showScaleBar) drawScaleBar();
+      }
+
+      // ============================================================
+      //  PANEL PAINT
+      // ============================================================
+      function paintPanel(now) {
+        if (now - state.lastPanelPaint < PANEL_INTERVAL) return;
+        state.lastPanelPaint = now;
+
+        const preds = state.predictions;
+        const n = preds.length;
+
+        let avgConf = 0;
+        if (n) {
+          let s = 0;
+          for (let i = 0; i < n; i++) s += preds[i].score;
+          avgConf = s / n;
+        }
+
+        const classSet = new Set();
+        for (let i = 0; i < n; i++) classSet.add(preds[i].class);
+
+        const fpsText = state.fps ? state.fps.toFixed(1) : '—';
+        const latText = state.latency ? Math.round(state.latency) + 'ms' : '—';
+        const confText = n ? (avgConf * 100).toFixed(1) + '%' : '—';
+        const classText = n ? String(classSet.size) : '—';
+        const resText = video.videoWidth ? `${video.videoWidth}×${video.videoHeight}` : '—';
+
+        mFps.textContent = fpsText;
+        mLatency.textContent = latText;
+        mObjects.textContent = String(n);
+        mResolution.textContent = resText;
+        mAvgConf.textContent = confText;
+        mClasses.textContent = classText;
+        mFiltered.textContent = String(state.filteredCount);
+        mNms.textContent = String(state.suppressedCount);
+
+        mFps.classList.toggle('idle', fpsText === '—');
+        mLatency.classList.toggle('idle', latText === '—');
+        mObjects.classList.toggle('idle', !state.active);
+        mResolution.classList.toggle('idle', resText === '—');
+        mAvgConf.classList.toggle('idle', confText === '—');
+        mClasses.classList.toggle('idle', classText === '—');
+        mFiltered.classList.toggle('idle', state.filteredCount === 0);
+        mNms.classList.toggle('idle', state.suppressedCount === 0);
+
+        // HUD
+        tFps.textContent = state.fps ? String(Math.min(999, Math.round(state.fps))) : '—';
+        tFps.classList.toggle('idle', !state.fps);
+        tObjects.textContent = String(n);
+        tObjects.classList.toggle('idle', !state.active);
+        tLatency.textContent = state.latency ? Math.round(state.latency) + 'ms' : '—';
+        tLatency.classList.toggle('idle', !state.latency);
+        tAvgConf.textContent = confText;
+        tAvgConf.classList.toggle('idle', confText === '—');
+
+        // Detection list
+        const groups = new Map();
+        for (const p of preds) {
+          const g = groups.get(p.class);
+          if (g) {
+            g.count++;
+            if (p.score > g.score) g.score = p.score;
+          } else {
+            groups.set(p.class, { count: 1, score: p.score });
+          }
+        }
+
+        if (!groups.size) {
+          if (detList.dataset.empty !== '1') {
+            detList.innerHTML = '<div class="empty">No objects detected</div>';
+            detList.dataset.empty = '1';
+          }
+          return;
+        }
+
+        const rows = [...groups.entries()]
+          .sort((a, b) => b[1].count - a[1].count || b[1].score - a[1].score);
+
+        detList.dataset.empty = '0';
+        detList.innerHTML = rows.map(([name, g]) => `
+          <div class="det">
+            <span class="det-name">${name}</span>
+            <span class="det-count">×${g.count}</span>
+            <span class="det-score">${Math.round(g.score * 100)}%</span>
+          </div>
+        `).join('');
+      }
+
+      function resetPanel() {
+        state.fps = 0;
+        state.latency = 0;
+        state.predictions = [];
+        state.rawCount = 0;
+        state.filteredCount = 0;
+        state.suppressedCount = 0;
+        state.lastPanelPaint = 0;
+
+        [tFps, tObjects, tLatency, tAvgConf].forEach(e => e.classList.add('idle'));
+        tFps.textContent = '—';
+        tObjects.textContent = '0';
+        tLatency.textContent = '—';
+        tAvgConf.textContent = '—';
+
+        [mFps, mLatency, mObjects, mResolution, mAvgConf, mClasses, mFiltered, mNms].forEach(e => {
+          e.textContent = '—';
+          e.classList.add('idle');
+        });
+        mObjects.textContent = '0';
+
+        detList.innerHTML = '<div class="empty">No objects detected</div>';
+        detList.dataset.empty = '1';
+      }
+
+      function setStatus(text, live) {
+        statusText.textContent = text;
+        statusChip.classList.toggle('live', !!live);
+      }
+
+      // ============================================================
+      //  INFERENCE LOOP
+      // ============================================================
+      let sendErrorLogged = false;
+
+      async function frameLoop() {
+        if (!state.active) return;
+        state.rafInfer = requestAnimationFrame(frameLoop);
+        if (state.inferenceInFlight) return;
+
+        const now = performance.now();
+        const minInterval = 1000 / FPS_CAP;
+        const dt = now - state.inferLast;
+        if (dt < minInterval) return;
+        state.inferLast = now;
+
+        if (state.paused) {
+          drawOverlay();
+          return;
+        }
+
+        const inst = 1000 / Math.max(1, dt);
+        state.fps = state.fps ? state.fps * 0.9 + inst * 0.1 : inst;
+
+        if (video.readyState < 2 || video.videoWidth === 0) return;
+        if (!state.model) return;
+
+        state.inferenceInFlight = true;
+        const t0 = performance.now();
+        let raw = [];
+        try {
+          raw = await state.model.detect(video, 100, config.threshold);
+          sendErrorLogged = false;
+        } catch (e) {
+          if (!sendErrorLogged) {
+            console.warn('[SENTINEL] detect error', e);
+            sendErrorLogged = true;
+          }
+        }
+        state.latency = performance.now() - t0;
+        state.inferenceInFlight = false;
+
+        // pipeline: threshold filter → NMS → geometric filter → cap
+        let preds = raw.filter(p => p.score >= config.threshold);
+        state.rawCount = preds.length;
+
+        let suppressed = 0;
+        if (config.nmsEnabled) {
+          const before = preds.length;
+          preds = applyNMS(preds, config.nmsIou);
+          suppressed = before - preds.length;
+        }
+        state.suppressedCount = suppressed;
+
+        const frameArea = Math.max(1, video.videoWidth * video.videoHeight);
+        const whitelist = parseWhitelist(config.classWhitelist);
+
+        const preFilter = preds.length;
+        preds = preds.filter(p => passFilters(p, whitelist, frameArea));
+        state.filteredCount = preFilter - preds.length;
+
+        preds.sort((a, b) => b.score - a.score);
+        preds = preds.slice(0, config.maxBoxes);
+
+        // assign index for label mode
+        for (let i = 0; i < preds.length; i++) preds[i]._idx = i;
+
+        state.predictions = preds;
+
+        drawOverlay();
+        paintPanel(performance.now());
       }
 
       // ============================================================
@@ -1176,236 +2032,23 @@
       }
 
       // ============================================================
-      //  DRAWING
+      //  BACKEND + MODEL
       // ============================================================
-      function boxToScreen(bbox) {
-        const vw = video.videoWidth;
-        const vh = video.videoHeight;
-        if (!vw || !vh || !cover.valid) return null;
-        const [x, y, w, h] = bbox;
-        const nx = x / vw;
-        const ny = y / vh;
-        const nw = w / vw;
-        const nh = h / vh;
-
-        let sx;
-        if (config.mirror) {
-          sx = cover.offsetX + (1 - nx - nw) * cover.drawW;
-        } else {
-          sx = cover.offsetX + nx * cover.drawW;
+      async function initBackend() {
+        try { await tf.setBackend('webgl'); } catch (_) { }
+        if (tf.getBackend() !== 'webgl') {
+          try { await tf.setBackend('cpu'); } catch (_) { }
         }
-        const sy = cover.offsetY + ny * cover.drawH;
-        const sw = nw * cover.drawW;
-        const sh = nh * cover.drawH;
-        return [sx, sy, sw, sh];
+        await tf.ready();
       }
 
-      function drawOverlay() {
-        ctx.clearRect(0, 0, viewW, viewH);
-        if (!state.active) return;
-        if (!config.showBoxes && !config.showLabels) return;
-
-        const preds = state.predictions;
-        if (!preds.length) return;
-
-        const base = Math.min(viewW, viewH);
-        const lineW = clamp((base / 420) * config.boxWeight, 0.75, 6);
-        const fs = clamp(Math.round((base / 48) * config.labelScale), 9, 26);
-        const chipH = Math.round(fs * 1.75);
-        const padX = Math.round(fs * 0.55);
-        const gap = Math.round(fs * 0.5);
-
-        ctx.textBaseline = 'middle';
-        ctx.font = `500 ${fs}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
-        ctx.lineJoin = 'miter';
-
-        for (let i = 0; i < preds.length; i++) {
-          const p = preds[i];
-          const rect = boxToScreen(p.bbox);
-          if (!rect) continue;
-          const [sx, sy, sw, sh] = rect;
-
-          if (config.showBoxes) {
-            ctx.lineWidth = lineW;
-            ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-            ctx.strokeRect(
-              sx + lineW / 2,
-              sy + lineW / 2,
-              Math.max(0, sw - lineW),
-              Math.max(0, sh - lineW)
-            );
-          }
-
-          if (config.showLabels) {
-            const name = p.class;
-            const conf = config.showScore ? Math.round(p.score * 100) + '%' : '';
-            const nameW = ctx.measureText(name).width;
-            const confW = conf ? ctx.measureText(conf).width : 0;
-            const chipW = Math.min(
-              viewW,
-              nameW + (conf ? gap + confW : 0) + padX * 2
-            );
-
-            let cx = clamp(sx, 0, Math.max(0, viewW - chipW));
-            let cy = sy - chipH - 3;
-            if (cy < 0) cy = sy + 3;
-            cy = clamp(cy, 0, Math.max(0, viewH - chipH));
-
-            ctx.fillStyle = 'rgba(8,8,10,0.86)';
-            ctx.fillRect(cx, cy, chipW, chipH);
-
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(255,255,255,0.20)';
-            ctx.strokeRect(cx + 0.5, cy + 0.5, chipW - 1, chipH - 1);
-
-            const ty = cy + chipH / 2 + 0.5;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(name, cx + padX, ty);
-            if (conf) {
-              ctx.fillStyle = 'rgba(255,255,255,0.46)';
-              ctx.fillText(conf, cx + padX + nameW + gap, ty);
-            }
-          }
+      async function loadModel(name) {
+        if (state.model) {
+          try { state.model.dispose(); } catch (_) { }
+          state.model = null;
         }
-      }
-
-      // ============================================================
-      //  PANEL PAINT
-      // ============================================================
-      function paintPanel(now) {
-        if (now - state.lastPanelPaint < PANEL_INTERVAL) return;
-        state.lastPanelPaint = now;
-
-        const fpsText = state.fps ? state.fps.toFixed(1) : '—';
-        const latText = state.latency ? Math.round(state.latency) + 'ms' : '—';
-        const objText = String(state.predictions.length);
-        const vw = video.videoWidth;
-        const vh = video.videoHeight;
-        const resText = vw ? `${vw}×${vh}` : '—';
-
-        mFps.textContent = fpsText;
-        mLatency.textContent = latText;
-        mObjects.textContent = objText;
-        mResolution.textContent = resText;
-
-        mFps.classList.toggle('idle', fpsText === '—');
-        mLatency.classList.toggle('idle', latText === '—');
-        mObjects.classList.toggle('idle', !state.active);
-        mResolution.classList.toggle('idle', resText === '—');
-
-        // HUD
-        tFps.textContent = state.fps ? String(Math.min(999, Math.round(state.fps))) : '—';
-        tFps.classList.toggle('idle', !state.fps);
-        tObjects.textContent = objText;
-        tObjects.classList.toggle('idle', !state.active);
-        tLatency.textContent = state.latency ? Math.round(state.latency) + 'ms' : '—';
-        tLatency.classList.toggle('idle', !state.latency);
-
-        // Detections list
-        const groups = new Map();
-        for (const p of state.predictions) {
-          const g = groups.get(p.class);
-          if (g) {
-            g.count++;
-            if (p.score > g.score) g.score = p.score;
-          } else {
-            groups.set(p.class, { count: 1, score: p.score });
-          }
-        }
-
-        if (!groups.size) {
-          if (detList.dataset.empty !== '1') {
-            detList.innerHTML = '<div class="empty">No objects detected</div>';
-            detList.dataset.empty = '1';
-          }
-          return;
-        }
-
-        const rows = [...groups.entries()]
-          .sort((a, b) => b[1].count - a[1].count || b[1].score - a[1].score);
-
-        detList.dataset.empty = '0';
-        detList.innerHTML = rows.map(([name, g]) => `
-          <div class="det">
-            <span class="det-name">${name}</span>
-            <span class="det-count">×${g.count}</span>
-            <span class="det-score">${Math.round(g.score * 100)}%</span>
-          </div>
-        `).join('');
-      }
-
-      function resetPanel() {
-        state.fps = 0;
-        state.latency = 0;
-        state.predictions = [];
-        state.lastPanelPaint = 0;
-
-        tFps.textContent = '—';
-        tFps.classList.add('idle');
-        tObjects.textContent = '0';
-        tObjects.classList.add('idle');
-        tLatency.textContent = '—';
-        tLatency.classList.add('idle');
-
-        mFps.textContent = '—';
-        mFps.classList.add('idle');
-        mLatency.textContent = '—';
-        mLatency.classList.add('idle');
-        mObjects.textContent = '—';
-        mObjects.classList.add('idle');
-        mResolution.textContent = '—';
-        mResolution.classList.add('idle');
-
-        detList.innerHTML = '<div class="empty">No objects detected</div>';
-        detList.dataset.empty = '1';
-      }
-
-      // ============================================================
-      //  INFERENCE LOOP
-      // ============================================================
-      let sendErrorLogged = false;
-
-      async function frameLoop() {
-        if (!state.active) return;
-        state.rafInfer = requestAnimationFrame(frameLoop);
-        if (state.inferenceInFlight) return;
-
-        const now = performance.now();
-        const minInterval = 1000 / FPS_CAP;
-        const dt = now - state.inferLast;
-        if (dt < minInterval) return;
-        state.inferLast = now;
-
-        if (state.paused) return;
-
-        const inst = 1000 / Math.max(1, dt);
-        state.fps = state.fps ? state.fps * 0.9 + inst * 0.1 : inst;
-
-        if (video.readyState < 2 || video.videoWidth === 0) return;
-        if (!state.model) return;
-
-        state.inferenceInFlight = true;
-        const t0 = performance.now();
-        let preds = [];
-        try {
-          preds = await state.model.detect(video, config.maxBoxes, config.threshold);
-          sendErrorLogged = false;
-        } catch (e) {
-          if (!sendErrorLogged) {
-            console.warn('[SENTINEL] detect error', e);
-            sendErrorLogged = true;
-          }
-        }
-        state.latency = performance.now() - t0;
-        state.inferenceInFlight = false;
-
-        state.predictions = preds
-          .filter(p => p.score >= config.threshold)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, config.maxBoxes);
-
-        drawOverlay();
-        paintPanel(performance.now());
+        state.model = await cocoSsd.load({ base: name });
+        state.modelName = name;
       }
 
       // ============================================================
@@ -1416,6 +2059,7 @@
 
         activateBtn.disabled = true;
         activateBtn.textContent = 'STARTING';
+        setStatus('REQUESTING CAMERA', false);
 
         try {
           await openStream(cameraSelect.value || undefined);
@@ -1429,11 +2073,11 @@
 
           activateBtn.disabled = false;
           activateBtn.textContent = 'ACTIVATE';
+          setStatus('ERROR', false);
           showToast(msg, 2200);
           return;
         }
 
-        // wait for video metadata if needed
         if (!video.videoWidth) {
           await new Promise(r => {
             const done = () => { video.removeEventListener('loadedmetadata', done); r(); };
@@ -1453,10 +2097,12 @@
         captureBtn.disabled = false;
         exportBtn.disabled = false;
 
+        setStatus('DETECTING', true);
         resetPanel();
         showToast('DETECTION ONLINE', 1400);
 
         state.inferLast = performance.now();
+        lastDrawTs = 0;
         frameLoop();
       }
 
@@ -1483,21 +2129,38 @@
         captureBtn.disabled = true;
         exportBtn.disabled = true;
 
+        setStatus('STANDBY', false);
         resetPanel();
       }
 
       function togglePause() {
         if (!state.active) return;
         state.paused = !state.paused;
+        setStatus(state.paused ? 'PAUSED' : 'DETECTING', !state.paused);
         showToast(state.paused ? 'PAUSED' : 'RESUMED', 900);
-        if (!state.paused) {
-          state.inferLast = performance.now();
-        }
+        if (!state.paused) state.inferLast = performance.now();
       }
 
       // ============================================================
       //  CAPTURE / EXPORT
       // ============================================================
+      function stamp() {
+        const d = new Date();
+        const p = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+      }
+
+      function download(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+
       function captureFrame() {
         if (!state.active) return;
         const vw = video.videoWidth;
@@ -1509,14 +2172,13 @@
         out.height = viewH;
         const oc = out.getContext('2d');
 
-        // Draw video with cover mapping
         const cA = viewW / viewH;
         const vA = vw / vh;
-        let dW, dH, oX, oY;
+        let dW, dH;
         if (vA > cA) { dH = viewH; dW = viewH * vA; }
         else { dW = viewW; dH = viewW / vA; }
-        oX = (viewW - dW) / 2;
-        oY = (viewH - dH) / 2;
+        const oX = (viewW - dW) / 2;
+        const oY = (viewH - dH) / 2;
 
         oc.save();
         if (config.mirror) {
@@ -1526,12 +2188,7 @@
         oc.drawImage(video, oX, oY, dW, dH);
         oc.restore();
 
-        // Draw overlay on top (uses screen coordinates already)
-        const prevCtx = ctx;
-        // temporarily reassign — drawOverlay uses module-level ctx
-        const realCtx = ctx;
-        // Redraw boxes onto out canvas by manually drawing
-        // simplest: draw current canvas contents
+        // composite the overlay canvas on top
         oc.drawImage(canvas, 0, 0, viewW, viewH);
 
         out.toBlob(blob => {
@@ -1547,14 +2204,33 @@
 
         const payload = {
           capturedAt: new Date().toISOString(),
+          system: 'SENTINEL',
+          module: 'OBJDET',
           model: state.modelName,
           backend: String(tf.getBackend()),
-          confidenceThreshold: config.threshold,
+          config: {
+            confidenceThreshold: config.threshold,
+            nmsEnabled: config.nmsEnabled,
+            nmsIou: config.nmsIou,
+            minAreaPct: config.minArea,
+            maxAreaPct: config.maxArea,
+            minAspect: config.minAspect,
+            maxAspect: config.maxAspect,
+            classWhitelist: config.classWhitelist || null,
+            boxStyle: config.boxStyle,
+            colorMode: config.colorMode,
+          },
           frame: {
             width: video.videoWidth,
             height: video.videoHeight
           },
-          inferenceMs: Math.round(state.latency),
+          stats: {
+            inferenceMs: Math.round(state.latency),
+            rawCount: state.rawCount,
+            suppressedCount: state.suppressedCount,
+            filteredCount: state.filteredCount,
+            finalCount: state.predictions.length,
+          },
           detections: state.predictions.map(p => ({
             class: p.class,
             score: Number(p.score.toFixed(4)),
@@ -1596,8 +2272,14 @@
       const FMT = {
         threshold: v => v.toFixed(2),
         maxBoxes: v => String(v | 0),
+        nmsIou: v => v.toFixed(2),
+        minArea: v => v.toFixed(1),
+        maxArea: v => String(v | 0),
+        minAspect: v => v.toFixed(2),
+        maxAspect: v => v.toFixed(1),
         boxWeight: v => v.toFixed(2),
         labelScale: v => v.toFixed(2),
+        overlayAlpha: v => v.toFixed(2),
       };
 
       const labelEls = {};
@@ -1622,7 +2304,6 @@
 
       function syncMirror() {
         video.classList.toggle('mirror', !!config.mirror);
-        // Mirror state affects drawing, so redraw immediately
         drawOverlay();
       }
 
@@ -1631,7 +2312,13 @@
         if (r) r.style.display = config.showReticle ? '' : 'none';
       }
 
+      function syncCornerTicks() {
+        const fc = document.querySelector('.frame-corners');
+        if (fc) fc.style.display = config.showCornerTicks ? '' : 'none';
+      }
+
       function wireInputs() {
+        // Sliders
         document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
           const key = input.dataset.key;
           input.value = config[key];
@@ -1643,9 +2330,11 @@
             syncSliderLabel(key, val);
             updateSliderFill(input);
             saveConfig();
+            if (state.active) drawOverlay();
           });
         });
 
+        // Toggles
         document.querySelectorAll('.toggle[data-key]').forEach(t => {
           const key = t.dataset.key;
           t.classList.toggle('on', !!config[key]);
@@ -1656,23 +2345,47 @@
             saveConfig();
             if (key === 'mirror') syncMirror();
             if (key === 'showReticle') syncReticle();
-            if (key === 'showBoxes' || key === 'showLabels' || key === 'showScore') {
-              drawOverlay();
-            }
+            if (key === 'showCornerTicks') syncCornerTicks();
+            if (state.active) drawOverlay();
           });
         });
 
+        // Collapsible sections
         document.querySelectorAll('.section-head').forEach(h => {
           h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
         });
 
-        document.querySelectorAll('.select[data-key]').forEach(s => {
-          const key = s.dataset.key;
-          s.value = config[key];
-          s.addEventListener('change', () => {
-            config[key] = s.value;
+        // Render-style selects
+        boxStyleSelect.value = config.boxStyle;
+        boxStyleSelect.addEventListener('change', () => {
+          config.boxStyle = boxStyleSelect.value;
+          saveConfig();
+          if (state.active) drawOverlay();
+        });
+
+        colorModeSelect.value = config.colorMode;
+        colorModeSelect.addEventListener('change', () => {
+          config.colorMode = colorModeSelect.value;
+          saveConfig();
+          if (state.active) drawOverlay();
+        });
+
+        labelModeSelect.value = config.labelMode;
+        labelModeSelect.addEventListener('change', () => {
+          config.labelMode = labelModeSelect.value;
+          saveConfig();
+          if (state.active) drawOverlay();
+        });
+
+        // Class whitelist input
+        classFilter.value = config.classWhitelist || '';
+        let filterDebounce = null;
+        classFilter.addEventListener('input', () => {
+          clearTimeout(filterDebounce);
+          filterDebounce = setTimeout(() => {
+            config.classWhitelist = classFilter.value.trim();
             saveConfig();
-          });
+          }, 220);
         });
       }
 
@@ -1717,10 +2430,11 @@
         }
       });
 
-      navigator.mediaDevices && navigator.mediaDevices.addEventListener &&
+      if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
         navigator.mediaDevices.addEventListener('devicechange', () => {
           if (state.active) refreshCameraList();
         });
+      }
 
       document.addEventListener('keydown', (e) => {
         const tag = (e.target && e.target.tagName) || '';
@@ -1757,6 +2471,13 @@
         }
       });
 
+      function showToast(text, ms) {
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms || 1200);
+      }
+
       // ============================================================
       //  BOOT
       // ============================================================
@@ -1765,6 +2486,7 @@
         wireInputs();
         syncMirror();
         syncReticle();
+        syncCornerTicks();
 
         modelSelect.value = config.model || state.modelName;
 
@@ -1795,6 +2517,7 @@
 
         activateBtn.disabled = false;
         activateBtn.textContent = 'ACTIVATE';
+        setStatus('STANDBY', false);
       }
 
       setTimeout(init, 200);
