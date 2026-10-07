@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>SENTINEL · OBJECT DETECTION</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+      color: #e8e8e8;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    :root {
+      --accent-hex: #ffffff;
+      --panel-bg: rgba(7, 8, 10, 0.94);
+      --hairline: rgba(255, 255, 255, 0.08);
+      --hairline-soft: rgba(255, 255, 255, 0.05);
+      --muted: rgba(255, 255, 255, 0.42);
+      --muted-2: rgba(255, 255, 255, 0.28);
+      --fg-bright: #f6f6f6;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #viewport {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    #video,
+    #overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #video {
+      object-fit: cover;
+      transform-origin: 50% 50%;
+      filter: contrast(1.04) brightness(1.00) saturate(0.98);
+      will-change: transform, filter;
+    }
+
+    #video.mirror {
+      transform: scaleX(-1);
+    }
+
+    #overlay {
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ============================ TOP BAR ============================ */
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: max(14px, env(safe-area-inset-top)) 20px 0 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .icon-btn {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.78);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: border-color .18s, color .18s, background .18s, opacity .18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .icon-btn:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.32;
+      cursor: not-allowed;
+    }
+
+    .icon-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ============================ HUD ============================ */
+    .hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity .25s ease;
+    }
+
+    .hud.hidden {
+      opacity: 0;
+    }
+
+    .hud-top {
+      position: absolute;
+      top: max(16px, env(safe-area-inset-top));
+      left: 22px;
+      display: flex;
+      gap: 18px;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .hud-top .val {
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 11px;
+      margin-left: 6px;
+    }
+
+    .hud-top .val.idle {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .hud-reticle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 34px;
+      height: 34px;
+      margin: -17px 0 0 -17px;
+      pointer-events: none;
+      opacity: 0.14;
+    }
+
+    .hud-reticle::before,
+    .hud-reticle::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .hud-reticle::before {
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      transform: translateX(-50%);
+    }
+
+    .hud-reticle::after {
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      transform: translateY(-50%);
+    }
+
+    .hud-reticle span {
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    /* ============================ BOTTOM BAR ============================ */
+    .bottombar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0 22px max(20px, env(safe-area-inset-bottom)) 22px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    #activateBtn {
+      pointer-events: auto;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      color: #f2f2f2;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 14px 30px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s, color .2s, transform .1s;
+      position: relative;
+      min-width: 200px;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    #activateBtn:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    #activateBtn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    #activateBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #activateBtn.on {
+      border-color: var(--accent-hex);
+      background: var(--accent-hex);
+      color: #000;
+    }
+
+    #activateBtn.on::before {
+      content: "";
+      position: absolute;
+      top: 7px;
+      left: 8px;
+      width: 4px;
+      height: 4px;
+      background: #000;
+      border-radius: 50%;
+      animation: blink 1.4s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.2;
+      }
+    }
+
+    /* ============================ TOAST ============================ */
+    #toast {
+      position: absolute;
+      left: 50%;
+      top: 14%;
+      transform: translate(-50%, -6px);
+      padding: 8px 18px;
+      background: rgba(0, 0, 0, 0.72);
+      border: 1px solid var(--accent-hex);
+      color: #fff;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* ============================ PANEL ============================ */
+    #settingsPanel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: min(420px, 92vw);
+      background: var(--panel-bg);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border-left: 1px solid var(--hairline);
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform .34s cubic-bezier(.22, 1, .36, 1);
+      display: flex;
+      flex-direction: column;
+      pointer-events: auto;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+    }
+
+    #settingsPanel.open {
+      transform: translateX(0);
+    }
+
+    .panel-head {
+      padding: max(18px, env(safe-area-inset-top)) 22px 14px 22px;
+      border-bottom: 1px solid var(--hairline);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .panel-head .title {
+      color: var(--fg-bright);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+    }
+
+    .panel-head .close {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.72);
+      font-family: inherit;
+      font-size: 10px;
+      padding: 5px 11px;
+      letter-spacing: 0.22em;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color .18s, color .18s;
+    }
+
+    .panel-head .close:hover {
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0 44px 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+    }
+
+    .panel-body::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .panel-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 2px;
+    }
+
+    .section {
+      border-bottom: 1px solid var(--hairline-soft);
+    }
+
+    .section-head {
+      padding: 15px 22px 12px 22px;
+      color: var(--muted-2);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: color .18s;
+      user-select: none;
+    }
+
+    .section-head:hover {
+      color: var(--muted);
+    }
+
+    .section-head .chev {
+      color: rgba(255, 255, 255, 0.22);
+      transition: transform .22s cubic-bezier(.22, 1, .36, 1);
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .section.collapsed .chev {
+      transform: rotate(-90deg);
+    }
+
+    .section.collapsed .section-content {
+      display: none;
+    }
+
+    .section-content {
+      padding: 0 22px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .field .label .value {
+      color: rgba(255, 255, 255, 0.94);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .field input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right,
+          var(--accent-hex) var(--fill, 0%),
+          rgba(255, 255, 255, 0.12) var(--fill, 0%));
+      outline: none;
+      cursor: pointer;
+      border-radius: 1px;
+    }
+
+    .field input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #000;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+      transition: transform .12s;
+    }
+
+    .field input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    .field input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #000;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+    }
+
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    .toggle:hover {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle .switch {
+      width: 30px;
+      height: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      position: relative;
+      transition: border-color .2s, background .2s;
+      flex-shrink: 0;
+    }
+
+    .toggle .switch::after {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      transition: left .2s cubic-bezier(.22, 1, .36, 1), background .2s;
+    }
+
+    .toggle.on {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle.on .switch {
+      border-color: var(--accent-hex);
+    }
+
+    .toggle.on .switch::after {
+      left: 17px;
+      background: var(--accent-hex);
+    }
+
+    .select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.85);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      padding: 8px 10px;
+      width: 100%;
+      cursor: pointer;
+      text-transform: uppercase;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
+      background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      transition: border-color .15s;
+    }
+
+    .select:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .select:focus {
+      outline: none;
+      border-color: var(--accent-hex);
+    }
+
+    .select:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .select option {
+      background: #0a0c0f;
+      color: #fff;
+    }
+
+    .hint {
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.26);
+      line-height: 1.6;
+      text-transform: uppercase;
+    }
+
+    /* ============================ METRICS ============================ */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--hairline-soft);
+      border: 1px solid var(--hairline-soft);
+    }
+
+    .metric {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 10px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .metric .k {
+      font-size: 8.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.32);
+    }
+
+    .metric .v {
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.94);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .metric .v.idle {
+      color: rgba(255, 255, 255, 0.28);
+    }
+
+    /* ============================ DETECTIONS ============================ */
+    .det-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .det {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--hairline-soft);
+      font-size: 11px;
+    }
+
+    .det:last-child {
+      border-bottom: none;
+    }
+
+    .det-name {
+      color: rgba(255, 255, 255, 0.92);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .det-count {
+      color: rgba(255, 255, 255, 0.42);
+      font-variant-numeric: tabular-nums;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .det-score {
+      color: rgba(255, 255, 255, 0.34);
+      font-variant-numeric: tabular-nums;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    .empty {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.26);
+      padding: 6px 0;
+    }
+
+    #panelOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s;
+    }
+
+    #panelOverlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ============================ BOOT ============================ */
+    #boot {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transition: opacity .5s ease;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #boot.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #boot .title {
+      font-size: 12px;
+      letter-spacing: 0.55em;
+      color: #f2f2f2;
+      font-weight: 600;
+    }
+
+    #boot .sub {
+      font-size: 10px;
+      letter-spacing: 0.26em;
+      color: rgba(255, 255, 255, 0.42);
+      max-width: 320px;
+    }
+
+    #boot .bar {
+      width: 220px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    #boot .bar i {
+      display: block;
+      height: 100%;
+      width: 40%;
+      background: rgba(255, 255, 255, 0.85);
+      animation: slide 1.2s infinite ease-in-out;
+    }
+
+    @keyframes slide {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(300%);
+      }
+    }
+
+    #boot.error .sub {
+      color: #ff3b30;
+    }
+
+    #boot.error .bar {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="stage">
+    <div id="viewport">
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+
+    <div class="topbar">
+      <div class="topbar-right">
+        <button class="icon-btn" id="captureBtn" type="button" title="Capture (C)" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M3 8h3l2-2h8l2 2h3v11H3z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="exportBtn" type="button" title="Export JSON (E)" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 3v12" />
+            <path d="M7 10l5 5 5-5" />
+            <path d="M4 20h16" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="settingsToggle" type="button" title="Settings (S)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <div class="hud-top">
+        <div>FPS<span class="val idle" id="tFps">—</span></div>
+        <div>OBJ<span class="val idle" id="tObjects">0</span></div>
+        <div>INFER<span class="val idle" id="tLatency">—</span></div>
+      </div>
+      <div class="hud-reticle"><span></span></div>
+    </div>
+
+    <div class="bottombar">
+      <button id="activateBtn" type="button" disabled>INITIALIZING</button>
+    </div>
+
+    <div id="toast"></div>
+    <div id="panelOverlay"></div>
+
+    <aside id="settingsPanel" aria-hidden="true">
+      <div class="panel-head">
+        <div class="title">Configuration</div>
+        <button class="close" id="settingsClose" type="button">CLOSE</button>
+      </div>
+      <div class="panel-body">
+
+        <div class="section" data-section="source">
+          <div class="section-head"><span>Source</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Camera Device</span></div>
+              <select class="select" id="cameraSelect" disabled>
+                <option>Unavailable</option>
+              </select>
+            </div>
+            <label class="toggle" data-key="mirror"><span>Mirror Preview</span><span class="switch"></span></label>
+          </div>
+        </div>
+
+        <div class="section" data-section="model">
+          <div class="section-head"><span>Model</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="field">
+              <div class="label"><span>Network</span></div>
+              <select class="select" id="modelSelect">
+                <option value="lite_mobilenet_v2">LITE MOBILENET V2</option>
+                <option value="mobilenet_v2">MOBILENET V2</option>
+                <option value="mobilenet_v1">MOBILENET V1</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="label"><span>Confidence</span><span class="value" data-value="threshold">0.50</span></div>
+              <input type="range" min="0.10" max="0.90" step="0.05" data-key="threshold">
+            </div>
+            <div class="field">
+              <div class="label"><span>Max Boxes</span><span class="value" data-value="maxBoxes">30</span></div>
+              <input type="range" min="5" max="60" step="1" data-key="maxBoxes">
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="overlay">
+          <div class="section-head"><span>Overlay</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <label class="toggle" data-key="showBoxes"><span>Bounding Boxes</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showLabels"><span>Class Labels</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showScore"><span>Confidence Score</span><span class="switch"></span></label>
+            <label class="toggle" data-key="showReticle"><span>Center Reticle</span><span class="switch"></span></label>
+            <div class="field">
+              <div class="label"><span>Box Weight</span><span class="value" data-value="boxWeight">1.50</span></div>
+              <input type="range" min="0.5" max="4" step="0.1" data-key="boxWeight">
+            </div>
+            <div class="field">
+              <div class="label"><span>Label Scale</span><span class="value" data-value="labelScale">1.00</span></div>
+              <input type="range" min="0.6" max="2" step="0.05" data-key="labelScale">
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="telemetry">
+          <div class="section-head"><span>Telemetry</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="metric-grid">
+              <div class="metric">
+                <span class="k">Throughput</span>
+                <span class="v idle" id="mFps">—</span>
+              </div>
+              <div class="metric">
+                <span class="k">Inference</span>
+                <span class="v idle" id="mLatency">—</span>
+              </div>
+              <div class="metric">
+                <span class="k">Objects</span>
+                <span class="v idle" id="mObjects">—</span>
+              </div>
+              <div class="metric">
+                <span class="k">Resolution</span>
+                <span class="v idle" id="mResolution">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="detections">
+          <div class="section-head"><span>Detections</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="det-list" id="detList">
+              <div class="empty">No objects detected</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-section="shortcuts">
+          <div class="section-head"><span>Shortcuts</span><span class="chev">▼</span></div>
+          <div class="section-content">
+            <div class="hint">A · ACTIVATE / DEACTIVATE</div>
+            <div class="hint">S · SETTINGS PANEL</div>
+            <div class="hint">C · CAPTURE FRAME</div>
+            <div class="hint">E · EXPORT JSON</div>
+            <div class="hint">M · MIRROR PREVIEW</div>
+            <div class="hint">H · TOGGLE HUD</div>
+            <div class="hint">F · FULLSCREEN</div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <div id="boot">
+      <div class="title">SENTINEL</div>
+      <div class="sub" id="bootMsg">INITIALIZING</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      window.addEventListener('error', (e) => {
+        console.error('[SENTINEL]', e.message, e.error && e.error.stack);
+      });
+
+      // ============================================================
+      //  ELEMENTS
+      // ============================================================
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('overlay');
+      const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
+      const bootEl = document.getElementById('boot');
+      const bootMsg = document.getElementById('bootMsg');
+      const activateBtn = document.getElementById('activateBtn');
+      const captureBtn = document.getElementById('captureBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const toastEl = document.getElementById('toast');
+      const hudEl = document.getElementById('hud');
+
+      const tFps = document.getElementById('tFps');
+      const tObjects = document.getElementById('tObjects');
+      const tLatency = document.getElementById('tLatency');
+
+      const mFps = document.getElementById('mFps');
+      const mLatency = document.getElementById('mLatency');
+      const mObjects = document.getElementById('mObjects');
+      const mResolution = document.getElementById('mResolution');
+
+      const detList = document.getElementById('detList');
+
+      const settingsPanel = document.getElementById('settingsPanel');
+      const settingsToggle = document.getElementById('settingsToggle');
+      const settingsClose = document.getElementById('settingsClose');
+      const panelOverlay = document.getElementById('panelOverlay');
+
+      const cameraSelect = document.getElementById('cameraSelect');
+      const modelSelect = document.getElementById('modelSelect');
+
+      // ============================================================
+      //  CONFIG
+      // ============================================================
+      const DEFAULTS = {
+        mirror: false,
+        threshold: 0.50,
+        maxBoxes: 30,
+        showBoxes: true,
+        showLabels: true,
+        showScore: true,
+        showReticle: true,
+        boxWeight: 1.50,
+        labelScale: 1.00,
+      };
+
+      const config = { ...DEFAULTS };
+
+      const LS_KEY = 'sentinel.objdetect.v1';
+
+      function loadConfig() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (raw) Object.assign(config, DEFAULTS, JSON.parse(raw));
+        } catch (e) { }
+      }
+      function saveConfig() {
+        try { localStorage.setItem(LS_KEY, JSON.stringify(config)); } catch (e) { }
+      }
+
+      // ============================================================
+      //  STATE
+      // ============================================================
+      const state = {
+        model: null,
+        modelName: 'lite_mobilenet_v2',
+        stream: null,
+        active: false,
+        paused: false,
+        rafInfer: null,
+        inferLast: 0,
+        inferenceInFlight: false,
+        fps: 0,
+        latency: 0,
+        predictions: [],
+        lastPanelPaint: 0,
+      };
+
+      const FPS_CAP = 60;
+      const PANEL_INTERVAL = 180;
+
+      // ============================================================
+      //  CANVAS / COVER
+      // ============================================================
+      let viewW = window.innerWidth;
+      let viewH = window.innerHeight;
+      const cover = { valid: false, drawW: 0, drawH: 0, offsetX: 0, offsetY: 0 };
+
+      function updateCover() {
+        const vw = video.videoWidth | 0;
+        const vh = video.videoHeight | 0;
+        if (!vw || !vh || !viewW || !viewH) { cover.valid = false; return; }
+        const cA = viewW / viewH;
+        const vA = vw / vh;
+        let dW, dH;
+        if (vA > cA) { dH = viewH; dW = viewH * vA; }
+        else { dW = viewW; dH = viewW / vA; }
+        cover.drawW = dW; cover.drawH = dH;
+        cover.offsetX = (viewW - dW) / 2;
+        cover.offsetY = (viewH - dH) / 2;
+        cover.valid = true;
+      }
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        viewW = window.innerWidth;
+        viewH = window.innerHeight;
+        canvas.width = Math.round(viewW * dpr);
+        canvas.height = Math.round(viewH * dpr);
+        canvas.style.width = viewW + 'px';
+        canvas.style.height = viewH + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        updateCover();
+      }
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+      video.addEventListener('loadedmetadata', updateCover);
+      video.addEventListener('loadeddata', updateCover);
+      resize();
+
+      // ============================================================
+      //  UTIL
+      // ============================================================
+      const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+
+      function stamp() {
+        const d = new Date();
+        const p = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+      }
+
+      function download(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+
+      function showToast(text, ms) {
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms || 1200);
+      }
+
+      // ============================================================
+      //  BACKEND + MODEL
+      // ============================================================
+      async function initBackend() {
+        try { await tf.setBackend('webgl'); } catch (_) { }
+        if (tf.getBackend() !== 'webgl') {
+          try { await tf.setBackend('cpu'); } catch (_) { }
+        }
+        await tf.ready();
+      }
+
+      async function loadModel(name) {
+        if (state.model) {
+          try { state.model.dispose(); } catch (_) { }
+          state.model = null;
+        }
+        state.model = await cocoSsd.load({ base: name });
+        state.modelName = name;
+      }
+
+      // ============================================================
+      //  CAMERA
+      // ============================================================
+      async function openStream(deviceId) {
+        if (state.stream) {
+          state.stream.getTracks().forEach(t => t.stop());
+          state.stream = null;
+        }
+
+        const attempts = [];
+        if (deviceId) {
+          attempts.push({
+            video: { deviceId: { ideal: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+          });
+        }
+        attempts.push({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        attempts.push({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+        attempts.push({ video: true, audio: false });
+
+        let lastErr = null;
+        for (const constraints of attempts) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            state.stream = stream;
+            video.srcObject = stream;
+            await video.play().catch(() => { });
+            return;
+          } catch (err) {
+            lastErr = err;
+            console.warn('getUserMedia attempt failed:', err.name, err.message);
+          }
+        }
+        throw lastErr || new Error('No usable camera constraints');
+      }
+
+      async function refreshCameraList() {
+        let devices = [];
+        try { devices = await navigator.mediaDevices.enumerateDevices(); } catch (_) { return; }
+        const cams = devices.filter(d => d.kind === 'videoinput');
+        if (!cams.length) return;
+
+        const activeId = state.stream
+          ? (state.stream.getVideoTracks()[0] || {}).getSettings?.().deviceId
+          : null;
+
+        cameraSelect.innerHTML = cams.map((c, i) => {
+          const label = c.label || `Camera ${i + 1}`;
+          return `<option value="${c.deviceId}">${label.replace(/[<>&"]/g, '')}</option>`;
+        }).join('');
+
+        if (activeId) cameraSelect.value = activeId;
+        cameraSelect.disabled = cams.length < 2;
+      }
+
+      // ============================================================
+      //  DRAWING
+      // ============================================================
+      function boxToScreen(bbox) {
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        if (!vw || !vh || !cover.valid) return null;
+        const [x, y, w, h] = bbox;
+        const nx = x / vw;
+        const ny = y / vh;
+        const nw = w / vw;
+        const nh = h / vh;
+
+        let sx;
+        if (config.mirror) {
+          sx = cover.offsetX + (1 - nx - nw) * cover.drawW;
+        } else {
+          sx = cover.offsetX + nx * cover.drawW;
+        }
+        const sy = cover.offsetY + ny * cover.drawH;
+        const sw = nw * cover.drawW;
+        const sh = nh * cover.drawH;
+        return [sx, sy, sw, sh];
+      }
+
+      function drawOverlay() {
+        ctx.clearRect(0, 0, viewW, viewH);
+        if (!state.active) return;
+        if (!config.showBoxes && !config.showLabels) return;
+
+        const preds = state.predictions;
+        if (!preds.length) return;
+
+        const base = Math.min(viewW, viewH);
+        const lineW = clamp((base / 420) * config.boxWeight, 0.75, 6);
+        const fs = clamp(Math.round((base / 48) * config.labelScale), 9, 26);
+        const chipH = Math.round(fs * 1.75);
+        const padX = Math.round(fs * 0.55);
+        const gap = Math.round(fs * 0.5);
+
+        ctx.textBaseline = 'middle';
+        ctx.font = `500 ${fs}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+        ctx.lineJoin = 'miter';
+
+        for (let i = 0; i < preds.length; i++) {
+          const p = preds[i];
+          const rect = boxToScreen(p.bbox);
+          if (!rect) continue;
+          const [sx, sy, sw, sh] = rect;
+
+          if (config.showBoxes) {
+            ctx.lineWidth = lineW;
+            ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+            ctx.strokeRect(
+              sx + lineW / 2,
+              sy + lineW / 2,
+              Math.max(0, sw - lineW),
+              Math.max(0, sh - lineW)
+            );
+          }
+
+          if (config.showLabels) {
+            const name = p.class;
+            const conf = config.showScore ? Math.round(p.score * 100) + '%' : '';
+            const nameW = ctx.measureText(name).width;
+            const confW = conf ? ctx.measureText(conf).width : 0;
+            const chipW = Math.min(
+              viewW,
+              nameW + (conf ? gap + confW : 0) + padX * 2
+            );
+
+            let cx = clamp(sx, 0, Math.max(0, viewW - chipW));
+            let cy = sy - chipH - 3;
+            if (cy < 0) cy = sy + 3;
+            cy = clamp(cy, 0, Math.max(0, viewH - chipH));
+
+            ctx.fillStyle = 'rgba(8,8,10,0.86)';
+            ctx.fillRect(cx, cy, chipW, chipH);
+
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+            ctx.strokeRect(cx + 0.5, cy + 0.5, chipW - 1, chipH - 1);
+
+            const ty = cy + chipH / 2 + 0.5;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(name, cx + padX, ty);
+            if (conf) {
+              ctx.fillStyle = 'rgba(255,255,255,0.46)';
+              ctx.fillText(conf, cx + padX + nameW + gap, ty);
+            }
+          }
+        }
+      }
+
+      // ============================================================
+      //  PANEL PAINT
+      // ============================================================
+      function paintPanel(now) {
+        if (now - state.lastPanelPaint < PANEL_INTERVAL) return;
+        state.lastPanelPaint = now;
+
+        const fpsText = state.fps ? state.fps.toFixed(1) : '—';
+        const latText = state.latency ? Math.round(state.latency) + 'ms' : '—';
+        const objText = String(state.predictions.length);
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        const resText = vw ? `${vw}×${vh}` : '—';
+
+        mFps.textContent = fpsText;
+        mLatency.textContent = latText;
+        mObjects.textContent = objText;
+        mResolution.textContent = resText;
+
+        mFps.classList.toggle('idle', fpsText === '—');
+        mLatency.classList.toggle('idle', latText === '—');
+        mObjects.classList.toggle('idle', !state.active);
+        mResolution.classList.toggle('idle', resText === '—');
+
+        // HUD
+        tFps.textContent = state.fps ? String(Math.min(999, Math.round(state.fps))) : '—';
+        tFps.classList.toggle('idle', !state.fps);
+        tObjects.textContent = objText;
+        tObjects.classList.toggle('idle', !state.active);
+        tLatency.textContent = state.latency ? Math.round(state.latency) + 'ms' : '—';
+        tLatency.classList.toggle('idle', !state.latency);
+
+        // Detections list
+        const groups = new Map();
+        for (const p of state.predictions) {
+          const g = groups.get(p.class);
+          if (g) {
+            g.count++;
+            if (p.score > g.score) g.score = p.score;
+          } else {
+            groups.set(p.class, { count: 1, score: p.score });
+          }
+        }
+
+        if (!groups.size) {
+          if (detList.dataset.empty !== '1') {
+            detList.innerHTML = '<div class="empty">No objects detected</div>';
+            detList.dataset.empty = '1';
+          }
+          return;
+        }
+
+        const rows = [...groups.entries()]
+          .sort((a, b) => b[1].count - a[1].count || b[1].score - a[1].score);
+
+        detList.dataset.empty = '0';
+        detList.innerHTML = rows.map(([name, g]) => `
+          <div class="det">
+            <span class="det-name">${name}</span>
+            <span class="det-count">×${g.count}</span>
+            <span class="det-score">${Math.round(g.score * 100)}%</span>
+          </div>
+        `).join('');
+      }
+
+      function resetPanel() {
+        state.fps = 0;
+        state.latency = 0;
+        state.predictions = [];
+        state.lastPanelPaint = 0;
+
+        tFps.textContent = '—';
+        tFps.classList.add('idle');
+        tObjects.textContent = '0';
+        tObjects.classList.add('idle');
+        tLatency.textContent = '—';
+        tLatency.classList.add('idle');
+
+        mFps.textContent = '—';
+        mFps.classList.add('idle');
+        mLatency.textContent = '—';
+        mLatency.classList.add('idle');
+        mObjects.textContent = '—';
+        mObjects.classList.add('idle');
+        mResolution.textContent = '—';
+        mResolution.classList.add('idle');
+
+        detList.innerHTML = '<div class="empty">No objects detected</div>';
+        detList.dataset.empty = '1';
+      }
+
+      // ============================================================
+      //  INFERENCE LOOP
+      // ============================================================
+      let sendErrorLogged = false;
+
+      async function frameLoop() {
+        if (!state.active) return;
+        state.rafInfer = requestAnimationFrame(frameLoop);
+        if (state.inferenceInFlight) return;
+
+        const now = performance.now();
+        const minInterval = 1000 / FPS_CAP;
+        const dt = now - state.inferLast;
+        if (dt < minInterval) return;
+        state.inferLast = now;
+
+        if (state.paused) return;
+
+        const inst = 1000 / Math.max(1, dt);
+        state.fps = state.fps ? state.fps * 0.9 + inst * 0.1 : inst;
+
+        if (video.readyState < 2 || video.videoWidth === 0) return;
+        if (!state.model) return;
+
+        state.inferenceInFlight = true;
+        const t0 = performance.now();
+        let preds = [];
+        try {
+          preds = await state.model.detect(video, config.maxBoxes, config.threshold);
+          sendErrorLogged = false;
+        } catch (e) {
+          if (!sendErrorLogged) {
+            console.warn('[SENTINEL] detect error', e);
+            sendErrorLogged = true;
+          }
+        }
+        state.latency = performance.now() - t0;
+        state.inferenceInFlight = false;
+
+        state.predictions = preds
+          .filter(p => p.score >= config.threshold)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, config.maxBoxes);
+
+        drawOverlay();
+        paintPanel(performance.now());
+      }
+
+      // ============================================================
+      //  ACTIVATION
+      // ============================================================
+      async function activate() {
+        if (state.active) return;
+
+        activateBtn.disabled = true;
+        activateBtn.textContent = 'STARTING';
+
+        try {
+          await openStream(cameraSelect.value || undefined);
+        } catch (e) {
+          console.error(e);
+          let msg = 'CAMERA ACCESS DENIED';
+          if (e && e.name === 'NotAllowedError') msg = 'PERMISSION DENIED';
+          else if (e && e.name === 'NotFoundError') msg = 'NO CAMERA FOUND';
+          else if (e && e.name === 'NotReadableError') msg = 'CAMERA BUSY';
+          else if (e && e.name) msg = e.name.toUpperCase();
+
+          activateBtn.disabled = false;
+          activateBtn.textContent = 'ACTIVATE';
+          showToast(msg, 2200);
+          return;
+        }
+
+        // wait for video metadata if needed
+        if (!video.videoWidth) {
+          await new Promise(r => {
+            const done = () => { video.removeEventListener('loadedmetadata', done); r(); };
+            video.addEventListener('loadedmetadata', done);
+            setTimeout(done, 1500);
+          });
+        }
+
+        updateCover();
+        await refreshCameraList();
+
+        state.active = true;
+        state.paused = false;
+        activateBtn.disabled = false;
+        activateBtn.textContent = 'ACTIVE';
+        activateBtn.classList.add('on');
+        captureBtn.disabled = false;
+        exportBtn.disabled = false;
+
+        resetPanel();
+        showToast('DETECTION ONLINE', 1400);
+
+        state.inferLast = performance.now();
+        frameLoop();
+      }
+
+      function deactivate() {
+        if (!state.active) return;
+        state.active = false;
+        state.paused = false;
+
+        if (state.rafInfer) {
+          cancelAnimationFrame(state.rafInfer);
+          state.rafInfer = null;
+        }
+
+        if (state.stream) {
+          state.stream.getTracks().forEach(t => t.stop());
+          state.stream = null;
+        }
+        video.srcObject = null;
+
+        ctx.clearRect(0, 0, viewW, viewH);
+
+        activateBtn.textContent = 'ACTIVATE';
+        activateBtn.classList.remove('on');
+        captureBtn.disabled = true;
+        exportBtn.disabled = true;
+
+        resetPanel();
+      }
+
+      function togglePause() {
+        if (!state.active) return;
+        state.paused = !state.paused;
+        showToast(state.paused ? 'PAUSED' : 'RESUMED', 900);
+        if (!state.paused) {
+          state.inferLast = performance.now();
+        }
+      }
+
+      // ============================================================
+      //  CAPTURE / EXPORT
+      // ============================================================
+      function captureFrame() {
+        if (!state.active) return;
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        if (!vw || !vh) return;
+
+        const out = document.createElement('canvas');
+        out.width = viewW;
+        out.height = viewH;
+        const oc = out.getContext('2d');
+
+        // Draw video with cover mapping
+        const cA = viewW / viewH;
+        const vA = vw / vh;
+        let dW, dH, oX, oY;
+        if (vA > cA) { dH = viewH; dW = viewH * vA; }
+        else { dW = viewW; dH = viewW / vA; }
+        oX = (viewW - dW) / 2;
+        oY = (viewH - dH) / 2;
+
+        oc.save();
+        if (config.mirror) {
+          oc.translate(viewW, 0);
+          oc.scale(-1, 1);
+        }
+        oc.drawImage(video, oX, oY, dW, dH);
+        oc.restore();
+
+        // Draw overlay on top (uses screen coordinates already)
+        const prevCtx = ctx;
+        // temporarily reassign — drawOverlay uses module-level ctx
+        const realCtx = ctx;
+        // Redraw boxes onto out canvas by manually drawing
+        // simplest: draw current canvas contents
+        oc.drawImage(canvas, 0, 0, viewW, viewH);
+
+        out.toBlob(blob => {
+          if (blob) {
+            download(blob, `sentinel-${stamp()}.png`);
+            showToast('FRAME CAPTURED', 1200);
+          }
+        }, 'image/png');
+      }
+
+      function exportDetections() {
+        if (!state.active) return;
+
+        const payload = {
+          capturedAt: new Date().toISOString(),
+          model: state.modelName,
+          backend: String(tf.getBackend()),
+          confidenceThreshold: config.threshold,
+          frame: {
+            width: video.videoWidth,
+            height: video.videoHeight
+          },
+          inferenceMs: Math.round(state.latency),
+          detections: state.predictions.map(p => ({
+            class: p.class,
+            score: Number(p.score.toFixed(4)),
+            bbox: {
+              x: Math.round(p.bbox[0]),
+              y: Math.round(p.bbox[1]),
+              width: Math.round(p.bbox[2]),
+              height: Math.round(p.bbox[3])
+            }
+          }))
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        download(blob, `sentinel-${stamp()}.json`);
+        showToast('DETECTIONS EXPORTED', 1200);
+      }
+
+      // ============================================================
+      //  PANEL
+      // ============================================================
+      function openPanel() {
+        settingsPanel.classList.add('open');
+        settingsPanel.setAttribute('aria-hidden', 'false');
+        panelOverlay.classList.add('show');
+      }
+      function closePanel() {
+        settingsPanel.classList.remove('open');
+        settingsPanel.setAttribute('aria-hidden', 'true');
+        panelOverlay.classList.remove('show');
+      }
+
+      settingsToggle.addEventListener('click', openPanel);
+      settingsClose.addEventListener('click', closePanel);
+      panelOverlay.addEventListener('click', closePanel);
+
+      // ============================================================
+      //  UI WIRING
+      // ============================================================
+      const FMT = {
+        threshold: v => v.toFixed(2),
+        maxBoxes: v => String(v | 0),
+        boxWeight: v => v.toFixed(2),
+        labelScale: v => v.toFixed(2),
+      };
+
+      const labelEls = {};
+      document.querySelectorAll('[data-value]').forEach(el => {
+        labelEls[el.dataset.value] = el;
+      });
+
+      function syncSliderLabel(key, val) {
+        const el = labelEls[key];
+        if (!el) return;
+        const f = FMT[key];
+        el.textContent = f ? f(parseFloat(val)) : String(val);
+      }
+
+      function updateSliderFill(input) {
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+        const val = parseFloat(input.value);
+        const pct = ((val - min) / (max - min)) * 100;
+        input.style.setProperty('--fill', pct.toFixed(2) + '%');
+      }
+
+      function syncMirror() {
+        video.classList.toggle('mirror', !!config.mirror);
+        // Mirror state affects drawing, so redraw immediately
+        drawOverlay();
+      }
+
+      function syncReticle() {
+        const r = document.querySelector('.hud-reticle');
+        if (r) r.style.display = config.showReticle ? '' : 'none';
+      }
+
+      function wireInputs() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
+          const key = input.dataset.key;
+          input.value = config[key];
+          syncSliderLabel(key, input.value);
+          updateSliderFill(input);
+          input.addEventListener('input', () => {
+            const val = parseFloat(input.value);
+            config[key] = val;
+            syncSliderLabel(key, val);
+            updateSliderFill(input);
+            saveConfig();
+          });
+        });
+
+        document.querySelectorAll('.toggle[data-key]').forEach(t => {
+          const key = t.dataset.key;
+          t.classList.toggle('on', !!config[key]);
+          t.addEventListener('click', (e) => {
+            e.preventDefault();
+            config[key] = !config[key];
+            t.classList.toggle('on', config[key]);
+            saveConfig();
+            if (key === 'mirror') syncMirror();
+            if (key === 'showReticle') syncReticle();
+            if (key === 'showBoxes' || key === 'showLabels' || key === 'showScore') {
+              drawOverlay();
+            }
+          });
+        });
+
+        document.querySelectorAll('.section-head').forEach(h => {
+          h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
+        });
+
+        document.querySelectorAll('.select[data-key]').forEach(s => {
+          const key = s.dataset.key;
+          s.value = config[key];
+          s.addEventListener('change', () => {
+            config[key] = s.value;
+            saveConfig();
+          });
+        });
+      }
+
+      // ============================================================
+      //  EVENTS
+      // ============================================================
+      activateBtn.addEventListener('click', () => {
+        if (state.active) deactivate(); else activate();
+      });
+
+      captureBtn.addEventListener('click', captureFrame);
+      exportBtn.addEventListener('click', exportDetections);
+
+      modelSelect.addEventListener('change', async () => {
+        const name = modelSelect.value;
+        modelSelect.disabled = true;
+        showToast('LOADING MODEL', 900);
+        try {
+          await loadModel(name);
+          config.model = name;
+          saveConfig();
+          showToast('MODEL READY', 900);
+        } catch (e) {
+          console.error(e);
+          showToast('MODEL LOAD FAILED', 1800);
+        }
+        modelSelect.disabled = false;
+      });
+
+      cameraSelect.addEventListener('change', async () => {
+        if (!state.active) return;
+        const id = cameraSelect.value;
+        if (!id) return;
+        showToast('SWITCHING SOURCE', 900);
+        try {
+          await openStream(id);
+          updateCover();
+          showToast('SOURCE READY', 900);
+        } catch (e) {
+          console.error(e);
+          showToast((e && e.name) ? e.name.toUpperCase() : 'CAMERA ERROR', 1800);
+        }
+      });
+
+      navigator.mediaDevices && navigator.mediaDevices.addEventListener &&
+        navigator.mediaDevices.addEventListener('devicechange', () => {
+          if (state.active) refreshCameraList();
+        });
+
+      document.addEventListener('keydown', (e) => {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+        const k = e.key.toLowerCase();
+
+        if (k === 'a') {
+          if (state.active) deactivate(); else activate();
+        } else if (k === 's') {
+          if (settingsPanel.classList.contains('open')) closePanel();
+          else openPanel();
+        } else if (e.key === 'Escape') {
+          closePanel();
+        } else if (k === 'c') {
+          captureFrame();
+        } else if (k === 'e') {
+          exportDetections();
+        } else if (k === 'm') {
+          config.mirror = !config.mirror;
+          const t = document.querySelector('.toggle[data-key="mirror"]');
+          if (t) t.classList.toggle('on', config.mirror);
+          saveConfig();
+          syncMirror();
+        } else if (k === 'h') {
+          hudEl.classList.toggle('hidden');
+        } else if (k === 'f') {
+          const el = document.getElementById('stage');
+          if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => { });
+          else document.exitFullscreen?.();
+        } else if (e.code === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+      });
+
+      // ============================================================
+      //  BOOT
+      // ============================================================
+      async function init() {
+        loadConfig();
+        wireInputs();
+        syncMirror();
+        syncReticle();
+
+        modelSelect.value = config.model || state.modelName;
+
+        bootMsg.textContent = 'INITIALIZING BACKEND';
+
+        try {
+          await initBackend();
+        } catch (e) {
+          console.error(e);
+          bootEl.classList.add('error');
+          bootMsg.textContent = 'BACKEND UNAVAILABLE';
+          return;
+        }
+
+        bootMsg.textContent = 'LOADING MODEL';
+
+        try {
+          await loadModel(modelSelect.value || state.modelName);
+        } catch (e) {
+          console.error(e);
+          bootEl.classList.add('error');
+          bootMsg.textContent = 'MODEL LOAD FAILED';
+          return;
+        }
+
+        bootMsg.textContent = 'READY';
+        bootEl.classList.add('hidden');
+
+        activateBtn.disabled = false;
+        activateBtn.textContent = 'ACTIVATE';
+      }
+
+      setTimeout(init, 200);
+
+    })();
+  </script>
+</body>
+
+</html>
