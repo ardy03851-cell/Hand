@@ -9,22 +9,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>SENTINEL · PINCH PULL</title>
     <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    html,
-    body {
-      height: 100%;
-      background: #000;
-      overflow: hidden;
+    html, body {
+      height: 100%; background: #000; overflow: hidden;
       font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
-      color: #e8e8e8;
-      user-select: none;
-      -webkit-user-select: none;
+      color: #e8e8e8; user-select: none; -webkit-user-select: none;
     }
 
     :root {
@@ -37,672 +27,282 @@
       --fg: #f6f6f6;
     }
 
-    #stage {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      overflow: hidden;
-    }
-
-    #viewport {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-    }
+    #stage { position: fixed; inset: 0; background: #000; overflow: hidden; }
+    #viewport { position: absolute; inset: 0; overflow: hidden; }
 
     #video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      transform: scaleX(-1);
-      transform-origin: 50% 50%;
-      filter: contrast(1.04) brightness(1.0) saturate(0.98);
-      pointer-events: none;
+      position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+      object-fit: cover; transform: scaleX(-1); transform-origin: 50% 50%;
+      filter: contrast(1.04) brightness(1.0) saturate(0.98); pointer-events: none;
     }
 
     #overlay {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      pointer-events: none;
-      z-index: 1;
+      position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+      pointer-events: none; z-index: 1;
     }
 
     .topbar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      position: absolute; top: 0; left: 0; right: 0;
       padding: max(14px, env(safe-area-inset-top)) 20px 0 20px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
-      z-index: 30;
-      pointer-events: none;
+      display: flex; justify-content: flex-end; align-items: flex-start;
+      z-index: 30; pointer-events: none;
     }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      pointer-events: auto;
-    }
+    .topbar-right { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
 
     .icon-btn {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      color: rgba(255, 255, 255, 0.78);
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      padding: 7px 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-transform: uppercase;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.78); font-family: inherit; font-size: 11px;
+      letter-spacing: 0.16em; padding: 7px 10px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
       transition: border-color .18s, color .18s;
     }
-
-    .icon-btn:hover {
-      border-color: rgba(255, 255, 255, 0.7);
-      color: #fff;
-    }
-
-    .icon-btn svg {
-      width: 12px;
-      height: 12px;
-    }
+    .icon-btn:hover { border-color: rgba(255, 255, 255, 0.7); color: #fff; }
+    .icon-btn svg { width: 12px; height: 12px; }
 
     .hud {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 20;
+      position: absolute; inset: 0; pointer-events: none; z-index: 20;
       transition: opacity .25s ease;
     }
-
-    .hud.hidden {
-      opacity: 0;
-    }
+    .hud.hidden { opacity: 0; }
 
     .hud-top {
-      position: absolute;
-      top: max(16px, env(safe-area-inset-top));
-      left: 22px;
-      right: 22px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      font-size: 9px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
+      position: absolute; top: max(16px, env(safe-area-inset-top));
+      left: 22px; right: 22px; display: flex; flex-wrap: wrap; gap: 14px;
+      font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); font-variant-numeric: tabular-nums;
     }
-
-    .hud-top .val {
-      color: rgba(255, 255, 255, 0.92);
-      font-size: 11px;
-      margin-left: 6px;
-    }
-
-    .hud-top .val.idle {
-      color: rgba(255, 255, 255, 0.3);
-    }
+    .hud-top .val { color: rgba(255, 255, 255, 0.92); font-size: 11px; margin-left: 6px; }
+    .hud-top .val.idle { color: rgba(255, 255, 255, 0.3); }
 
     .hint-bar {
-      position: absolute;
-      left: 22px;
-      right: 22px;
+      position: absolute; left: 22px; right: 22px;
       bottom: max(24px, env(safe-area-inset-bottom));
-      font-size: 9px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.34);
-      line-height: 1.7;
-      max-width: 60vw;
+      font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.34); line-height: 1.7; max-width: 60vw;
     }
-
-    .hint-bar b {
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 600;
-    }
+    .hint-bar b { color: rgba(255, 255, 255, 0.9); font-weight: 600; }
 
     .bottombar {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      position: absolute; left: 0; right: 0; bottom: 0;
       padding: 0 22px max(20px, env(safe-area-inset-bottom)) 22px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-      z-index: 30;
-      pointer-events: none;
+      display: flex; justify-content: flex-end; align-items: flex-end;
+      z-index: 30; pointer-events: none;
     }
 
     #activateBtn {
-      pointer-events: auto;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.32);
-      color: #f2f2f2;
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      font-weight: 600;
-      padding: 14px 30px;
-      cursor: pointer;
-      position: relative;
-      min-width: 190px;
-      text-align: center;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      pointer-events: auto; background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.32); color: #f2f2f2;
+      font-family: inherit; font-size: 11px; letter-spacing: 0.3em;
+      text-transform: uppercase; font-weight: 600; padding: 14px 30px;
+      cursor: pointer; position: relative; min-width: 190px; text-align: center;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
       transition: background .2s, border-color .2s, color .2s, transform .1s;
     }
-
-    #activateBtn:hover {
-      border-color: rgba(255, 255, 255, 0.85);
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    #activateBtn:active {
-      transform: translateY(1px);
-    }
-
-    #activateBtn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    #activateBtn.on {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: #000;
-    }
-
+    #activateBtn:hover { border-color: rgba(255, 255, 255, 0.85); background: rgba(255, 255, 255, 0.06); }
+    #activateBtn:active { transform: translateY(1px); }
+    #activateBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #activateBtn.on { border-color: var(--accent); background: var(--accent); color: #000; }
     #activateBtn.on::before {
-      content: "";
-      position: absolute;
-      top: 7px;
-      left: 8px;
-      width: 4px;
-      height: 4px;
-      background: #000;
-      border-radius: 50%;
+      content: ""; position: absolute; top: 7px; left: 8px;
+      width: 4px; height: 4px; background: #000; border-radius: 50%;
       animation: blink 1.4s infinite;
     }
-
-    @keyframes blink {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.2;
-      }
-    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
     #toast {
-      position: absolute;
-      left: 50%;
-      top: 12%;
-      transform: translate(-50%, -6px);
-      padding: 8px 18px;
-      background: rgba(0, 0, 0, 0.72);
-      border: 1px solid var(--accent);
-      color: #fff;
-      font-size: 10px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      pointer-events: none;
-      opacity: 0;
-      white-space: nowrap;
-      z-index: 60;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      position: absolute; left: 50%; top: 12%; transform: translate(-50%, -6px);
+      padding: 8px 18px; background: rgba(0, 0, 0, 0.72);
+      border: 1px solid var(--accent); color: #fff; font-size: 10px;
+      letter-spacing: 0.28em; text-transform: uppercase; pointer-events: none;
+      opacity: 0; white-space: nowrap; z-index: 60;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       transition: opacity .25s ease, transform .25s ease;
     }
-
-    #toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
     #settingsPanel {
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 100%;
-      width: min(420px, 92vw);
-      background: var(--panel-bg);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      border-left: 1px solid var(--hairline);
-      z-index: 50;
-      transform: translateX(100%);
+      position: absolute; top: 0; right: 0; height: 100%; width: min(420px, 92vw);
+      background: var(--panel-bg); backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px); border-left: 1px solid var(--hairline);
+      z-index: 50; transform: translateX(100%);
       transition: transform .34s cubic-bezier(.22, 1, .36, 1);
-      display: flex;
-      flex-direction: column;
-      pointer-events: auto;
-      font-size: 11px;
-      letter-spacing: 0.06em;
+      display: flex; flex-direction: column; pointer-events: auto;
+      font-size: 11px; letter-spacing: 0.06em;
     }
-
-    #settingsPanel.open {
-      transform: translateX(0);
-    }
+    #settingsPanel.open { transform: translateX(0); }
 
     .panel-head {
       padding: max(18px, env(safe-area-inset-top)) 22px 14px 22px;
       border-bottom: 1px solid var(--hairline);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       flex-shrink: 0;
     }
-
     .panel-head .title {
-      color: var(--fg);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.34em;
-      text-transform: uppercase;
+      color: var(--fg); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.34em; text-transform: uppercase;
     }
-
     .panel-head .close {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      color: rgba(255, 255, 255, 0.72);
-      font-family: inherit;
-      font-size: 10px;
-      padding: 5px 11px;
-      letter-spacing: 0.22em;
-      cursor: pointer;
-      text-transform: uppercase;
+      background: transparent; border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.72); font-family: inherit;
+      font-size: 10px; padding: 5px 11px; letter-spacing: 0.22em;
+      cursor: pointer; text-transform: uppercase;
       transition: border-color .18s, color .18s;
     }
-
-    .panel-head .close:hover {
-      border-color: rgba(255, 255, 255, 0.7);
-      color: #fff;
-    }
+    .panel-head .close:hover { border-color: rgba(255, 255, 255, 0.7); color: #fff; }
 
     .panel-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 6px 0 44px 0;
+      flex: 1; overflow-y: auto; padding: 6px 0 44px 0;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+      scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
     }
+    .panel-body::-webkit-scrollbar { width: 3px; }
+    .panel-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 2px; }
 
-    .panel-body::-webkit-scrollbar {
-      width: 3px;
-    }
-
-    .panel-body::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 2px;
-    }
-
-    .section {
-      border-bottom: 1px solid var(--hairline-soft);
-    }
-
+    .section { border-bottom: 1px solid var(--hairline-soft); }
     .section-head {
-      padding: 15px 22px 12px 22px;
-      color: var(--muted-2);
-      font-size: 9px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-      transition: color .18s;
+      padding: 15px 22px 12px 22px; color: var(--muted-2);
+      font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; user-select: none; transition: color .18s;
     }
-
-    .section-head:hover {
-      color: var(--muted);
-    }
-
+    .section-head:hover { color: var(--muted); }
     .section-head .chev {
-      color: rgba(255, 255, 255, 0.22);
-      font-size: 8px;
-      line-height: 1;
+      color: rgba(255, 255, 255, 0.22); font-size: 8px; line-height: 1;
       transition: transform .22s cubic-bezier(.22, 1, .36, 1);
     }
-
-    .section.collapsed .chev {
-      transform: rotate(-90deg);
-    }
-
-    .section.collapsed .section-content {
-      display: none;
-    }
-
+    .section.collapsed .chev { transform: rotate(-90deg); }
+    .section.collapsed .section-content { display: none; }
     .section-content {
       padding: 0 22px 20px 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 13px;
+      display: flex; flex-direction: column; gap: 13px;
     }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
+    .field { display: flex; flex-direction: column; gap: 7px; }
     .field .label {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      color: rgba(255, 255, 255, 0.58);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      display: flex; justify-content: space-between; align-items: baseline;
+      color: rgba(255, 255, 255, 0.58); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase;
     }
-
     .field .label .value {
-      color: rgba(255, 255, 255, 0.94);
-      font-variant-numeric: tabular-nums;
-      font-weight: 500;
+      color: rgba(255, 255, 255, 0.94); font-variant-numeric: tabular-nums; font-weight: 500;
     }
 
     .field input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 2px;
+      -webkit-appearance: none; appearance: none; width: 100%; height: 2px;
       background: linear-gradient(to right,
-          var(--accent) var(--fill, 0%),
-          rgba(255, 255, 255, 0.12) var(--fill, 0%));
-      outline: none;
-      cursor: pointer;
-      border-radius: 1px;
+        var(--accent) var(--fill, 0%),
+        rgba(255, 255, 255, 0.12) var(--fill, 0%));
+      outline: none; cursor: pointer; border-radius: 1px;
     }
-
     .field input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      background: #fff;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid #000;
+      -webkit-appearance: none; appearance: none;
+      width: 12px; height: 12px; background: #fff; border-radius: 50%;
+      cursor: pointer; border: 2px solid #000;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
     }
-
     .field input[type="range"]::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      background: #fff;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid #000;
+      width: 12px; height: 12px; background: #fff; border-radius: 50%;
+      cursor: pointer; border: 2px solid #000;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
     }
 
-    /* Colour picker rows */
     .color-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 2px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; padding: 2px 0;
     }
-
     .color-row .name {
-      color: rgba(255, 255, 255, 0.62);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      flex: 1;
+      color: rgba(255, 255, 255, 0.62); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase; flex: 1;
     }
-
     .color-row .hex {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 9px;
-      letter-spacing: 0.08em;
-      font-variant-numeric: tabular-nums;
+      color: rgba(255, 255, 255, 0.5); font-size: 9px;
+      letter-spacing: 0.08em; font-variant-numeric: tabular-nums;
     }
-
     .color-row input[type="color"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 40px;
-      height: 26px;
-      padding: 0;
+      -webkit-appearance: none; appearance: none;
+      width: 40px; height: 26px; padding: 0;
       border: 1px solid rgba(255, 255, 255, 0.25);
-      background: transparent;
-      cursor: pointer;
-      flex-shrink: 0;
+      background: transparent; cursor: pointer; flex-shrink: 0;
     }
-
-    .color-row input[type="color"]::-webkit-color-swatch-wrapper {
-      padding: 0;
-    }
-
-    .color-row input[type="color"]::-webkit-color-swatch {
-      border: none;
-      border-radius: 0;
-    }
-
-    .color-row input[type="color"]::-moz-color-swatch {
-      border: none;
-      border-radius: 0;
-    }
+    .color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0; }
+    .color-row input[type="color"]::-moz-color-swatch { border: none; border-radius: 0; }
 
     .select {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.85);
-      font-family: inherit;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      padding: 8px 10px;
-      width: 100%;
-      cursor: pointer;
-      text-transform: uppercase;
-      -webkit-appearance: none;
-      appearance: none;
+      background: transparent; border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.85); font-family: inherit; font-size: 10px;
+      letter-spacing: 0.1em; padding: 8px 10px; width: 100%; cursor: pointer;
+      text-transform: uppercase; -webkit-appearance: none; appearance: none;
       background-image:
         linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
         linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
       background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
-      background-size: 5px 5px, 5px 5px;
-      background-repeat: no-repeat;
+      background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
       transition: border-color .15s;
     }
-
-    .select:hover {
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    .select:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .select option {
-      background: #0a0c0f;
-      color: #fff;
-    }
+    .select:hover { border-color: rgba(255, 255, 255, 0.4); }
+    .select:focus { outline: none; border-color: var(--accent); }
+    .select option { background: #0a0c0f; color: #fff; }
 
     .toggle {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 0;
-      cursor: pointer;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      user-select: none;
-      transition: color .15s;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 4px 0; cursor: pointer; color: rgba(255, 255, 255, 0.7);
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      user-select: none; transition: color .15s;
     }
-
-    .toggle:hover {
-      color: rgba(255, 255, 255, 0.95);
-    }
-
+    .toggle:hover { color: rgba(255, 255, 255, 0.95); }
     .toggle .switch {
-      width: 30px;
-      height: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      position: relative;
-      flex-shrink: 0;
-      transition: border-color .2s;
+      width: 30px; height: 14px; border: 1px solid rgba(255, 255, 255, 0.28);
+      position: relative; flex-shrink: 0; transition: border-color .2s;
     }
-
     .toggle .switch::after {
-      content: "";
-      position: absolute;
-      top: 1px;
-      left: 1px;
-      width: 10px;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.4);
+      content: ""; position: absolute; top: 1px; left: 1px;
+      width: 10px; height: 10px; background: rgba(255, 255, 255, 0.4);
       transition: left .2s cubic-bezier(.22, 1, .36, 1), background .2s;
     }
-
-    .toggle.on {
-      color: rgba(255, 255, 255, 0.95);
-    }
-
-    .toggle.on .switch {
-      border-color: var(--accent);
-    }
-
-    .toggle.on .switch::after {
-      left: 17px;
-      background: var(--accent);
-    }
+    .toggle.on { color: rgba(255, 255, 255, 0.95); }
+    .toggle.on .switch { border-color: var(--accent); }
+    .toggle.on .switch::after { left: 17px; background: var(--accent); }
 
     .wide-btn {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.8);
-      font-family: inherit;
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      padding: 10px;
-      cursor: pointer;
-      transition: border-color .15s, color .15s, background .15s;
+      background: transparent; border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8); font-family: inherit; font-size: 10px;
+      letter-spacing: 0.22em; text-transform: uppercase; padding: 10px;
+      cursor: pointer; transition: border-color .15s, color .15s, background .15s;
     }
-
-    .wide-btn:hover {
-      border-color: rgba(255, 255, 255, 0.6);
-      color: #fff;
-      background: rgba(255, 255, 255, 0.04);
-    }
+    .wide-btn:hover { border-color: rgba(255, 255, 255, 0.6); color: #fff; background: rgba(255, 255, 255, 0.04); }
 
     .hint {
-      font-size: 8.5px;
-      letter-spacing: 0.12em;
-      color: rgba(255, 255, 255, 0.26);
-      line-height: 1.7;
-      text-transform: uppercase;
+      font-size: 8.5px; letter-spacing: 0.12em; color: rgba(255, 255, 255, 0.26);
+      line-height: 1.7; text-transform: uppercase;
     }
 
     #panelOverlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 40;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .28s;
+      position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45);
+      z-index: 40; opacity: 0; pointer-events: none; transition: opacity .28s;
     }
-
-    #panelOverlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    #panelOverlay.show { opacity: 1; pointer-events: auto; }
 
     #boot {
-      position: absolute;
-      inset: 0;
-      z-index: 100;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      padding: 24px;
-      text-align: center;
-      transition: opacity .5s ease;
+      position: absolute; inset: 0; z-index: 100; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; padding: 24px; text-align: center; transition: opacity .5s ease;
     }
-
-    #boot.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #boot .title {
-      font-size: 12px;
-      letter-spacing: 0.55em;
-      color: #f2f2f2;
-      font-weight: 600;
-    }
-
-    #boot .sub {
-      font-size: 10px;
-      letter-spacing: 0.26em;
-      color: rgba(255, 255, 255, 0.42);
-      max-width: 320px;
-    }
-
+    #boot.hidden { opacity: 0; pointer-events: none; }
+    #boot .title { font-size: 12px; letter-spacing: 0.55em; color: #f2f2f2; font-weight: 600; }
+    #boot .sub { font-size: 10px; letter-spacing: 0.26em; color: rgba(255, 255, 255, 0.42); max-width: 320px; }
     #boot .bar {
-      width: 220px;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-      margin-top: 6px;
+      width: 220px; height: 1px; background: rgba(255, 255, 255, 0.08);
+      overflow: hidden; margin-top: 6px;
     }
-
     #boot .bar i {
-      display: block;
-      height: 100%;
-      width: 40%;
-      background: rgba(255, 255, 255, 0.85);
+      display: block; height: 100%; width: 40%; background: rgba(255, 255, 255, 0.85);
       animation: slide 1.2s infinite ease-in-out;
     }
-
-    @keyframes slide {
-      0% {
-        transform: translateX(-100%);
-      }
-
-      100% {
-        transform: translateX(300%);
-      }
-    }
-
-    #boot.error .sub {
-      color: #ff3b30;
-    }
-
-    #boot.error .bar {
-      display: none;
-    }
+    @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+    #boot.error .sub { color: #ff3b30; }
+    #boot.error .bar { display: none; }
   </style>
   </head>
 
@@ -719,8 +319,7 @@
           <button class="icon-btn" id="settingsToggle" type="button" title="Settings (S)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
               <circle cx="12" cy="12" r="3" />
-              <path
-              d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
             </svg>
           </button>
         </div>
@@ -750,7 +349,7 @@
         </div>
         <div class="panel-body">
 
-          <!-- THEMES ------------------------------------------------->
+          <!-- THEME ============================================== -->
           <div class="section" data-section="theme">
             <div class="section-head"><span>Overlay Theme</span><span class="chev">▼</span></div>
             <div class="section-content">
@@ -758,7 +357,6 @@
                 <div class="label"><span>Preset</span></div>
                 <select class="select" id="themeSelect"></select>
               </div>
-
               <div class="color-row">
                 <span class="name">Accent</span>
                 <span class="hex" id="hexAccent">#ffffff</span>
@@ -774,16 +372,119 @@
                 <span class="hex" id="hexBg">#000000</span>
                 <input type="color" id="colorBg" value="#000000">
               </div>
+            </div>
+          </div>
+
+          <!-- CODE STRING UI ===================================== -->
+          <div class="section" data-section="stringui">
+            <div class="section-head"><span>Code String UI</span><span class="chev">▼</span></div>
+            <div class="section-content">
+              <div class="field">
+                <div class="label"><span>Font Size Mode</span></div>
+                <select class="select" id="fontModeSelect">
+                  <option value="auto">Auto Fit</option>
+                  <option value="fixed">Fixed Size</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label"><span>Fixed Font Size</span>
+                  <span class="value" data-value="fontFixed">11</span>
+                </div>
+                <input type="range" min="6" max="28" step="1" data-key="fontFixed">
+              </div>
+              <div class="field">
+                <div class="label"><span>Character Spacing</span>
+                  <span class="value" data-value="charSpacing">0.62</span>
+                </div>
+                <input type="range" min="0.4" max="1.2" step="0.02" data-key="charSpacing">
+              </div>
+              <div class="field">
+                <div class="label"><span>Block Padding</span>
+                  <span class="value" data-value="blockPadding">0.82</span>
+                </div>
+                <input type="range" min="0.2" max="2.0" step="0.05" data-key="blockPadding">
+              </div>
+              <div class="field">
+                <div class="label"><span>Border Width</span>
+                  <span class="value" data-value="borderWidth">1.2</span>
+                </div>
+                <input type="range" min="0" max="4" step="0.1" data-key="borderWidth">
+              </div>
+              <div class="field">
+                <div class="label"><span>Block Background Opacity</span>
+                  <span class="value" data-value="bgOpacity">0.68</span>
+                </div>
+                <input type="range" min="0" max="1" step="0.02" data-key="bgOpacity">
+              </div>
+              <div class="field">
+                <div class="label"><span>Tag Position</span></div>
+                <select class="select" id="tagPositionSelect">
+                  <option value="above">Above Line</option>
+                  <option value="below">Below Line</option>
+                  <option value="hidden">Hidden</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label"><span>Max Line Characters</span>
+                  <span class="value" data-value="maxLineChars">40</span>
+                </div>
+                <input type="range" min="8" max="80" step="1" data-key="maxLineChars">
+              </div>
               <div class="hint">
-                Accent tints the skeleton, halos, borders and pull thread.
-                Text colours the code itself. Editing any colour switches you to a custom theme.
+                Font, spacing and padding scale the whole strand. Auto-fit makes each
+                strand fit inside the pull distance; Fixed uses the size you set.
               </div>
             </div>
           </div>
 
-          <!-- PINCH -------------------------------------------------->
-          <div class="section" data-section="pinch">
-            <div class="section-head"><span>Pinch</span><span class="chev">▼</span></div>
+          <!-- LENGTHS & PHYSICS ================================== -->
+          <div class="section" data-section="lengths">
+            <div class="section-head"><span>Lengths &amp; Physics</span><span class="chev">▼</span></div>
+            <div class="section-content">
+              <div class="field">
+                <div class="label"><span>Min Pull Distance (px)</span>
+                  <span class="value" data-value="pullMinDist">60</span>
+                </div>
+                <input type="range" min="30" max="300" step="5" data-key="pullMinDist">
+              </div>
+              <div class="field">
+                <div class="label"><span>Max Pull Distance (px)</span>
+                  <span class="value" data-value="pullMaxDist">380</span>
+                </div>
+                <input type="range" min="120" max="900" step="10" data-key="pullMaxDist">
+              </div>
+              <div class="field">
+                <div class="label"><span>Strand Lifetime (s)</span>
+                  <span class="value" data-value="strandLife">30</span>
+                </div>
+                <input type="range" min="5" max="180" step="5" data-key="strandLife">
+              </div>
+              <div class="field">
+                <div class="label"><span>Drift Speed</span>
+                  <span class="value" data-value="driftSpeed">1.00</span>
+                </div>
+                <input type="range" min="0" max="3" step="0.1" data-key="driftSpeed">
+              </div>
+              <div class="field">
+                <div class="label"><span>Grab Cooldown (ms)</span>
+                  <span class="value" data-value="grabCooldown">260</span>
+                </div>
+                <input type="range" min="0" max="900" step="20" data-key="grabCooldown">
+              </div>
+              <div class="field">
+                <div class="label"><span>Return Radius (× hand)</span>
+                  <span class="value" data-value="returnRadiusScale">1.90</span>
+                </div>
+                <input type="range" min="1.0" max="3.5" step="0.1" data-key="returnRadiusScale">
+              </div>
+              <label class="toggle" data-key="drift"><span>Drift</span><span class="switch"></span></label>
+              <label class="toggle" data-key="allowReturn"><span>Return To Hand</span><span class="switch"></span></label>
+            </div>
+          </div>
+
+          <!-- DETECTION ========================================== -->
+          <div class="section" data-section="detection">
+            <div class="section-head"><span>Hand Detection</span><span class="chev">▼</span></div>
             <div class="section-content">
               <div class="field">
                 <div class="label"><span>Pinch Sensitivity</span>
@@ -792,47 +493,68 @@
                 <input type="range" min="0.6" max="2" step="0.05" data-key="pinchSensitivity">
               </div>
               <div class="field">
-                <div class="label"><span>Smoothing</span>
+                <div class="label"><span>Grab Looseness</span>
+                  <span class="value" data-value="grabLooseness">1.00</span>
+                </div>
+                <input type="range" min="0.6" max="1.8" step="0.05" data-key="grabLooseness">
+              </div>
+              <div class="field">
+                <div class="label"><span>Pinch Smoothing</span>
                   <span class="value" data-value="pinchSmoothing">0.55</span>
                 </div>
                 <input type="range" min="0" max="1" step="0.05" data-key="pinchSmoothing">
               </div>
               <div class="field">
-                <div class="label"><span>Grab Looseness</span>
-                  <span class="value" data-value="grabLooseness">1.00</span>
+                <div class="label"><span>Hand Loss Grace (frames)</span>
+                  <span class="value" data-value="handGrace">16</span>
                 </div>
-                <input type="range" min="0.6" max="1.6" step="0.05" data-key="grabLooseness">
+                <input type="range" min="1" max="40" step="1" data-key="handGrace">
               </div>
-              <label class="toggle" data-key="showPinchHalo"><span>Pinch Halo</span><span class="switch"></span></label>
-              <label class="toggle" data-key="showSkeleton"><span>Skeleton</span><span class="switch"></span></label>
-              <label class="toggle" data-key="showSourceHalo"><span>Source Halo</span><span class="switch"></span></label>
+              <div class="field">
+                <div class="label"><span>Min Hand Span</span>
+                  <span class="value" data-value="minHandSpan">0.030</span>
+                </div>
+                <input type="range" min="0.015" max="0.15" step="0.005" data-key="minHandSpan">
+              </div>
+              <label class="toggle" data-key="validateLandmarks"><span>Validate Landmarks</span><span
+              class="switch"></span></label>
+              <label class="toggle" data-key="pinchAngleGate"><span>Pinch Angle Gate</span><span
+              class="switch"></span></label>
+              <label class="toggle" data-key="openSpreadGate"><span>Open Hand Spread Gate</span><span
+              class="switch"></span></label>
+              <label class="toggle" data-key="zFromScale"><span>Depth From Scale</span><span class="switch"></span></label>
               <div class="hint">
-                Full pinch (thumb-index closed) pulls new code out of an open hand.
-                A loose pinch is enough to grab and move an existing line.
+                Validation rejects frames whose landmarks are geometrically impossible.
+                Angle gate requires thumb &amp; index to point at each other.
+                Spread gate requires fingers to be spread, not just extended.
               </div>
             </div>
           </div>
 
-          <!-- STRANDS ------------------------------------------------>
-          <div class="section" data-section="strands">
-            <div class="section-head"><span>Code Strands</span><span class="chev">▼</span></div>
+          <!-- DISPLAY ============================================ -->
+          <div class="section" data-section="display">
+            <div class="section-head"><span>Display</span><span class="chev">▼</span></div>
             <div class="section-content">
-              <label class="toggle" data-key="showLineNumbers"><span>Line Labels</span><span
+              <label class="toggle" data-key="showPinchHalo"><span>Pinch Halo</span><span class="switch"></span></label>
+              <label class="toggle" data-key="showSkeleton"><span>Skeleton</span><span class="switch"></span></label>
+              <label class="toggle" data-key="showSourceHalo"><span>Source Halo</span><span
               class="switch"></span></label>
-              <label class="toggle" data-key="drift"><span>Drift</span><span class="switch"></span></label>
-              <label class="toggle" data-key="allowReturn"><span>Return To Hand</span><span class="switch"></span></label>
+              <label class="toggle" data-key="showLineNumbers"><span>Line Labels</span><span class="switch"></span></label>
               <div class="field">
                 <div class="label"><span>Max Strands</span>
                   <span class="value" data-value="maxStrands">6</span>
                 </div>
-                <input type="range" min="1" max="12" step="1" data-key="maxStrands">
+                <input type="range" min="1" max="16" step="1" data-key="maxStrands">
               </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS ============================================ -->
+          <div class="section" data-section="actions">
+            <div class="section-head"><span>Actions</span><span class="chev">▼</span></div>
+            <div class="section-content">
               <button class="wide-btn" id="clearStrands" type="button">Clear Strands</button>
               <button class="wide-btn" id="resetDefaults" type="button">Reset Defaults</button>
-              <div class="hint">
-                Pinch near a line's edges (loosely) to grab it. Drag it around.
-                Drop it inside an open palm to absorb it back. Tap any line to copy.
-              </div>
             </div>
           </div>
 
@@ -853,6 +575,9 @@
     (() => {
       "use strict";
 
+      /* ============================================================
+         GLOBAL ERROR LOG
+         ============================================================ */
       window.addEventListener('error', (e) => {
         console.error('[SENTINEL]', e.message, e.error && e.error.stack);
       });
@@ -893,6 +618,9 @@
       const hexText = $('hexText');
       const hexBg = $('hexBg');
 
+      const fontModeSelect = $('fontModeSelect');
+      const tagPositionSelect = $('tagPositionSelect');
+
       /* ============================================================
          CONSTANTS
          ============================================================ */
@@ -900,26 +628,21 @@
 
       const MAX_HANDS = 2;
       const MODEL_COMPLEXITY = 1;
-      const MIN_DETECTION = 0.6;
-      const MIN_TRACKING = 0.6;
+      const MIN_DETECTION = 0.45;
+      const MIN_TRACKING = 0.45;
 
-      const FPS_CAP = 60;
+      const FPS_CAP = 45;
       const RES_W = 1280;
       const RES_H = 720;
       const FACING_MODE = 'user';
       const PAUSE_ON_HIDE = true;
 
       const MIRROR = true;
-      const PREDICTION = 1.0;
-      const GRACE_FRAMES = 8;
 
       const D_CUTOFF = 1.0;
       const RESPONSIVENESS = 0.5;
 
-      /* Pinch states:
-         - pinching: ratio < onT (full pinch, used for PULL)
-         - contact : ratio < contactT (loose, used for GRAB)
-         Each with its own debounce/hysteresis. */
+      /* Pinch thresholds (normalised thumb-index / hand span) */
       const PINCH_ON_BASE = 0.30;
       const PINCH_HYST = 0.16;
       const PINCH_ON_FRAMES = 2;
@@ -928,31 +651,34 @@
       const CONTACT_ON_BASE = 0.62;
       const CONTACT_OFF_BASE = 0.78;
 
-      /* Open hand: all 4 fingers extended for N frames */
+      /* Open hand debounce */
       const OPEN_FRAMES = 2;
 
-      /* Strand layout */
-      const CHAR_RATIO = 0.62;
-      const FONT_MIN = 8;
-      const FONT_MAX = 13;
-      const SPAWN_GRAB_COOLDOWN = 260;   // ms after spawn before grabbable
+      /* ---- Matching / persistence tuning -------------------------
+         The single biggest cause of "my hand keeps disappearing" was
+         that a lost detection instantly removed the hand from the
+         render list, AND the motion-prediction term could overshoot
+         far enough to break slot matching during fast movement. */
+      const MATCH_VEL_WEIGHT = 0.5;    /* 0..1 of measured wrist velocity */
+      const MATCH_MAX_PREDICT = 0.10;  /* hard cap on prediction, normalised */
+      const MATCH_MAX_D2 = 0.12;       /* max squared wrist distance to match */
 
       /* ============================================================
-         THEMES  ("songs")
+         THEMES
          ============================================================ */
       const THEMES = [
-        { name: 'MONO', accent: '#ffffff', text: '#f2f2f2', bg: '#000000' },
+        { name: 'MONO',   accent: '#ffffff', text: '#f2f2f2', bg: '#000000' },
         { name: 'MATRIX', accent: '#4aff8c', text: '#c8ffd8', bg: '#001008' },
-        { name: 'AMBER', accent: '#ffb000', text: '#ffd98a', bg: '#0e0800' },
-        { name: 'ICE', accent: '#7adfff', text: '#d4f4ff', bg: '#000a10' },
-        { name: 'NEON', accent: '#ff2bd6', text: '#ffc4f0', bg: '#0e000a' },
+        { name: 'AMBER',  accent: '#ffb000', text: '#ffd98a', bg: '#0e0800' },
+        { name: 'ICE',    accent: '#7adfff', text: '#d4f4ff', bg: '#000a10' },
+        { name: 'NEON',   accent: '#ff2bd6', text: '#ffc4f0', bg: '#0e000a' },
         { name: 'SUNSET', accent: '#ff6b3d', text: '#ffd0b8', bg: '#100400' },
-        { name: 'VOID', accent: '#a78bfa', text: '#ddd0ff', bg: '#080414' },
-        { name: 'BLOOD', accent: '#ff3355', text: '#ffc8d4', bg: '#100004' },
-        { name: 'SOLAR', accent: '#ffd93d', text: '#fff3b0', bg: '#0c0a00' },
-        { name: 'MINT', accent: '#3ddc97', text: '#c8ffe8', bg: '#001008' },
+        { name: 'VOID',   accent: '#a78bfa', text: '#ddd0ff', bg: '#080414' },
+        { name: 'BLOOD',  accent: '#ff3355', text: '#ffc8d4', bg: '#100004' },
+        { name: 'SOLAR',  accent: '#ffd93d', text: '#fff3b0', bg: '#0c0a00' },
+        { name: 'MINT',   accent: '#3ddc97', text: '#c8ffe8', bg: '#001008' },
         { name: 'COBALT', accent: '#3b82ff', text: '#c4dbff', bg: '#00060e' },
-        { name: 'ROSE', accent: '#ff7aa8', text: '#ffd6e4', bg: '#0e0006' },
+        { name: 'ROSE',   accent: '#ff7aa8', text: '#ffd6e4', bg: '#0e0006' },
       ];
 
       function hexToRgb(hex) {
@@ -964,25 +690,22 @@
           b: parseInt(f.substring(4, 6), 16) || 0,
         };
       }
-
       function hexRgba(hex, a) {
         const c = hexToRgb(hex);
         return `rgba(${c.r},${c.g},${c.b},${a})`;
       }
 
       let TC = null;
-
       function getActiveTheme() {
         if (config.customTheme) return config.customTheme;
         return THEMES[config.themeIdx] || THEMES[0];
       }
-
       function buildThemeColors() {
         const t = getActiveTheme();
         TC = {
           accent: t.accent,
           text: t.text,
-          bg: hexRgba(t.bg, 0.68),
+          bg: hexRgba(t.bg, config.bgOpacity),
           border: hexRgba(t.accent, 0.35),
           borderStrong: hexRgba(t.accent, 0.85),
           borderGrab: hexRgba(t.accent, 1.0),
@@ -1005,17 +728,46 @@
          CONFIG
          ============================================================ */
       const DEFAULTS = {
+        /* theme */
         themeIdx: 0,
         customTheme: null,
+
+        /* code string UI */
+        fontMode: 'auto',
+        fontFixed: 11,
+        charSpacing: 0.62,
+        blockPadding: 0.82,
+        borderWidth: 1.2,
+        bgOpacity: 0.68,
+        tagPosition: 'above',
+        maxLineChars: 40,
+
+        /* lengths & physics */
+        pullMinDist: 60,
+        pullMaxDist: 380,
+        strandLife: 30,
+        driftSpeed: 1.0,
+        grabCooldown: 260,
+        returnRadiusScale: 1.90,
+        drift: true,
+        allowReturn: true,
+
+        /* detection */
         pinchSensitivity: 1.0,
-        pinchSmoothing: 0.55,
         grabLooseness: 1.0,
+        pinchSmoothing: 0.55,
+        handGrace: 16,
+        minHandSpan: 0.03,
+        validateLandmarks: true,
+        pinchAngleGate: false,
+        openSpreadGate: true,
+        zFromScale: true,
+
+        /* display */
         showPinchHalo: true,
         showSkeleton: true,
         showSourceHalo: true,
         showLineNumbers: true,
-        drift: true,
-        allowReturn: true,
         maxStrands: 6,
       };
 
@@ -1023,7 +775,7 @@
 
       function loadConfig() {
         try {
-          const raw = localStorage.getItem('sentinel.pinch.v3');
+          const raw = localStorage.getItem('sentinel.pinch.v5');
           if (raw) {
             const parsed = JSON.parse(raw);
             Object.assign(config, DEFAULTS, parsed);
@@ -1033,11 +785,9 @@
           }
         } catch (e) { /* ignore */ }
       }
-
       function saveConfig() {
-        try {
-          localStorage.setItem('sentinel.pinch.v3', JSON.stringify(config));
-        } catch (e) { /* ignore */ }
+        try { localStorage.setItem('sentinel.pinch.v5', JSON.stringify(config)); }
+        catch (e) { /* ignore */ }
       }
 
       /* ============================================================
@@ -1121,20 +871,13 @@
 
       class OneEuroFilter {
         constructor(minCutoff, beta, dCutoff) {
-          this.minCutoff = minCutoff;
-          this.beta = beta;
-          this.dCutoff = dCutoff;
-          this.xFilt = new LowPass();
-          this.dxFilt = new LowPass();
-          this.prevX = null;
-          this.prevT = null;
-          this.value = 0;
-          this.velocity = 0;
+          this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+          this.xFilt = new LowPass(); this.dxFilt = new LowPass();
+          this.prevX = null; this.prevT = null;
+          this.value = 0; this.velocity = 0;
         }
         setParams(minCutoff, beta, dCutoff) {
-          this.minCutoff = minCutoff;
-          this.beta = beta;
-          this.dCutoff = dCutoff;
+          this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
         }
         alpha(cutoff, dt) {
           const tau = 1 / (2 * Math.PI * cutoff);
@@ -1150,8 +893,7 @@
           const dt = tSec - this.prevT;
           if (dt <= 0) return this.value;
           const dx = (x - this.prevX) / dt;
-          this.prevX = x;
-          this.prevT = tSec;
+          this.prevX = x; this.prevT = tSec;
           const dxHat = this.dxFilt.filter(dx, this.alpha(this.dCutoff, dt));
           const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
           this.value = this.xFilt.filter(x, this.alpha(cutoff, dt));
@@ -1159,12 +901,9 @@
           return this.value;
         }
         reset() {
-          this.xFilt.reset();
-          this.dxFilt.reset();
-          this.prevX = null;
-          this.prevT = null;
-          this.value = 0;
-          this.velocity = 0;
+          this.xFilt.reset(); this.dxFilt.reset();
+          this.prevX = null; this.prevT = null;
+          this.value = 0; this.velocity = 0;
         }
       }
 
@@ -1184,29 +923,31 @@
       let inferenceGeneration = 0;
 
       let hands = null;
-      let handData = [];
+      let handData = [];     /* live hands only — drives interaction */
+      let renderHands = [];  /* live + fading recently-lost — drives drawing */
       let nextSlotId = 1;
       const handSlots = new Map();
 
       const strands = [];
       let lastFrameT = 0;
 
+      /* Reusable font string cache to avoid rebuilding each draw */
+      let cachedFontStr = '';
+      let cachedFontKey = '';
+
       const pull = {
         active: false,
-        anchorId: -1,
-        pinchId: -1,
+        anchorId: -1, pinchId: -1,
         anchor: { x: 0, y: 0 },
         pinch: { x: 0, y: 0 },
         baseline: 0,
         line: null,
-        font: 11,
-        spacing: 7,
-        required: 100,
-        progress: 0,
+        font: 11, spacing: 7,
+        required: 100, progress: 0,
       };
 
       /* ============================================================
-         CANVAS + COVER MAPPING
+         CANVAS + COVER
          ============================================================ */
       let viewW = window.innerWidth;
       let viewH = window.innerHeight;
@@ -1266,7 +1007,7 @@
       /* ============================================================
          SLOTS
          ============================================================ */
-      function makeSlot(id, label) {
+      function makeSlot(id, label, now) {
         const slot = {
           id, label,
           initialized: false,
@@ -1275,7 +1016,11 @@
           filters: new Array(63),
           pinchFilter: new OneEuroFilter(1.0, 0.02, D_CUTOFF),
           lastWrist: null,
+          lastWristT: now,
+          wristVX: 0, wristVY: 0,
           lostFrames: 0,
+          stale: false,
+          staleAlpha: 1,
 
           pinching: false,
           pinchOnFrames: 0,
@@ -1300,10 +1045,52 @@
         return slot;
       }
 
+      /* ============================================================
+         LANDMARK VALIDATION  (rejects implausible frames)
+
+         The previous thresholds were tight enough to reject perfectly
+         valid hands — a fist, an edge-on hand, or a hand held a bit
+         far from the camera all failed and were thrown away. These
+         limits only catch genuinely broken frames now.
+         ============================================================ */
+      function validateLandmarks(lm) {
+        if (!lm || lm.length < 21) return false;
+
+        for (let i = 0; i < 21; i++) {
+          const p = lm[i];
+          if (!p) return false;
+          if (!isFinite(p.x) || !isFinite(p.y)) return false;
+          if (p.x < -1.0 || p.x > 2.0) return false;
+          if (p.y < -1.0 || p.y > 2.0) return false;
+        }
+
+        const wrist = lm[0];
+        const midMCP = lm[9];
+        const indexMCP = lm[5];
+        const pinkyMCP = lm[17];
+
+        const span = Math.hypot(midMCP.x - wrist.x, midMCP.y - wrist.y);
+        if (span < config.minHandSpan || span > 1.0) return false;
+
+        const width = Math.hypot(indexMCP.x - pinkyMCP.x, indexMCP.y - pinkyMCP.y);
+        if (width < 0.006 || width > 0.9) return false;
+
+        const ratio = width / span;
+        if (ratio < 0.15 || ratio > 3.0) return false;
+
+        /* Index finger tip shouldn't be implausibly far from its MCP */
+        const indexLen = Math.hypot(lm[8].x - lm[5].x, lm[8].y - lm[5].y);
+        if (indexLen > span * 3.0) return false;
+
+        return true;
+      }
+
+      /* ============================================================
+         MATCHING  (position + velocity, handedness as tiebreaker)
+         ============================================================ */
       const _pairs = [];
 
-      function matchDetections(dets) {
-        const MAX_DIST2 = 0.05;
+      function matchDetections(dets, now) {
         const assigned = new Array(dets.length).fill(null);
         const slotUsed = new Set();
 
@@ -1314,22 +1101,40 @@
             if (slotUsed.has(slot.id)) continue;
             const pw = slot.lastWrist;
             if (!pw) continue;
-            if (slot.label !== dets[i].label) continue;
-            const dx = w.x - pw.x;
-            const dy = w.y - pw.y;
-            const dz = (w.z || 0) - (pw.z || 0);
-            const d2 = dx * dx + dy * dy + dz * dz * 0.25;
-            if (d2 < MAX_DIST2) _pairs.push({ i, slot, d2 });
+
+            /* Predict where this slot will be now, but never let the
+               prediction run away during fast movement — an unbounded
+               prediction was causing match failures and slot churn. */
+            const dt = Math.min(0.12, Math.max(0, (now - slot.lastWristT) / 1000));
+            let ox = slot.wristVX * dt * MATCH_VEL_WEIGHT;
+            let oy = slot.wristVY * dt * MATCH_VEL_WEIGHT;
+            const om = Math.hypot(ox, oy);
+            if (om > MATCH_MAX_PREDICT) {
+              const k = MATCH_MAX_PREDICT / om;
+              ox *= k; oy *= k;
+            }
+
+            const dx = w.x - (pw.x + ox);
+            const dy = w.y - (pw.y + oy);
+            const d2 = dx * dx + dy * dy;
+
+            /* Handedness is a tiny tiebreaker, NOT a filter */
+            const labelPenalty = slot.label === dets[i].label ? 0 : 0.004;
+            _pairs.push({ i, slot, d2, cost: d2 + labelPenalty });
           }
         }
-        _pairs.sort((a, b) => a.d2 - b.d2);
+
+        _pairs.sort((a, b) => a.cost - b.cost);
+
         for (let p = 0; p < _pairs.length; p++) {
           const pair = _pairs[p];
+          if (pair.d2 > MATCH_MAX_D2) break;
           if (assigned[pair.i] !== null) continue;
           if (slotUsed.has(pair.slot.id)) continue;
           assigned[pair.i] = pair.slot;
           slotUsed.add(pair.slot.id);
         }
+
         return assigned;
       }
 
@@ -1338,17 +1143,55 @@
          ============================================================ */
       function fingerExtended(sm, mcp, pip, tip) {
         const a = angleAt(sm[mcp], sm[pip], sm[tip]);
-        if (a < 2.30) return false;
+        if (a < 2.10) return false;
         const dTip = dist3(sm[tip], sm[0]);
         const dPip = dist3(sm[pip], sm[0]);
-        return dTip > dPip * 1.06;
+        return dTip > dPip * 1.02;
+      }
+
+      function thumbIndexOriented(sm) {
+        /* Thumb direction (IP → tip) */
+        const tdx = sm[4].x - sm[3].x;
+        const tdy = sm[4].y - sm[3].y;
+        const tLen = Math.hypot(tdx, tdy) || 1e-6;
+
+        /* Index direction (PIP → tip) */
+        const idx = sm[8].x - sm[7].x;
+        const idy = sm[8].y - sm[7].y;
+        const iLen = Math.hypot(idx, idy) || 1e-6;
+
+        /* Gap between tips */
+        const gx = sm[8].x - sm[4].x;
+        const gy = sm[8].y - sm[4].y;
+        const gLen = Math.hypot(gx, gy) || 1e-6;
+
+        const tDot = (tdx * gx + tdy * gy) / (tLen * gLen);
+        const iDot = (idx * -gx + idy * -gy) / (iLen * gLen);
+
+        /* Both fingers point roughly into the gap */
+        return tDot > 0.25 && iDot > 0.25;
+      }
+
+      function fingersSpread(sm) {
+        const tips = [8, 12, 16, 20];
+        const span = Math.max(1e-4, dist3(sm[0], sm[9]));
+
+        let minSep = Infinity;
+        for (let i = 0; i < tips.length - 1; i++) {
+          const a = sm[tips[i]], b = sm[tips[i + 1]];
+          const sep = Math.hypot(a.x - b.x, a.y - b.y) / span;
+          if (sep < minSep) minSep = sep;
+        }
+        return minSep > 0.10;
       }
 
       function computeMetrics(slot, tSec) {
         const sm = slot.smooth;
 
+        /* Hand span = wrist → middle MCP */
         const span = Math.max(1e-4, dist3(sm[0], sm[9]));
 
+        /* Raw pinch ratio */
         const rawPinch = dist3(sm[4], sm[8]) / span;
         slot.pinchFilter.setParams(
           minCutoffFromSmoothing(config.pinchSmoothing),
@@ -1361,18 +1204,25 @@
         const onT = clamp(PINCH_ON_BASE * sens, 0.15, 0.55);
         const offT = Math.min(onT + PINCH_HYST, 0.85);
 
-        /* Full pinch state machine (drives PULL) */
+        /* Optional geometric gate — require facing fingers */
+        const oriented = config.pinchAngleGate ? thumbIndexOriented(sm) : true;
+
+        /* Full pinch state machine */
         if (slot.pinching) {
-          if (slot.pinchFilt > offT) {
+          const stillPinching = slot.pinchFilt <= offT && oriented;
+          if (!stillPinching) {
             slot.pinchOffFrames++;
             if (slot.pinchOffFrames >= PINCH_OFF_FRAMES) {
               slot.pinching = false;
               slot.pinchOffFrames = 0;
               slot.pinchOnFrames = 0;
             }
-          } else slot.pinchOffFrames = 0;
+          } else {
+            slot.pinchOffFrames = 0;
+          }
         } else {
-          if (slot.pinchFilt < onT) {
+          const canStart = slot.pinchFilt < onT && oriented;
+          if (canStart) {
             slot.pinchOnFrames++;
             if (slot.pinchOnFrames >= PINCH_ON_FRAMES) {
               slot.pinching = true;
@@ -1380,12 +1230,14 @@
               slot.pinchOnFrames = 0;
               slot.pinchOffFrames = 0;
             }
-          } else slot.pinchOnFrames = 0;
+          } else {
+            slot.pinchOnFrames = 0;
+          }
         }
 
         slot.pinchStrength = clamp(1 - slot.pinchFilt / (offT * 1.15), 0, 1);
 
-        /* Loose contact state (drives GRAB) */
+        /* Loose contact state (grab) */
         const looseness = clamp(config.grabLooseness, 0.4, 2.5);
         const contactOn = clamp(CONTACT_ON_BASE * sens * looseness, 0.25, 0.95);
         const contactOff = clamp(CONTACT_OFF_BASE * sens * looseness, contactOn + 0.05, 1.4);
@@ -1397,10 +1249,8 @@
         if (slot.pinching) slot.contact = true;
 
         /* Screen-space anchors */
-        const thumbP = slot.pts[4];
-        const indexP = slot.pts[8];
-        slot.pinch.x = (thumbP.x + indexP.x) * 0.5;
-        slot.pinch.y = (thumbP.y + indexP.y) * 0.5;
+        slot.pinch.x = (slot.pts[4].x + slot.pts[8].x) * 0.5;
+        slot.pinch.y = (slot.pts[4].y + slot.pts[8].y) * 0.5;
 
         let px = 0, py = 0;
         const palmIds = [0, 5, 9, 13, 17];
@@ -1412,15 +1262,19 @@
         slot.palm.y = py / palmIds.length;
         slot.spanPx = Math.max(30, dist2(slot.pts[0].x, slot.pts[0].y, slot.pts[9].x, slot.pts[9].y));
 
-        /* Open hand (source of pull) */
+        /* Open hand (source for pull) */
         const fIndex = fingerExtended(sm, 5, 6, 8);
         const fMiddle = fingerExtended(sm, 9, 10, 12);
         const fRing = fingerExtended(sm, 13, 14, 16);
         const fPinky = fingerExtended(sm, 17, 18, 20);
 
-        const fourOpen = fIndex && fMiddle && fRing && fPinky;
+        let fourOpen = fIndex && fMiddle && fRing && fPinky;
+        if (fourOpen && config.openSpreadGate) {
+          if (!fingersSpread(sm)) fourOpen = false;
+        }
+
         if (fourOpen && !slot.pinching) slot.openFrames++;
-        else slot.openFrames = Math.max(0, slot.openFrames - 2);
+        else slot.openFrames = Math.max(0, slot.openFrames - 1);
 
         slot.open = slot.openFrames >= OPEN_FRAMES;
 
@@ -1437,27 +1291,33 @@
         const meta = r.multiHandedness || [];
         const now = performance.now();
         const tSec = now / 1000;
-        const predictS = PREDICTION * 0.03;
 
         const minCutoff = minCutoffFromSmoothing(config.pinchSmoothing);
         const beta = betaFromResponsiveness(RESPONSIVENESS);
 
+        /* ---- Normalise detections ---- */
         const dets = [];
         for (let i = 0; i < list.length; i++) {
           const lm = list[i];
+
+          /* Landmark validation — reject implausible frames */
+          if (config.validateLandmarks && !validateLandmarks(lm)) continue;
+
           const rawLabel = (meta[i] && meta[i].label) || 'Hand';
           const label = rawLabel === 'Left' ? 'Right' : (rawLabel === 'Right' ? 'Left' : 'Hand');
           dets.push({ lm, label });
         }
 
-        const assigned = matchDetections(dets);
+        /* ---- Match to existing slots ---- */
+        const assigned = matchDetections(dets, now);
         for (let i = 0; i < dets.length; i++) {
           if (assigned[i]) continue;
-          const slot = makeSlot(nextSlotId++, dets[i].label);
+          const slot = makeSlot(nextSlotId++, dets[i].label, now);
           handSlots.set(slot.id, slot);
           assigned[i] = slot;
         }
 
+        /* ---- Update assigned slots ---- */
         const out = [];
         const usedSlotIds = new Set();
 
@@ -1470,6 +1330,7 @@
           const smooth = slot.smooth;
           const pts = slot.pts;
 
+          /* First frame: seed filter with raw values */
           if (!slot.initialized) {
             for (let j = 0; j < 21; j++) {
               const p = lm[j];
@@ -1480,6 +1341,7 @@
             slot.initialized = true;
           }
 
+          /* Filter each landmark */
           for (let j = 0; j < 21; j++) {
             const p = lm[j];
             const s = smooth[j];
@@ -1493,31 +1355,59 @@
             s.z = fz.filter(p.z || 0, tSec);
           }
 
+          /* Depth-from-scale: replace z with a value derived from hand span.
+             MediaPipe's z is notoriously noisy — this gives stable depth.
+             Larger span → closer → more negative z (toward camera). */
+          if (config.zFromScale) {
+            const refSpan = 0.20;
+            const span = Math.max(1e-4, dist3(smooth[0], smooth[9]));
+            const zEst = clamp((span - refSpan) * 3, -0.5, 0.5);
+            smooth[0].z = zEst; /* propagate to all via relative offsets */
+            for (let j = 1; j < 21; j++) {
+              /* Preserve relative z (finger depth) but reduce magnitude */
+              smooth[j].z = smooth[j].z * 0.4 + zEst * 0.6;
+            }
+          }
+
+          /* Screen-space projection */
           for (let j = 0; j < 21; j++) {
             const s = smooth[j];
             const q = pts[j];
-            const k = j * 3;
-            q.x = projectX(s.x + filters[k].velocity * predictS);
-            q.y = projectY(s.y + filters[k + 1].velocity * predictS);
-            q.z = (s.z + filters[k + 2].velocity * predictS) * cover.drawW;
+            q.x = projectX(s.x);
+            q.y = projectY(s.y);
+            q.z = s.z * cover.drawW;
           }
 
+          /* Wrist velocity for matching prediction */
+          if (slot.lastWrist) {
+            const dt = Math.max(0.001, (now - slot.lastWristT) / 1000);
+            if (dt < 0.3) {
+              const nvx = (lm[0].x - slot.lastWrist.x) / dt;
+              const nvy = (lm[0].y - slot.lastWrist.y) / dt;
+              slot.wristVX = slot.wristVX * 0.6 + nvx * 0.4;
+              slot.wristVY = slot.wristVY * 0.6 + nvy * 0.4;
+            }
+          } else {
+            slot.wristVX = 0;
+            slot.wristVY = 0;
+          }
           slot.lastWrist = { x: lm[0].x, y: lm[0].y, z: lm[0].z || 0 };
+          slot.lastWristT = now;
           slot.lostFrames = 0;
 
           computeMetrics(slot, tSec);
           out.push(slot);
         }
 
+        /* ---- Age out stale slots ---- */
         for (const slot of [...handSlots.values()]) {
           if (usedSlotIds.has(slot.id)) continue;
           slot.lostFrames++;
-          if (slot.lostFrames > GRACE_FRAMES) {
+          if (slot.lostFrames > config.handGrace) {
             handSlots.delete(slot.id);
             if (pull.active && (pull.anchorId === slot.id || pull.pinchId === slot.id)) {
               cancelPull();
             }
-            /* Release any strands grabbed by this lost hand */
             for (const s of strands) {
               if (s.grabbedBy === slot.id) s.grabbedBy = -1;
             }
@@ -1526,6 +1416,26 @@
 
         handData = out;
 
+        /* ---- Render list: live + recently lost, fading out ----------
+           MediaPipe drops individual frames constantly, especially on
+           motion or motion blur. Previously that made the whole hand
+           (and any grab it held) blink off. Now the last known pose
+           keeps drawing and fades over the grace window. */
+        renderHands.length = 0;
+        for (const slot of handSlots.values()) {
+          if (usedSlotIds.has(slot.id)) {
+            slot.stale = false;
+            slot.staleAlpha = 1;
+          } else {
+            slot.stale = true;
+            slot.staleAlpha = clamp(
+              1 - slot.lostFrames / Math.max(1, config.handGrace + 1), 0, 1
+            );
+          }
+          renderHands.push(slot);
+        }
+
+        /* HUD */
         const n = out.length;
         tHands.textContent = String(n);
         tHands.classList.toggle('idle', n === 0);
@@ -1539,7 +1449,7 @@
       }
 
       /* ============================================================
-         PULL  (open hand + full pinch → extract a line)
+         PULL
          ============================================================ */
       function handIsGrabbing(handId) {
         for (const s of strands) if (s.grabbedBy === handId) return true;
@@ -1550,15 +1460,8 @@
         const line = pickLine();
         const minDim = Math.min(viewW, viewH);
 
-        const maxWidth = minDim * 0.55;
-        let spacing = clamp(minDim / 42, 6, 8.5);
-        let font = spacing / CHAR_RATIO;
-        const natural = line.text.length * spacing;
-        if (natural > maxWidth) {
-          spacing = maxWidth / line.text.length;
-          font = spacing / CHAR_RATIO;
-        }
-        font = clamp(font, FONT_MIN, FONT_MAX);
+        const spacing = getCharSpacing(line.text);
+        const font = spacing / config.charSpacing;
 
         pull.active = true;
         pull.anchorId = openSlot.id;
@@ -1571,7 +1474,11 @@
         pull.line = line;
         pull.font = font;
         pull.spacing = spacing;
-        pull.required = clamp(line.text.length * spacing * 0.85, 50, minDim * 0.65);
+        pull.required = clamp(
+          line.text.length * spacing * 0.85,
+          config.pullMinDist,
+          Math.min(config.pullMaxDist, minDim * 0.75)
+        );
         pull.progress = 0;
       }
 
@@ -1586,10 +1493,8 @@
       function completePull() {
         const line = pull.line;
         if (!line) { cancelPull(); return; }
-        const ax = pull.anchor.x, ay = pull.anchor.y;
-        const bx = pull.pinch.x, by = pull.pinch.y;
-        const angle = Math.atan2(by - ay, bx - ax);
-        spawnStrand(line, ax, ay, angle, pull.font, pull.spacing);
+        const angle = Math.atan2(pull.pinch.y - pull.anchor.y, pull.pinch.x - pull.anchor.x);
+        spawnStrand(line, pull.anchor.x, pull.anchor.y, angle, pull.font, pull.spacing);
         showToast('EXTRACTED · ' + line.tag);
         cancelPull();
       }
@@ -1639,25 +1544,49 @@
       }
 
       /* ============================================================
-         GRAB / DRAG / RETURN-TO-HAND
+         STRAND LAYOUT HELPERS
+         ============================================================ */
+      function getCharSpacing(text) {
+        const minDim = Math.min(viewW, viewH);
+
+        if (config.fontMode === 'fixed') {
+          const font = clamp(config.fontFixed, 6, 40);
+          return font * config.charSpacing;
+        }
+
+        /* Auto-fit: prefer a natural size, shrink if the line is long */
+        const naturalSpacing = clamp(minDim / 42, 6, 9);
+        const maxWidth = minDim * 0.62;
+        const textLen = Math.max(1, Math.min(text.length, config.maxLineChars));
+        let spacing = naturalSpacing;
+        if (textLen * spacing > maxWidth) {
+          spacing = maxWidth / textLen;
+        }
+        return clamp(spacing, 4.5, 18);
+      }
+
+      function trimText(text) {
+        const n = Math.max(3, config.maxLineChars | 0);
+        return text.length > n ? text.substring(0, n - 1) + '…' : text;
+      }
+
+      /* ============================================================
+         GRAB / DRAG / RETURN
          ============================================================ */
       function updateGrabs(dt) {
         const now = performance.now();
 
-        /* ---- Update existing grabs ---- */
         for (let i = strands.length - 1; i >= 0; i--) {
           const s = strands[i];
           if (s.grabbedBy < 0) continue;
 
           const hand = handSlots.get(s.grabbedBy);
 
-          /* Hand lost or released contact → drop */
           if (!hand || (!hand.contact && !hand.pinching)) {
             s.grabbedBy = -1;
             continue;
           }
 
-          /* Absorbing animation */
           if (s.absorbing) {
             s.absorbT += dt * 3.0;
             const h = handSlots.get(s.absorbHand);
@@ -1667,7 +1596,7 @@
               s.y = lerp(s.grabY, h.palm.y, t);
             }
             s.alpha = Math.max(0, 1 - t);
-            s.scale = lerp(1, 0.35, t);
+            s.scale = lerp(1, 0.3, t);
             if (s.absorbT >= 1) {
               strands.splice(i, 1);
               updateLineCounter();
@@ -1675,17 +1604,17 @@
             continue;
           }
 
-          /* Check for return to any open hand (other than the grabbing one) */
+          /* Check return-to-hand */
           if (config.allowReturn) {
-            let absorbed = false;
             const cx = s.x + Math.cos(s.angle) * s.len * 0.5;
             const cy = s.y + Math.sin(s.angle) * s.len * 0.5;
 
+            let absorbed = false;
             for (let j = 0; j < handData.length; j++) {
               const other = handData[j];
               if (other.id === hand.id) continue;
               if (!other.open) continue;
-              const r = other.spanPx * 1.9;
+              const r = other.spanPx * config.returnRadiusScale;
               if (dist2(cx, cy, other.palm.x, other.palm.y) < r) {
                 s.absorbing = true;
                 s.absorbHand = other.id;
@@ -1700,22 +1629,17 @@
             if (absorbed) continue;
           }
 
-          /* Follow the pinch point (offset preserved at grab time) */
           s.x = hand.pinch.x + s.grabOffsetX;
           s.y = hand.pinch.y + s.grabOffsetY;
         }
 
-        /* ---- Look for new grabs ---- */
+        /* New grabs */
         for (let i = 0; i < handData.length; i++) {
           const hand = handData[i];
           if (!hand.contact) continue;
-
-          /* Busy with a pull? */
           if (pull.active && (pull.anchorId === hand.id || pull.pinchId === hand.id)) continue;
-          /* Already grabbing? */
           if (handIsGrabbing(hand.id)) continue;
 
-          /* Find topmost strand under the pinch */
           for (let j = strands.length - 1; j >= 0; j--) {
             const s = strands[j];
             if (s.grabbedBy >= 0 || s.absorbing) continue;
@@ -1736,30 +1660,29 @@
          STRANDS
          ============================================================ */
       function spawnStrand(line, x, y, angle, font, spacing) {
-        const len = line.text.length * spacing;
-        const speed = config.drift ? 10 + Math.random() * 10 : 0;
+        const text = trimText(line.text);
+        const len = text.length * spacing;
+        const speedBase = config.drift ? (10 + Math.random() * 10) * config.driftSpeed : 0;
 
         const s = {
-          text: line.text,
+          text,
           tag: line.tag,
           x, y, angle,
-          font, spacing, len,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 3,
+          font, spacing,
+          len,
+          vx: Math.cos(angle) * speedBase,
+          vy: Math.sin(angle) * speedBase - 3 * config.driftSpeed,
           alpha: 1,
           scale: 1,
           born: performance.now(),
-          life: 30,
+          life: config.strandLife,
           copied: false,
           grabbedBy: -1,
-          grabOffsetX: 0,
-          grabOffsetY: 0,
+          grabOffsetX: 0, grabOffsetY: 0,
           absorbing: false,
-          absorbT: 0,
-          absorbHand: -1,
-          grabX: 0,
-          grabY: 0,
-          noGrabUntil: performance.now() + SPAWN_GRAB_COOLDOWN,
+          absorbT: 0, absorbHand: -1,
+          grabX: 0, grabY: 0,
+          noGrabUntil: performance.now() + config.grabCooldown,
         };
 
         strands.push(s);
@@ -1776,14 +1699,12 @@
         for (let i = strands.length - 1; i >= 0; i--) {
           const s = strands[i];
 
-          /* Grabbed / absorbing strands are handled in updateGrabs */
           if (s.grabbedBy >= 0 || s.absorbing) {
-            /* freeze age so it doesn't expire while held */
             s.born += dt * 1000;
             continue;
           }
 
-          if (config.drift) {
+          if (config.drift && config.driftSpeed > 0) {
             s.x += s.vx * dt;
             s.y += s.vy * dt;
             if (s.x < 24 || s.x > viewW - 24) s.vx = -s.vx;
@@ -1809,8 +1730,8 @@
       function hitStrand(s, x, y) {
         const scale = s.scale || 1;
         const spacing = s.spacing * scale;
-        const len = s.text.length * spacing;
         const font = s.font * scale;
+        const len = s.text.length * spacing;
 
         const dx = x - s.x;
         const dy = y - s.y;
@@ -1819,17 +1740,14 @@
         const along = dx * ux + dy * uy;
         const perp = dx * (-uy) + dy * ux;
 
-        const padAlong = 24;                 /* generous ends */
-        const padPerp = Math.max(10, font * 2.0); /* generous sides */
+        const padAlong = 22;
+        const padPerp = Math.max(10, font * 2.0);
 
         return along >= -padAlong && along <= len + padAlong && Math.abs(perp) <= padPerp;
       }
 
       function copyStrand(s) {
-        const onDone = () => {
-          s.copied = true;
-          showToast('COPIED · ' + s.tag);
-        };
+        const onDone = () => { s.copied = true; showToast('COPIED · ' + s.tag); };
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(s.text).then(onDone).catch(() => fallbackCopy(s.text, onDone));
         } else fallbackCopy(s.text, onDone);
@@ -1843,8 +1761,7 @@
           ta.style.top = '-1000px';
           ta.style.opacity = '0';
           document.body.appendChild(ta);
-          ta.focus();
-          ta.select();
+          ta.focus(); ta.select();
           document.execCommand('copy');
           document.body.removeChild(ta);
           onDone();
@@ -1852,14 +1769,13 @@
       }
 
       /* ============================================================
-         DRAWING — SKELETON
+         DRAWING — HAND
          ============================================================ */
       function strokeConnections(pts) {
         ctx.beginPath();
         for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
           const c = HAND_CONNECTIONS[i];
-          const a = pts[c[0]];
-          const b = pts[c[1]];
+          const a = pts[c[0]], b = pts[c[1]];
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
         }
@@ -1890,13 +1806,9 @@
         ctx.fill();
       }
 
-      /* ============================================================
-         DRAWING — HALOS
-         ============================================================ */
       function drawPinchHalo(h) {
         const s = h.pinchStrength;
         const r = lerp(30, 8, s);
-
         ctx.beginPath();
         ctx.arc(h.pinch.x, h.pinch.y, r, 0, TAU);
         ctx.strokeStyle = hexRgba(TC.accent, 0.18 + s * 0.55);
@@ -1947,12 +1859,21 @@
       }
 
       /* ============================================================
-         DRAWING — TEXT ALONG A THREAD
+         DRAWING — TEXT
          ============================================================ */
       function glyphAngleOf(angle) {
         let a = angle;
         if (a > Math.PI / 2 || a < -Math.PI / 2) a += Math.PI;
         return a;
+      }
+
+      function getFontStr(fontPx) {
+        const key = fontPx.toFixed(1);
+        if (key !== cachedFontKey) {
+          cachedFontKey = key;
+          cachedFontStr = `${key}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+        }
+        return cachedFontStr;
       }
 
       function drawTextAlong(text, count, x, y, angle, font, spacing, color, alpha) {
@@ -1963,7 +1884,7 @@
 
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.font = `${font.toFixed(1)}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+        ctx.font = getFontStr(font);
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = color;
@@ -1979,7 +1900,12 @@
         ctx.restore();
       }
 
+      /* ============================================================
+         DRAWING — STRAND
+         ============================================================ */
       function drawStrand(s) {
+        if (s.alpha < 0.02) return;
+
         const scale = s.scale || 1;
         const spacing = s.spacing * scale;
         const font = s.font * scale;
@@ -1987,58 +1913,69 @@
 
         const ux = Math.cos(s.angle);
         const uy = Math.sin(s.angle);
-        const px = -uy;
-        const py = ux;
+        const px = -uy, py = ux;
         const P = (a, b) => [s.x + ux * a + px * b, s.y + uy * a + py * b];
 
-        const pad = 9 * scale;
-        const halfH = font * 1.05;
+        const pad = font * config.blockPadding;
+        const halfH = font * 0.86;
         const isGrabbed = s.grabbedBy >= 0 && !s.absorbing;
 
-        ctx.save();
-        ctx.globalAlpha = s.alpha;
+        /* Backdrop */
+        if (config.bgOpacity > 0) {
+          const c1 = P(-pad, -halfH);
+          const c2 = P(len + pad, -halfH);
+          const c3 = P(len + pad, halfH);
+          const c4 = P(-pad, halfH);
 
-        const c1 = P(-pad, -halfH);
-        const c2 = P(len + pad, -halfH);
-        const c3 = P(len + pad, halfH);
-        const c4 = P(-pad, halfH);
-
-        ctx.beginPath();
-        ctx.moveTo(c1[0], c1[1]);
-        ctx.lineTo(c2[0], c2[1]);
-        ctx.lineTo(c3[0], c3[1]);
-        ctx.lineTo(c4[0], c4[1]);
-        ctx.closePath();
-
-        ctx.fillStyle = TC.bg;
-        ctx.fill();
-
-        if (isGrabbed) {
-          ctx.strokeStyle = TC.borderGrab;
-          ctx.lineWidth = 1.8;
-        } else if (s.copied) {
-          ctx.strokeStyle = hexRgba(TC.accent, 0.6);
-          ctx.lineWidth = 1.2;
-        } else {
-          ctx.strokeStyle = TC.border;
-          ctx.lineWidth = 1;
+          ctx.save();
+          ctx.globalAlpha = s.alpha;
+          ctx.beginPath();
+          ctx.moveTo(c1[0], c1[1]);
+          ctx.lineTo(c2[0], c2[1]);
+          ctx.lineTo(c3[0], c3[1]);
+          ctx.lineTo(c4[0], c4[1]);
+          ctx.closePath();
+          ctx.fillStyle = TC.bg;
+          ctx.fill();
+          ctx.restore();
         }
-        ctx.stroke();
-        ctx.restore();
+
+        /* Border */
+        if (config.borderWidth > 0) {
+          const c1 = P(-pad, -halfH);
+          const c2 = P(len + pad, -halfH);
+          const c3 = P(len + pad, halfH);
+          const c4 = P(-pad, halfH);
+
+          ctx.save();
+          ctx.globalAlpha = s.alpha;
+          ctx.beginPath();
+          ctx.moveTo(c1[0], c1[1]);
+          ctx.lineTo(c2[0], c2[1]);
+          ctx.lineTo(c3[0], c3[1]);
+          ctx.lineTo(c4[0], c4[1]);
+          ctx.closePath();
+
+          if (isGrabbed) { ctx.strokeStyle = TC.borderGrab; ctx.lineWidth = config.borderWidth * 1.5; }
+          else if (s.copied) { ctx.strokeStyle = hexRgba(TC.accent, 0.6); ctx.lineWidth = config.borderWidth; }
+          else { ctx.strokeStyle = TC.border; ctx.lineWidth = config.borderWidth; }
+          ctx.stroke();
+          ctx.restore();
+        }
 
         /* Text */
-        drawTextAlong(s.text, s.text.length, s.x, s.y, s.angle, font, spacing,
-          TC.text, s.alpha);
+        drawTextAlong(s.text, s.text.length, s.x, s.y, s.angle, font, spacing, TC.text, s.alpha);
 
         /* Tag */
-        if (config.showLineNumbers) {
+        if (config.tagPosition !== 'hidden' && config.showLineNumbers) {
           const ga = glyphAngleOf(s.angle);
-          const tagPos = P(-pad, -halfH - 8 * scale);
+          const tagOffset = config.tagPosition === 'above' ? (-halfH - font * 0.9) : (halfH + font * 0.9);
+          const tagPos = P(-pad, tagOffset);
           ctx.save();
-          ctx.globalAlpha = s.alpha * 0.8;
+          ctx.globalAlpha = s.alpha * 0.85;
           ctx.translate(tagPos[0], tagPos[1]);
           ctx.rotate(ga);
-          ctx.font = `${Math.max(7, font * 0.72).toFixed(1)}px ui-monospace, Menlo, monospace`;
+          ctx.font = getFontStr(Math.max(7, font * 0.72));
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
           ctx.fillStyle = s.copied ? TC.tagCopied : TC.tag;
@@ -2048,7 +1985,7 @@
       }
 
       /* ============================================================
-         DRAWING — ACTIVE PULL
+         DRAWING — PULL
          ============================================================ */
       function drawPull() {
         if (!pull.active || !pull.line) return;
@@ -2090,7 +2027,7 @@
         ctx.stroke();
 
         ctx.save();
-        ctx.font = `${Math.max(7, pull.font * 0.7).toFixed(1)}px ui-monospace, Menlo, monospace`;
+        ctx.font = getFontStr(Math.max(7, pull.font * 0.7));
         ctx.fillStyle = TC.tag;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
@@ -2099,7 +2036,7 @@
       }
 
       /* ============================================================
-         HINT BAR
+         HINT
          ============================================================ */
       let hintCache = '';
       function setHint(html) {
@@ -2112,9 +2049,12 @@
         if (!active) { setHint('OPEN ONE HAND · PINCH &amp; PULL WITH THE OTHER'); return; }
         if (pull.active) { setHint('<b>PULL</b> · ' + Math.round(pull.progress * 100) + '%'); return; }
 
-        let anyGrab = false;
-        for (const s of strands) if (s.grabbedBy >= 0 && !s.absorbing) { anyGrab = true; break; }
-        if (anyGrab) { setHint('<b>DRAG</b> · RETURN TO AN OPEN HAND TO ABSORB'); return; }
+        for (const s of strands) {
+          if (s.grabbedBy >= 0 && !s.absorbing) {
+            setHint('<b>DRAG</b> · RETURN TO AN OPEN HAND TO ABSORB');
+            return;
+          }
+        }
 
         let openCount = 0, pinchCount = 0;
         for (let i = 0; i < handData.length; i++) {
@@ -2148,13 +2088,20 @@
 
         for (let i = 0; i < strands.length; i++) drawStrand(strands[i]);
 
-        for (let i = 0; i < handData.length; i++) {
-          const h = handData[i];
+        /* Draw from renderHands (live + fading ghosts) so a single
+           dropped detection frame no longer makes the hand blink out. */
+        for (let i = 0; i < renderHands.length; i++) {
+          const h = renderHands[i];
+          const a = h.staleAlpha === undefined ? 1 : h.staleAlpha;
+          if (a <= 0.03) continue;
+          ctx.save();
+          ctx.globalAlpha = a;
           if (config.showSourceHalo && h.open) {
             drawSourceHalo(h, pull.active && pull.anchorId === h.id);
           }
           if (config.showSkeleton) drawSkeleton(h);
           if (config.showPinchHalo) drawPinchHalo(h);
+          ctx.restore();
         }
 
         drawPull();
@@ -2309,6 +2256,7 @@
         stopCamera();
         handSlots.clear();
         handData = [];
+        renderHands = [];
         inferenceInFlight = false;
         cancelPull();
         clearStrands();
@@ -2350,10 +2298,7 @@
         for (let i = strands.length - 1; i >= 0; i--) {
           const s = strands[i];
           if (s.absorbing) continue;
-          if (hitStrand(s, x, y)) {
-            copyStrand(s);
-            return;
-          }
+          if (hitStrand(s, x, y)) { copyStrand(s); return; }
         }
       }, { passive: true });
 
@@ -2414,9 +2359,6 @@
         }
       });
 
-      /* ============================================================
-         SECTION COLLAPSE
-         ============================================================ */
       document.querySelectorAll('.section-head').forEach(h => {
         h.addEventListener('click', () => {
           const parent = h.parentElement;
@@ -2455,10 +2397,7 @@
 
       function onThemePresetChange(val) {
         if (val === 'custom') {
-          /* Switch to custom, seeded from the current active theme */
-          config.customTheme = { ...getActiveTheme() };
-          /* Clear the name so it's clearly custom */
-          config.customTheme.name = 'CUSTOM';
+          config.customTheme = { ...getActiveTheme(), name: 'CUSTOM' };
         } else {
           config.themeIdx = parseInt(val, 10) || 0;
           config.customTheme = null;
@@ -2483,13 +2422,37 @@
       colorText.addEventListener('input', () => onThemeColorChange('text', colorText.value));
       colorBg.addEventListener('input', () => onThemeColorChange('bg', colorBg.value));
 
+      fontModeSelect.addEventListener('change', () => {
+        config.fontMode = fontModeSelect.value;
+        saveConfig();
+      });
+
+      tagPositionSelect.addEventListener('change', () => {
+        config.tagPosition = tagPositionSelect.value;
+        saveConfig();
+      });
+
       /* ============================================================
          SLIDERS / TOGGLES
          ============================================================ */
       const FMT = {
+        fontFixed: v => String(v | 0),
+        charSpacing: v => v.toFixed(2),
+        blockPadding: v => v.toFixed(2),
+        borderWidth: v => v.toFixed(1),
+        bgOpacity: v => v.toFixed(2),
+        maxLineChars: v => String(v | 0),
+        pullMinDist: v => String(v | 0),
+        pullMaxDist: v => String(v | 0),
+        strandLife: v => String(v | 0),
+        driftSpeed: v => v.toFixed(2),
+        grabCooldown: v => String(v | 0),
+        returnRadiusScale: v => v.toFixed(2),
         pinchSensitivity: v => v.toFixed(2),
-        pinchSmoothing: v => v.toFixed(2),
         grabLooseness: v => v.toFixed(2),
+        pinchSmoothing: v => v.toFixed(2),
+        handGrace: v => String(v | 0),
+        minHandSpan: v => v.toFixed(3),
         maxStrands: v => String(v | 0),
       };
 
@@ -2523,6 +2486,8 @@
         document.querySelectorAll('.toggle[data-key]').forEach(t => {
           t.classList.toggle('on', !!config[t.dataset.key]);
         });
+        fontModeSelect.value = config.fontMode;
+        tagPositionSelect.value = config.tagPosition;
       }
 
       function wireInputs() {
@@ -2542,6 +2507,7 @@
               while (strands.length > config.maxStrands) strands.shift();
               updateLineCounter();
             }
+            if (key === 'bgOpacity') buildThemeColors();
             saveConfig();
           });
         });
