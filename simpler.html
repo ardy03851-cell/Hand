@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>SENTINEL · 3D HAND</title>
-  <style>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SENTINEL · PINCH PULL</title>
+    <style>
     * {
       margin: 0;
       padding: 0;
@@ -28,13 +28,13 @@
     }
 
     :root {
-      --accent-hex: #ffffff;
+      --accent: #ffffff;
       --panel-bg: rgba(7, 8, 10, 0.94);
       --hairline: rgba(255, 255, 255, 0.08);
       --hairline-soft: rgba(255, 255, 255, 0.05);
       --muted: rgba(255, 255, 255, 0.42);
       --muted-2: rgba(255, 255, 255, 0.28);
-      --fg-bright: #f6f6f6;
+      --fg: #f6f6f6;
     }
 
     #stage {
@@ -50,31 +50,29 @@
       overflow: hidden;
     }
 
-    #video,
+    #video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transform: scaleX(-1);
+      transform-origin: 50% 50%;
+      filter: contrast(1.04) brightness(1.0) saturate(0.98);
+      pointer-events: none;
+    }
+
     #overlay {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       display: block;
-    }
-
-    /* Natural, correctly mirrored selfie view */
-    #video {
-      object-fit: cover;
-      transform: scaleX(-1);
-      transform-origin: 50% 50%;
-      filter: contrast(1.04) brightness(1.00) saturate(0.98);
-      will-change: transform, filter;
-    }
-
-    #overlay {
       pointer-events: none;
-      z-index: 2;
-      will-change: transform;
+      z-index: 1;
     }
 
-    /* ============================ TOP BAR ============================ */
     .topbar {
       position: absolute;
       top: 0;
@@ -84,7 +82,7 @@
       display: flex;
       justify-content: flex-end;
       align-items: flex-start;
-      z-index: 20;
+      z-index: 30;
       pointer-events: none;
     }
 
@@ -104,13 +102,13 @@
       letter-spacing: 0.16em;
       padding: 7px 10px;
       cursor: pointer;
-      transition: border-color .18s, color .18s, background .18s;
       display: flex;
       align-items: center;
       gap: 6px;
       text-transform: uppercase;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
+      transition: border-color .18s, color .18s;
     }
 
     .icon-btn:hover {
@@ -123,12 +121,11 @@
       height: 12px;
     }
 
-    /* ============================ HUD ============================ */
     .hud {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 10;
+      z-index: 20;
       transition: opacity .25s ease;
     }
 
@@ -140,14 +137,15 @@
       position: absolute;
       top: max(16px, env(safe-area-inset-top));
       left: 22px;
+      right: 22px;
       display: flex;
-      gap: 18px;
+      flex-wrap: wrap;
+      gap: 14px;
       font-size: 9px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum";
     }
 
     .hud-top .val {
@@ -160,6 +158,24 @@
       color: rgba(255, 255, 255, 0.3);
     }
 
+    .hint-bar {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: max(24px, env(safe-area-inset-bottom));
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.34);
+      line-height: 1.7;
+      max-width: 60vw;
+    }
+
+    .hint-bar b {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+    }
+
     .bottombar {
       position: absolute;
       left: 0;
@@ -169,6 +185,7 @@
       display: flex;
       justify-content: flex-end;
       align-items: flex-end;
+      z-index: 30;
       pointer-events: none;
     }
 
@@ -184,12 +201,12 @@
       font-weight: 600;
       padding: 14px 30px;
       cursor: pointer;
-      transition: background .2s, border-color .2s, color .2s, transform .1s;
       position: relative;
-      min-width: 200px;
+      min-width: 190px;
       text-align: center;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
+      transition: background .2s, border-color .2s, color .2s, transform .1s;
     }
 
     #activateBtn:hover {
@@ -207,8 +224,8 @@
     }
 
     #activateBtn.on {
-      border-color: var(--accent-hex);
-      background: var(--accent-hex);
+      border-color: var(--accent);
+      background: var(--accent);
       color: #000;
     }
 
@@ -239,21 +256,22 @@
     #toast {
       position: absolute;
       left: 50%;
-      top: 14%;
+      top: 12%;
       transform: translate(-50%, -6px);
       padding: 8px 18px;
       background: rgba(0, 0, 0, 0.72);
-      border: 1px solid var(--accent-hex);
+      border: 1px solid var(--accent);
       color: #fff;
       font-size: 10px;
       letter-spacing: 0.28em;
       text-transform: uppercase;
       pointer-events: none;
       opacity: 0;
-      transition: opacity .25s ease, transform .25s ease;
+      white-space: nowrap;
       z-index: 60;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      transition: opacity .25s ease, transform .25s ease;
     }
 
     #toast.show {
@@ -261,7 +279,6 @@
       transform: translate(-50%, 0);
     }
 
-    /* ============================ PANEL ============================ */
     #settingsPanel {
       position: absolute;
       top: 0;
@@ -296,7 +313,7 @@
     }
 
     .panel-head .title {
-      color: var(--fg-bright);
+      color: var(--fg);
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.34em;
@@ -353,8 +370,8 @@
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      transition: color .18s;
       user-select: none;
+      transition: color .18s;
     }
 
     .section-head:hover {
@@ -363,9 +380,9 @@
 
     .section-head .chev {
       color: rgba(255, 255, 255, 0.22);
-      transition: transform .22s cubic-bezier(.22, 1, .36, 1);
       font-size: 8px;
       line-height: 1;
+      transition: transform .22s cubic-bezier(.22, 1, .36, 1);
     }
 
     .section.collapsed .chev {
@@ -402,9 +419,7 @@
     .field .label .value {
       color: rgba(255, 255, 255, 0.94);
       font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum";
       font-weight: 500;
-      letter-spacing: 0.04em;
     }
 
     .field input[type="range"] {
@@ -413,7 +428,7 @@
       width: 100%;
       height: 2px;
       background: linear-gradient(to right,
-          var(--accent-hex) var(--fill, 0%),
+          var(--accent) var(--fill, 0%),
           rgba(255, 255, 255, 0.12) var(--fill, 0%));
       outline: none;
       cursor: pointer;
@@ -430,11 +445,6 @@
       cursor: pointer;
       border: 2px solid #000;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
-      transition: transform .12s;
-    }
-
-    .field input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.12);
     }
 
     .field input[type="range"]::-moz-range-thumb {
@@ -447,55 +457,54 @@
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
     }
 
-    .toggle {
+    /* Colour picker rows */
+    .color-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 0;
-      cursor: pointer;
-      color: rgba(255, 255, 255, 0.7);
+      gap: 12px;
+      padding: 2px 0;
+    }
+
+    .color-row .name {
+      color: rgba(255, 255, 255, 0.62);
       font-size: 10px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      user-select: none;
-      transition: color .15s;
+      flex: 1;
     }
 
-    .toggle:hover {
-      color: rgba(255, 255, 255, 0.95);
+    .color-row .hex {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;
     }
 
-    .toggle .switch {
-      width: 30px;
-      height: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      position: relative;
-      transition: border-color .2s, background .2s;
+    .color-row input[type="color"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 40px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: transparent;
+      cursor: pointer;
       flex-shrink: 0;
     }
 
-    .toggle .switch::after {
-      content: "";
-      position: absolute;
-      top: 1px;
-      left: 1px;
-      width: 10px;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.4);
-      transition: left .2s cubic-bezier(.22, 1, .36, 1), background .2s;
+    .color-row input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
     }
 
-    .toggle.on {
-      color: rgba(255, 255, 255, 0.95);
+    .color-row input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 0;
     }
 
-    .toggle.on .switch {
-      border-color: var(--accent-hex);
-    }
-
-    .toggle.on .switch::after {
-      left: 17px;
-      background: var(--accent-hex);
+    .color-row input[type="color"]::-moz-color-swatch {
+      border: none;
+      border-radius: 0;
     }
 
     .select {
@@ -526,7 +535,7 @@
 
     .select:focus {
       outline: none;
-      border-color: var(--accent-hex);
+      border-color: var(--accent);
     }
 
     .select option {
@@ -534,11 +543,81 @@
       color: #fff;
     }
 
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    .toggle:hover {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle .switch {
+      width: 30px;
+      height: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      position: relative;
+      flex-shrink: 0;
+      transition: border-color .2s;
+    }
+
+    .toggle .switch::after {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      transition: left .2s cubic-bezier(.22, 1, .36, 1), background .2s;
+    }
+
+    .toggle.on {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle.on .switch {
+      border-color: var(--accent);
+    }
+
+    .toggle.on .switch::after {
+      left: 17px;
+      background: var(--accent);
+    }
+
+    .wide-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 10px;
+      cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+
+    .wide-btn:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
     .hint {
       font-size: 8.5px;
       letter-spacing: 0.12em;
       color: rgba(255, 255, 255, 0.26);
-      line-height: 1.6;
+      line-height: 1.7;
       text-transform: uppercase;
     }
 
@@ -557,7 +636,6 @@
       pointer-events: auto;
     }
 
-    /* ============================ BOOT ============================ */
     #boot {
       position: absolute;
       inset: 0;
@@ -568,9 +646,9 @@
       align-items: center;
       justify-content: center;
       gap: 18px;
-      transition: opacity .5s ease;
       padding: 24px;
       text-align: center;
+      transition: opacity .5s ease;
     }
 
     #boot.hidden {
@@ -589,7 +667,7 @@
       font-size: 10px;
       letter-spacing: 0.26em;
       color: rgba(255, 255, 255, 0.42);
-      max-width: 300px;
+      max-width: 320px;
     }
 
     #boot .bar {
@@ -626,127 +704,150 @@
       display: none;
     }
   </style>
-</head>
+  </head>
 
-<body>
+  <body>
 
-  <div id="stage">
-    <div id="viewport">
-      <video id="video" playsinline autoplay muted></video>
-      <canvas id="overlay"></canvas>
-    </div>
+    <div id="stage">
+      <div id="viewport">
+        <video id="video" playsinline autoplay muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
 
-    <div class="topbar">
-      <div class="topbar-right">
-        <button class="icon-btn" id="settingsToggle" type="button" title="Settings (S)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <circle cx="12" cy="12" r="3" />
-            <path
+      <div class="topbar">
+        <div class="topbar-right">
+          <button class="icon-btn" id="settingsToggle" type="button" title="Settings (S)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="12" cy="12" r="3" />
+              <path
               d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="hud" id="hud">
-      <div class="hud-top">
-        <div>FPS<span class="val idle" id="tFps">—</span></div>
-        <div>HANDS<span class="val idle" id="tHands">0</span></div>
-      </div>
-    </div>
-
-    <div class="bottombar">
-      <button id="activateBtn" type="button">ACTIVATE</button>
-    </div>
-
-    <div id="toast"></div>
-    <div id="panelOverlay"></div>
-
-    <aside id="settingsPanel" aria-hidden="true">
-      <div class="panel-head">
-        <div class="title">Configuration</div>
-        <button class="close" id="settingsClose" type="button">CLOSE</button>
-      </div>
-      <div class="panel-body">
-
-        <div class="section" data-section="hand3d">
-          <div class="section-head"><span>3D Hand</span><span class="chev">▼</span></div>
-          <div class="section-content">
-            <label class="toggle" data-key="showMesh"><span>Enable 3D Mesh</span><span class="switch"></span></label>
-
-            <div class="field">
-              <div class="label"><span>Render Style</span></div>
-              <select class="select" data-key="meshStyle">
-                <option value="slab">Slab Solid</option>
-                <option value="wire">Wireframe</option>
-                <option value="xray">X-Ray</option>
-                <option value="holo">Holographic</option>
-                <option value="chrome">Chrome</option>
-                <option value="neon">Neon Grid</option>
-                <option value="matrix">Matrix Green</option>
-                <option value="glass">Frosted Glass</option>
-                <option value="thermal">Thermal</option>
-                <option value="sketch">Sketch</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Opacity</span><span class="value" data-value="meshOpacity">0.72</span></div>
-              <input type="range" min="0.05" max="1" step="0.05" data-key="meshOpacity">
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Poly Density</span><span class="value" data-value="meshDensity">1</span></div>
-              <input type="range" min="0" max="2" step="1" data-key="meshDensity">
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Depth Volume</span><span class="value" data-value="depthScale">1.00</span></div>
-              <input type="range" min="0" max="2.5" step="0.05" data-key="depthScale">
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Volume Thickness</span><span class="value" data-value="meshThickness">0.17</span>
-              </div>
-              <input type="range" min="0.02" max="0.45" step="0.01" data-key="meshThickness">
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Rim Light</span><span class="value" data-value="rimLight">0.30</span></div>
-              <input type="range" min="0" max="1" step="0.05" data-key="rimLight">
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Light Angle</span><span class="value" data-value="lightAngle">0</span></div>
-              <input type="range" min="0" max="360" step="5" data-key="lightAngle">
-            </div>
-
-            <div class="field">
-              <div class="label"><span>Shading Contrast</span><span class="value" data-value="shadeContrast">0.80</span>
-              </div>
-              <input type="range" min="0" max="1.2" step="0.05" data-key="shadeContrast">
-            </div>
-
-            <label class="toggle" data-key="meshShade"><span>Surface Shading</span><span class="switch"></span></label>
-            <label class="toggle" data-key="meshEdges"><span>Panel Edges</span><span class="switch"></span></label>
-            <label class="toggle" data-key="meshBackface"><span>Backface Wires</span><span class="switch"></span></label>
-
-            <div class="hint">Closed volume mesh — extruded palm slab + tapered prism fingers.
-              Renderer re-skins per style without rebuilding topology.</div>
-          </div>
+            </svg>
+          </button>
         </div>
-
       </div>
-    </aside>
 
-    <div id="boot">
-      <div class="title">SENTINEL</div>
-      <div class="sub" id="bootMsg">INITIALIZING</div>
-      <div class="bar"><i></i></div>
+      <div class="hud" id="hud">
+        <div class="hud-top">
+          <div>FPS<span class="val idle" id="tFps">—</span></div>
+          <div>HANDS<span class="val idle" id="tHands">0</span></div>
+          <div>PINCH<span class="val idle" id="tPinch">—</span></div>
+          <div>LINES<span class="val idle" id="tLines">0</span></div>
+        </div>
+        <div class="hint-bar" id="hint">OPEN ONE HAND · PINCH &amp; PULL WITH THE OTHER</div>
+      </div>
+
+      <div class="bottombar">
+        <button id="activateBtn" type="button">ACTIVATE</button>
+      </div>
+
+      <div id="toast"></div>
+      <div id="panelOverlay"></div>
+
+      <aside id="settingsPanel" aria-hidden="true">
+        <div class="panel-head">
+          <div class="title">Configuration</div>
+          <button class="close" id="settingsClose" type="button">CLOSE</button>
+        </div>
+        <div class="panel-body">
+
+          <!-- THEMES ------------------------------------------------->
+          <div class="section" data-section="theme">
+            <div class="section-head"><span>Overlay Theme</span><span class="chev">▼</span></div>
+            <div class="section-content">
+              <div class="field">
+                <div class="label"><span>Preset</span></div>
+                <select class="select" id="themeSelect"></select>
+              </div>
+
+              <div class="color-row">
+                <span class="name">Accent</span>
+                <span class="hex" id="hexAccent">#ffffff</span>
+                <input type="color" id="colorAccent" value="#ffffff">
+              </div>
+              <div class="color-row">
+                <span class="name">Text</span>
+                <span class="hex" id="hexText">#f2f2f2</span>
+                <input type="color" id="colorText" value="#f2f2f2">
+              </div>
+              <div class="color-row">
+                <span class="name">Background</span>
+                <span class="hex" id="hexBg">#000000</span>
+                <input type="color" id="colorBg" value="#000000">
+              </div>
+              <div class="hint">
+                Accent tints the skeleton, halos, borders and pull thread.
+                Text colours the code itself. Editing any colour switches you to a custom theme.
+              </div>
+            </div>
+          </div>
+
+          <!-- PINCH -------------------------------------------------->
+          <div class="section" data-section="pinch">
+            <div class="section-head"><span>Pinch</span><span class="chev">▼</span></div>
+            <div class="section-content">
+              <div class="field">
+                <div class="label"><span>Pinch Sensitivity</span>
+                  <span class="value" data-value="pinchSensitivity">1.00</span>
+                </div>
+                <input type="range" min="0.6" max="2" step="0.05" data-key="pinchSensitivity">
+              </div>
+              <div class="field">
+                <div class="label"><span>Smoothing</span>
+                  <span class="value" data-value="pinchSmoothing">0.55</span>
+                </div>
+                <input type="range" min="0" max="1" step="0.05" data-key="pinchSmoothing">
+              </div>
+              <div class="field">
+                <div class="label"><span>Grab Looseness</span>
+                  <span class="value" data-value="grabLooseness">1.00</span>
+                </div>
+                <input type="range" min="0.6" max="1.6" step="0.05" data-key="grabLooseness">
+              </div>
+              <label class="toggle" data-key="showPinchHalo"><span>Pinch Halo</span><span class="switch"></span></label>
+              <label class="toggle" data-key="showSkeleton"><span>Skeleton</span><span class="switch"></span></label>
+              <label class="toggle" data-key="showSourceHalo"><span>Source Halo</span><span class="switch"></span></label>
+              <div class="hint">
+                Full pinch (thumb-index closed) pulls new code out of an open hand.
+                A loose pinch is enough to grab and move an existing line.
+              </div>
+            </div>
+          </div>
+
+          <!-- STRANDS ------------------------------------------------>
+          <div class="section" data-section="strands">
+            <div class="section-head"><span>Code Strands</span><span class="chev">▼</span></div>
+            <div class="section-content">
+              <label class="toggle" data-key="showLineNumbers"><span>Line Labels</span><span
+              class="switch"></span></label>
+              <label class="toggle" data-key="drift"><span>Drift</span><span class="switch"></span></label>
+              <label class="toggle" data-key="allowReturn"><span>Return To Hand</span><span class="switch"></span></label>
+              <div class="field">
+                <div class="label"><span>Max Strands</span>
+                  <span class="value" data-value="maxStrands">6</span>
+                </div>
+                <input type="range" min="1" max="12" step="1" data-key="maxStrands">
+              </div>
+              <button class="wide-btn" id="clearStrands" type="button">Clear Strands</button>
+              <button class="wide-btn" id="resetDefaults" type="button">Reset Defaults</button>
+              <div class="hint">
+                Pinch near a line's edges (loosely) to grab it. Drag it around.
+                Drop it inside an open palm to absorb it back. Tap any line to copy.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      <div id="boot">
+        <div class="title">SENTINEL</div>
+        <div class="sub" id="bootMsg">INITIALIZING</div>
+        <div class="bar"><i></i></div>
+      </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"
+    crossorigin="anonymous"></script>
 
   <script>
     (() => {
@@ -756,38 +857,51 @@
         console.error('[SENTINEL]', e.message, e.error && e.error.stack);
       });
 
-      // ============================================================
-      //  ELEMENTS
-      // ============================================================
-      const video = document.getElementById('video');
-      const canvas = document.getElementById('overlay');
+      /* ============================================================
+         DOM
+         ============================================================ */
+      const $ = (id) => document.getElementById(id);
+
+      const video = $('video');
+      const canvas = $('overlay');
       const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
-      const bootEl = document.getElementById('boot');
-      const bootMsg = document.getElementById('bootMsg');
-      const activateBtn = document.getElementById('activateBtn');
-      const toastEl = document.getElementById('toast');
-      const hudEl = document.getElementById('hud');
 
-      const tFps = document.getElementById('tFps');
-      const tHands = document.getElementById('tHands');
+      const bootEl = $('boot');
+      const bootMsg = $('bootMsg');
+      const activateBtn = $('activateBtn');
+      const toastEl = $('toast');
+      const hudEl = $('hud');
+      const hintEl = $('hint');
 
-      const settingsPanel = document.getElementById('settingsPanel');
-      const settingsToggle = document.getElementById('settingsToggle');
-      const settingsClose = document.getElementById('settingsClose');
-      const panelOverlay = document.getElementById('panelOverlay');
+      const tFps = $('tFps');
+      const tHands = $('tHands');
+      const tPinch = $('tPinch');
+      const tLines = $('tLines');
 
-      // ============================================================
-      //  FIXED TRACKING TUNING
-      // ============================================================
+      const settingsPanel = $('settingsPanel');
+      const settingsToggle = $('settingsToggle');
+      const settingsClose = $('settingsClose');
+      const panelOverlay = $('panelOverlay');
+      const clearStrandsBtn = $('clearStrands');
+      const resetDefaultsBtn = $('resetDefaults');
+
+      const themeSelect = $('themeSelect');
+      const colorAccent = $('colorAccent');
+      const colorText = $('colorText');
+      const colorBg = $('colorBg');
+      const hexAccent = $('hexAccent');
+      const hexText = $('hexText');
+      const hexBg = $('hexBg');
+
+      /* ============================================================
+         CONSTANTS
+         ============================================================ */
+      const TAU = Math.PI * 2;
+
       const MAX_HANDS = 2;
       const MODEL_COMPLEXITY = 1;
       const MIN_DETECTION = 0.6;
       const MIN_TRACKING = 0.6;
-
-      const STABILIZATION = 0.55;
-      const RESPONSIVENESS = 0.50;
-      const PREDICTION = 1.0;
-      const GRACE_FRAMES = 6;
 
       const FPS_CAP = 60;
       const RES_W = 1280;
@@ -795,59 +909,54 @@
       const FACING_MODE = 'user';
       const PAUSE_ON_HIDE = true;
 
-      // Video is CSS-mirrored (selfie view); landmarks are mirrored to match.
       const MIRROR = true;
+      const PREDICTION = 1.0;
+      const GRACE_FRAMES = 8;
 
-      // Skeleton constants
-      const BONE_WIDTH = 1.4;
-      const JOINT_RADIUS = 1.8;
-      const GLOW_OPACITY = 0.10;
+      const D_CUTOFF = 1.0;
+      const RESPONSIVENESS = 0.5;
 
-      // ============================================================
-      //  CONFIG — only the 3D hand section
-      // ============================================================
-      const DEFAULTS = {
-        showMesh: true,
-        meshStyle: 'holo',
-        meshOpacity: 0.72,
-        meshDensity: 1,
-        depthScale: 1.00,
-        meshThickness: 0.17,
-        rimLight: 0.30,
-        lightAngle: 0,
-        shadeContrast: 0.80,
-        meshShade: true,
-        meshEdges: true,
-        meshBackface: false,
-      };
+      /* Pinch states:
+         - pinching: ratio < onT (full pinch, used for PULL)
+         - contact : ratio < contactT (loose, used for GRAB)
+         Each with its own debounce/hysteresis. */
+      const PINCH_ON_BASE = 0.30;
+      const PINCH_HYST = 0.16;
+      const PINCH_ON_FRAMES = 2;
+      const PINCH_OFF_FRAMES = 3;
 
-      const config = { ...DEFAULTS };
+      const CONTACT_ON_BASE = 0.62;
+      const CONTACT_OFF_BASE = 0.78;
 
-      function loadConfig() {
-        try {
-          const raw = localStorage.getItem('sentinel.hand3d.v1');
-          if (raw) Object.assign(config, DEFAULTS, JSON.parse(raw));
-        } catch (e) { }
-      }
-      function saveConfig() {
-        try { localStorage.setItem('sentinel.hand3d.v1', JSON.stringify(config)); } catch (e) { }
-      }
+      /* Open hand: all 4 fingers extended for N frames */
+      const OPEN_FRAMES = 2;
 
-      // ============================================================
-      //  MATH
-      // ============================================================
-      const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
-      const dist3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
+      /* Strand layout */
+      const CHAR_RATIO = 0.62;
+      const FONT_MIN = 8;
+      const FONT_MAX = 13;
+      const SPAWN_GRAB_COOLDOWN = 260;   // ms after spawn before grabbable
 
-      // ============================================================
-      //  COLOR
-      // ============================================================
-      const ACCENT_HEX = '#ffffff';
-      const ACCENT_RGB = hexToRgb(ACCENT_HEX);
-      const ALPHA_LUT = new Array(33);
+      /* ============================================================
+         THEMES  ("songs")
+         ============================================================ */
+      const THEMES = [
+        { name: 'MONO', accent: '#ffffff', text: '#f2f2f2', bg: '#000000' },
+        { name: 'MATRIX', accent: '#4aff8c', text: '#c8ffd8', bg: '#001008' },
+        { name: 'AMBER', accent: '#ffb000', text: '#ffd98a', bg: '#0e0800' },
+        { name: 'ICE', accent: '#7adfff', text: '#d4f4ff', bg: '#000a10' },
+        { name: 'NEON', accent: '#ff2bd6', text: '#ffc4f0', bg: '#0e000a' },
+        { name: 'SUNSET', accent: '#ff6b3d', text: '#ffd0b8', bg: '#100400' },
+        { name: 'VOID', accent: '#a78bfa', text: '#ddd0ff', bg: '#080414' },
+        { name: 'BLOOD', accent: '#ff3355', text: '#ffc8d4', bg: '#100004' },
+        { name: 'SOLAR', accent: '#ffd93d', text: '#fff3b0', bg: '#0c0a00' },
+        { name: 'MINT', accent: '#3ddc97', text: '#c8ffe8', bg: '#001008' },
+        { name: 'COBALT', accent: '#3b82ff', text: '#c4dbff', bg: '#00060e' },
+        { name: 'ROSE', accent: '#ff7aa8', text: '#ffd6e4', bg: '#0e0006' },
+      ];
 
       function hexToRgb(hex) {
-        const h = hex.replace('#', '');
+        const h = (hex || '#000000').replace('#', '');
         const f = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
         return {
           r: parseInt(f.substring(0, 2), 16) || 0,
@@ -856,41 +965,176 @@
         };
       }
 
-      function rgba(a) {
-        if (a <= 0) return 'rgba(0,0,0,0)';
-        if (a >= 1) a = 1;
-        let i = (a * 32 + 0.5) | 0;
-        if (i < 0) i = 0; else if (i > 32) i = 32;
-        let s = ALPHA_LUT[i];
-        if (s === undefined) {
-          s = `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${i / 32})`;
-          ALPHA_LUT[i] = s;
-        }
-        return s;
+      function hexRgba(hex, a) {
+        const c = hexToRgb(hex);
+        return `rgba(${c.r},${c.g},${c.b},${a})`;
       }
 
-      // ============================================================
-      //  ONE-EURO FILTER
-      // ============================================================
+      let TC = null;
+
+      function getActiveTheme() {
+        if (config.customTheme) return config.customTheme;
+        return THEMES[config.themeIdx] || THEMES[0];
+      }
+
+      function buildThemeColors() {
+        const t = getActiveTheme();
+        TC = {
+          accent: t.accent,
+          text: t.text,
+          bg: hexRgba(t.bg, 0.68),
+          border: hexRgba(t.accent, 0.35),
+          borderStrong: hexRgba(t.accent, 0.85),
+          borderGrab: hexRgba(t.accent, 1.0),
+          skeleton: hexRgba(t.accent, 0.55),
+          skeletonActive: hexRgba(t.accent, 0.95),
+          glow: hexRgba(t.accent, 0.05),
+          joint: hexRgba(t.text, 0.9),
+          halo: hexRgba(t.accent, 0.5),
+          haloDim: hexRgba(t.accent, 0.16),
+          thread: hexRgba(t.accent, 0.35),
+          ring: hexRgba(t.accent, 0.9),
+          ringDim: hexRgba(t.accent, 0.18),
+          tag: hexRgba(t.accent, 0.72),
+          tagCopied: hexRgba(t.accent, 0.95),
+        };
+        document.documentElement.style.setProperty('--accent', t.accent);
+      }
+
+      /* ============================================================
+         CONFIG
+         ============================================================ */
+      const DEFAULTS = {
+        themeIdx: 0,
+        customTheme: null,
+        pinchSensitivity: 1.0,
+        pinchSmoothing: 0.55,
+        grabLooseness: 1.0,
+        showPinchHalo: true,
+        showSkeleton: true,
+        showSourceHalo: true,
+        showLineNumbers: true,
+        drift: true,
+        allowReturn: true,
+        maxStrands: 6,
+      };
+
+      const config = { ...DEFAULTS };
+
+      function loadConfig() {
+        try {
+          const raw = localStorage.getItem('sentinel.pinch.v3');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            Object.assign(config, DEFAULTS, parsed);
+            if (config.customTheme && typeof config.customTheme !== 'object') {
+              config.customTheme = null;
+            }
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      function saveConfig() {
+        try {
+          localStorage.setItem('sentinel.pinch.v3', JSON.stringify(config));
+        } catch (e) { /* ignore */ }
+      }
+
+      /* ============================================================
+         CODE LINES
+         ============================================================ */
+      const CODE_LINES = [
+        { tag: 'L.0412', text: 'const MAX_HANDS = 2;' },
+        { tag: 'L.0418', text: 'hands.onResults(onResults);' },
+        { tag: 'L.0421', text: 'maxNumHands: MAX_HANDS,' },
+        { tag: 'L.0422', text: 'minDetectionConfidence: 0.6,' },
+        { tag: 'L.0423', text: 'minTrackingConfidence: 0.6,' },
+        { tag: 'L.0430', text: 'await hands.send({ image });' },
+        { tag: 'L.0447', text: 'const lm = landmarks[i];' },
+        { tag: 'L.0451', text: 'const thumb = lm[4];' },
+        { tag: 'L.0452', text: 'const index = lm[8];' },
+        { tag: 'L.0456', text: 'const pinch = dist3(thumb, index);' },
+        { tag: 'L.0457', text: 'const span  = dist3(lm[0], lm[9]);' },
+        { tag: 'L.0458', text: 'const ratio = pinch / span;' },
+        { tag: 'L.0461', text: 'if (ratio < PINCH_ON) {' },
+        { tag: 'L.0462', text: '  state.pinching = true;' },
+        { tag: 'L.0466', text: 'if (ratio > PINCH_OFF) {' },
+        { tag: 'L.0467', text: '  state.pinching = false;' },
+        { tag: 'L.0480', text: 'const HAND_CONNECTIONS = [' },
+        { tag: 'L.0481', text: '  [0,1],[1,2],[2,3],[3,4],' },
+        { tag: 'L.0485', text: 'const GRACE_FRAMES = 8;' },
+        { tag: 'L.0491', text: 'slot.lostFrames++;' },
+        { tag: 'L.0492', text: 'if (slot.lostFrames > GRACE)' },
+        { tag: 'L.0493', text: '  handSlots.delete(slot.id);' },
+        { tag: 'L.0506', text: 'smooth[j].x = fx.filter(p.x);' },
+        { tag: 'L.0510', text: 'const tSec = now / 1000;' },
+        { tag: 'L.0523', text: 'new OneEuroFilter(1.0, 0.02);' },
+        { tag: 'L.0544', text: 'video.srcObject = stream;' },
+        { tag: 'L.0546', text: 'await video.play();' },
+        { tag: 'L.0561', text: 'const a = angleAt(mcp, pip, tip);' },
+        { tag: 'L.0562', text: 'return a > 2.30;' },
+        { tag: 'L.0588', text: 'handData = out;' },
+        { tag: 'L.0601', text: 'ctx.clearRect(0, 0, w, h);' },
+        { tag: 'L.0602', text: 'requestAnimationFrame(loop);' },
+        { tag: 'L.0613', text: 'mediaStream.getTracks()' },
+        { tag: 'L.0614', text: '  .forEach(t => t.stop());' },
+      ];
+
+      let lastLineIdx = -1;
+      function pickLine() {
+        if (CODE_LINES.length === 1) return CODE_LINES[0];
+        let i;
+        do { i = (Math.random() * CODE_LINES.length) | 0; }
+        while (i === lastLineIdx);
+        lastLineIdx = i;
+        return CODE_LINES[i];
+      }
+
+      /* ============================================================
+         MATH
+         ============================================================ */
+      const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const dist2 = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+      const dist3 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
+
+      function angleAt(a, b, c) {
+        const ux = a.x - b.x, uy = a.y - b.y, uz = (a.z || 0) - (b.z || 0);
+        const vx = c.x - b.x, vy = c.y - b.y, vz = (c.z || 0) - (b.z || 0);
+        const lu = Math.hypot(ux, uy, uz), lv = Math.hypot(vx, vy, vz);
+        if (lu < 1e-6 || lv < 1e-6) return Math.PI;
+        return Math.acos(clamp((ux * vx + uy * vy + uz * vz) / (lu * lv), -1, 1));
+      }
+
+      /* ============================================================
+         FILTERS
+         ============================================================ */
       class LowPass {
-        constructor() { this.y = 0; this.initialized = false; }
-        filter(x, alpha) {
-          if (!this.initialized) { this.y = x; this.initialized = true; }
-          else this.y = alpha * x + (1 - alpha) * this.y;
+        constructor() { this.y = 0; this.ready = false; }
+        filter(x, a) {
+          if (!this.ready) { this.y = x; this.ready = true; }
+          else this.y = a * x + (1 - a) * this.y;
           return this.y;
         }
-        reset() { this.initialized = false; this.y = 0; }
+        reset() { this.ready = false; this.y = 0; }
       }
 
       class OneEuroFilter {
         constructor(minCutoff, beta, dCutoff) {
-          this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
-          this.xFilt = new LowPass(); this.dxFilt = new LowPass();
-          this.prevX = null; this.prevT = null;
-          this.value = 0; this.velocity = 0;
+          this.minCutoff = minCutoff;
+          this.beta = beta;
+          this.dCutoff = dCutoff;
+          this.xFilt = new LowPass();
+          this.dxFilt = new LowPass();
+          this.prevX = null;
+          this.prevT = null;
+          this.value = 0;
+          this.velocity = 0;
         }
         setParams(minCutoff, beta, dCutoff) {
-          this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+          this.minCutoff = minCutoff;
+          this.beta = beta;
+          this.dCutoff = dCutoff;
         }
         alpha(cutoff, dt) {
           const tau = 1 / (2 * Math.PI * cutoff);
@@ -906,29 +1150,30 @@
           const dt = tSec - this.prevT;
           if (dt <= 0) return this.value;
           const dx = (x - this.prevX) / dt;
-          this.prevX = x; this.prevT = tSec;
-          const aD = this.alpha(this.dCutoff, dt);
-          const dxHat = this.dxFilt.filter(dx, aD);
+          this.prevX = x;
+          this.prevT = tSec;
+          const dxHat = this.dxFilt.filter(dx, this.alpha(this.dCutoff, dt));
           const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
-          const a = this.alpha(cutoff, dt);
-          this.value = this.xFilt.filter(x, a);
+          this.value = this.xFilt.filter(x, this.alpha(cutoff, dt));
           this.velocity = dxHat;
           return this.value;
         }
         reset() {
-          this.xFilt.reset(); this.dxFilt.reset();
-          this.prevX = null; this.prevT = null;
-          this.value = 0; this.velocity = 0;
+          this.xFilt.reset();
+          this.dxFilt.reset();
+          this.prevX = null;
+          this.prevT = null;
+          this.value = 0;
+          this.velocity = 0;
         }
       }
 
-      const minCutoffFromStabilization = s => 12 * Math.pow(0.038, s);
+      const minCutoffFromSmoothing = s => 12 * Math.pow(0.038, s);
       const betaFromResponsiveness = r => 0.003 + r * 0.117;
-      const D_CUTOFF = 1.0;
 
-      // ============================================================
-      //  STATE
-      // ============================================================
+      /* ============================================================
+         STATE
+         ============================================================ */
       let active = false;
       let mediaStream = null;
       let rafInfer = null;
@@ -936,12 +1181,33 @@
       let inferLast = 0;
       let fpsSmooth = 0;
       let inferenceInFlight = false;
-      let handData = [];
-      let hands = null;
+      let inferenceGeneration = 0;
 
-      // ============================================================
-      //  CANVAS SIZE + COVER MAPPING
-      // ============================================================
+      let hands = null;
+      let handData = [];
+      let nextSlotId = 1;
+      const handSlots = new Map();
+
+      const strands = [];
+      let lastFrameT = 0;
+
+      const pull = {
+        active: false,
+        anchorId: -1,
+        pinchId: -1,
+        anchor: { x: 0, y: 0 },
+        pinch: { x: 0, y: 0 },
+        baseline: 0,
+        line: null,
+        font: 11,
+        spacing: 7,
+        required: 100,
+        progress: 0,
+      };
+
+      /* ============================================================
+         CANVAS + COVER MAPPING
+         ============================================================ */
       let viewW = window.innerWidth;
       let viewH = window.innerHeight;
       const cover = { valid: false, drawW: 0, drawH: 0, offsetX: 0, offsetY: 0 };
@@ -955,7 +1221,8 @@
         let dW, dH;
         if (vA > cA) { dH = viewH; dW = viewH * vA; }
         else { dW = viewW; dH = viewW / vA; }
-        cover.drawW = dW; cover.drawH = dH;
+        cover.drawW = dW;
+        cover.drawH = dH;
         cover.offsetX = (viewW - dW) / 2;
         cover.offsetY = (viewH - dH) / 2;
         cover.valid = true;
@@ -972,19 +1239,18 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         updateCover();
       }
+
       window.addEventListener('resize', resize);
       window.addEventListener('orientationchange', () => setTimeout(resize, 120));
       video.addEventListener('loadedmetadata', updateCover);
       video.addEventListener('loadeddata', updateCover);
-      resize();
 
       function projectX(nx) { return cover.offsetX + (MIRROR ? 1 - nx : nx) * cover.drawW; }
       function projectY(ny) { return cover.offsetY + ny * cover.drawH; }
-      function projectZ(nz) { return (nz || 0) * (cover.drawW || viewW) * config.depthScale; }
 
-      // ============================================================
-      //  LANDMARK TOPOLOGY
-      // ============================================================
+      /* ============================================================
+         HAND TOPOLOGY
+         ============================================================ */
       const HAND_CONNECTIONS = [
         [0, 1], [1, 2], [2, 3], [3, 4],
         [0, 5], [5, 6], [6, 7], [7, 8],
@@ -995,480 +1261,36 @@
       ];
       const FINGERTIPS = [4, 8, 12, 16, 20];
       const IS_TIP = new Uint8Array(21);
-      for (let i = 0; i < 5; i++) IS_TIP[FINGERTIPS[i]] = 1;
+      for (let i = 0; i < FINGERTIPS.length; i++) IS_TIP[FINGERTIPS[i]] = 1;
 
-      // ============================================================
-      //  MESH TOPOLOGY
-      // ============================================================
-      const meshTopologyCache = new Map();
-
-      function buildTopology(density) {
-        const sides = [4, 6, 8][density] || 6;
-        const palmN = 18;
-        const fingerN = 3 * sides + 1;
-        const vertCount = palmN + 5 * fingerN;
-
-        const faces = [];
-        const recipes = new Array(vertCount);
-
-        const palmLm = [0, 1, 5, 9, 13, 17];
-        for (let i = 0; i < 6; i++) recipes[i] = { k: 0, lm: palmLm[i] };
-        for (let i = 0; i < 6; i++) recipes[6 + i] = { k: 1, lm: palmLm[i] };
-        for (let i = 0; i < 6; i++) recipes[12 + i] = { k: 2, lm: palmLm[i] };
-
-        faces.push([6, 7, 8, 9, 10, 11]);
-        faces.push([12, 13, 14, 15, 16, 17]);
-
-        for (let i = 0; i < 6; i++) {
-          const j = (i + 1) % 6;
-          faces.push([6 + i, 6 + j, j, i]);
-          faces.push([i, j, 12 + j, 12 + i]);
-        }
-
-        const fingerLm = [
-          [1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20],
-        ];
-        const fingerRad = [0.135, 0.100, 0.105, 0.092, 0.075];
-        const taper = [1.0, 0.88, 0.78, 0.62];
-
-        let base = palmN;
-        for (let f = 0; f < 5; f++) {
-          for (let k = 0; k < 3; k++) {
-            for (let s = 0; s < sides; s++) {
-              recipes[base + k * sides + s] = { k: 3, f, seg: k, side: s, sides };
-            }
-          }
-          recipes[base + 3 * sides] = { k: 4, f };
-
-          const r0 = base;
-          const r2 = base + 2 * sides;
-          const apex = base + 3 * sides;
-
-          const cap = [];
-          for (let s = 0; s < sides; s++) cap.push(r0 + s);
-          faces.push(cap);
-
-          for (let k = 0; k < 2; k++) {
-            const a = base + k * sides;
-            const b = base + (k + 1) * sides;
-            for (let s = 0; s < sides; s++) {
-              const s2 = (s + 1) % sides;
-              faces.push([a + s, a + s2, b + s2, b + s]);
-            }
-          }
-
-          for (let s = 0; s < sides; s++) {
-            const s2 = (s + 1) % sides;
-            faces.push([r2 + s, r2 + s2, apex]);
-          }
-
-          base += fingerN;
-        }
-
-        return { density, sides, vertCount, faces, recipes, fingerLm, fingerRad, taper };
-      }
-
-      function getTopology(density) {
-        let t = meshTopologyCache.get(density);
-        if (!t) { t = buildTopology(density); meshTopologyCache.set(density, t); }
-        return t;
-      }
-
-      const meshRenderers = new Map();
-
-      function getMeshRenderer(density) {
-        let r = meshRenderers.get(density);
-        if (!r) {
-          const topo = getTopology(density);
-          const positions = new Float32Array(topo.vertCount * 3);
-          const faceZ = new Float32Array(topo.faces.length);
-          const faceOrder = new Array(topo.faces.length);
-          for (let i = 0; i < topo.faces.length; i++) faceOrder[i] = i;
-          r = { topo, positions, faceZ, faceOrder };
-          meshRenderers.set(density, r);
-        }
-        return r;
-      }
-
-      let _cmpFaceZ_arr = null;
-      function _cmpFaceZ(a, b) { return _cmpFaceZ_arr[b] - _cmpFaceZ_arr[a]; }
-
-      // ============================================================
-      //  MESH EVALUATION
-      // ============================================================
-      function evaluateMesh(topo, pts, positions) {
-        const { vertCount, recipes, fingerLm, fingerRad, taper } = topo;
-
-        const p0 = pts[0], p5 = pts[5], p9 = pts[9], p17 = pts[17];
-
-        const e1x = p5.x - p0.x, e1y = p5.y - p0.y, e1z = p5.z - p0.z;
-        const e2x = p17.x - p0.x, e2y = p17.y - p0.y, e2z = p17.z - p0.z;
-        let nx = e1y * e2z - e1z * e2y;
-        let ny = e1z * e2x - e1x * e2z;
-        let nz = e1x * e2y - e1y * e2x;
-        let nl = dist3(nx, ny, nz) || 1;
-        nx /= nl; ny /= nl; nz /= nl;
-
-        const scale = dist3(p9.x - p0.x, p9.y - p0.y, p9.z - p0.z) || 1;
-        const thick = scale * config.meshThickness;
-        const halfT = thick * 0.5;
-        const shrinkK = 0.16;
-
-        const palmLm = [0, 1, 5, 9, 13, 17];
-        let ccx = 0, ccy = 0, ccz = 0;
-        for (let i = 0; i < 6; i++) {
-          const p = pts[palmLm[i]];
-          ccx += p.x; ccy += p.y; ccz += p.z;
-        }
-        ccx /= 6; ccy /= 6; ccz /= 6;
-
-        for (let i = 0; i < vertCount; i++) {
-          const r = recipes[i];
-          let x, y, z;
-          switch (r.k) {
-            case 0: { const p = pts[r.lm]; x = p.x; y = p.y; z = p.z; break; }
-            case 1: {
-              const p = pts[r.lm];
-              const ax = ccx - p.x, ay = ccy - p.y, az = ccz - p.z;
-              x = p.x + ax * shrinkK + nx * halfT;
-              y = p.y + ay * shrinkK + ny * halfT;
-              z = p.z + az * shrinkK + nz * halfT;
-              break;
-            }
-            case 2: {
-              const p = pts[r.lm];
-              const ax = ccx - p.x, ay = ccy - p.y, az = ccz - p.z;
-              x = p.x + ax * shrinkK - nx * halfT;
-              y = p.y + ay * shrinkK - ny * halfT;
-              z = p.z + az * shrinkK - nz * halfT;
-              break;
-            }
-            case 3: {
-              const chain = fingerLm[r.f];
-              const a = pts[chain[r.seg]];
-              const b = pts[chain[r.seg + 1]];
-              let dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
-              const dl = dist3(dx, dy, dz) || 1;
-              dx /= dl; dy /= dl; dz /= dl;
-              const dn = nx * dx + ny * dy + nz * dz;
-              let ux = nx - dn * dx, uy = ny - dn * dy, uz = nz - dn * dz;
-              const ul = dist3(ux, uy, uz);
-              if (ul < 1e-5) { ux = 0; uy = 1; uz = 0; }
-              else { ux /= ul; uy /= ul; uz /= ul; }
-              const rx = dy * uz - dz * uy;
-              const ry = dz * ux - dx * uz;
-              const rz = dx * uy - dy * ux;
-              const rad = fingerRad[r.f] * taper[r.seg] * scale;
-              const ang = (r.side / r.sides) * Math.PI * 2;
-              const ca = Math.cos(ang), sa = Math.sin(ang);
-              x = a.x + (rx * ca + ux * sa) * rad;
-              y = a.y + (ry * ca + uy * sa) * rad;
-              z = a.z + (rz * ca + uz * sa) * rad;
-              break;
-            }
-            default: {
-              const chain = fingerLm[r.f];
-              const b = pts[chain[2]];
-              const t = pts[chain[3]];
-              let dx = t.x - b.x, dy = t.y - b.y, dz = t.z - b.z;
-              const dl = dist3(dx, dy, dz) || 1;
-              dx /= dl; dy /= dl; dz /= dl;
-              const rad = fingerRad[r.f] * scale * 0.95;
-              x = t.x + dx * rad; y = t.y + dy * rad; z = t.z + dz * rad;
-            }
-          }
-          const o = i * 3;
-          positions[o] = x;
-          positions[o + 1] = y;
-          positions[o + 2] = z;
-        }
-      }
-
-      // ============================================================
-      //  DYNAMIC LIGHT
-      // ============================================================
-      const LIGHT = { x: -0.42, y: -0.62, z: -0.66 };
-
-      function updateLight() {
-        const a = config.lightAngle * Math.PI / 180;
-        const bx = -0.42, by = -0.62, bz = -0.66;
-        const ca = Math.cos(a), sa = Math.sin(a);
-        let x = bx * ca - by * sa;
-        let y = bx * sa + by * ca;
-        let z = bz;
-        const l = Math.sqrt(x * x + y * y + z * z) || 1;
-        LIGHT.x = x / l; LIGHT.y = y / l; LIGHT.z = z / l;
-      }
-      updateLight();
-
-      // ============================================================
-      //  DRAW — 3D MESH
-      // ============================================================
-      function drawMesh(hand) {
-        const density = config.meshDensity;
-        const renderer = getMeshRenderer(density);
-        const topo = renderer.topo;
-        const positions = renderer.positions;
-        const faceZ = renderer.faceZ;
-        const faceOrder = renderer.faceOrder;
-        const faces = topo.faces;
-
-        evaluateMesh(topo, hand.pts, positions);
-
-        const faceCount = faces.length;
-        for (let i = 0; i < faceCount; i++) {
-          const f = faces[i];
-          let z = 0;
-          const fn = f.length;
-          for (let j = 0; j < fn; j++) z += positions[f[j] * 3 + 2];
-          faceZ[i] = z / fn;
-        }
-
-        _cmpFaceZ_arr = faceZ;
-        faceOrder.sort(_cmpFaceZ);
-
-        const op = config.meshOpacity;
-        const edges = config.meshEdges;
-        const mode = config.meshStyle;
-        const ar = ACCENT_RGB.r, ag = ACCENT_RGB.g, ab = ACCENT_RGB.b;
-        const now = performance.now();
-        const rimK = config.rimLight;
-        const shK = config.shadeContrast;
-        const backface = config.meshBackface;
-
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 0.8;
-
-        const isHolo = mode === 'holo';
-        if (isHolo) ctx.globalCompositeOperation = 'lighter';
-
-        for (let oi = 0; oi < faceCount; oi++) {
-          const fi = faceOrder[oi];
-          const f = faces[fi];
-
-          const i0 = f[0] * 3, i1 = f[1] * 3, i2 = f[2] * 3;
-          const ax = positions[i0], ay = positions[i0 + 1], az = positions[i0 + 2];
-          const bx = positions[i1], by = positions[i1 + 1], bz = positions[i1 + 2];
-          const cx = positions[i2], cy = positions[i2 + 1], cz = positions[i2 + 2];
-          const e1x = bx - ax, e1y = by - ay, e1z = bz - az;
-          const e2x = cx - ax, e2y = cy - ay, e2z = cz - az;
-          let nX = e1y * e2z - e1z * e2y;
-          let nY = e1z * e2x - e1x * e2z;
-          let nZ = e1x * e2y - e1y * e2x;
-          const nL = dist3(nX, nY, nZ);
-          let isBack = false;
-          if (nL < 1e-6) { nX = 0; nY = 0; nZ = -1; }
-          else {
-            nX /= nL; nY /= nL; nZ /= nL;
-            if (nZ > 0) { isBack = true; nX = -nX; nY = -nY; nZ = -nZ; }
-          }
-
-          if (isBack && !backface && mode === 'wire') continue;
-
-          const diff = Math.max(0, nX * LIGHT.x + nY * LIGHT.y + nZ * LIGHT.z);
-          const absNZ = nZ < 0 ? -nZ : nZ;
-          const rimB = 1 - (absNZ > 1 ? 1 : absNZ);
-          const rim = rimB * rimB * rimB;
-          const diffK = config.meshShade ? diff * shK : 0;
-          let sh = 0.16 + diffK + rim * rimK;
-          if (sh > 1.4) sh = 1.4;
-          const zAvg = (az + bz + cz) / 3;
-
-          ctx.beginPath();
-          ctx.moveTo(positions[i0], positions[i0 + 1]);
-          for (let j = 1; j < f.length; j++) {
-            const idx = f[j] * 3;
-            ctx.lineTo(positions[idx], positions[idx + 1]);
-          }
-          ctx.closePath();
-
-          switch (mode) {
-            case 'wire': {
-              ctx.strokeStyle = rgba(op * (0.28 + diff * 0.72));
-              ctx.lineWidth = 1;
-              ctx.stroke();
-              break;
-            }
-            case 'xray': {
-              const r = (8 + (ar - 8) * sh) | 0;
-              const g = (10 + (ag - 10) * sh) | 0;
-              const b = (14 + (ab - 14) * sh) | 0;
-              ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.28})`;
-              ctx.fill();
-              ctx.strokeStyle = rgba(op * (0.35 + diff * 0.65));
-              ctx.lineWidth = 0.9;
-              ctx.stroke();
-              break;
-            }
-            case 'holo': {
-              const h = 0.35 + diff * 0.9 + rim * rimK * 1.6;
-              const r = Math.min(255, (ar * h) | 0);
-              const g = Math.min(255, (ag * h) | 0);
-              const b = Math.min(255, (ab * h) | 0);
-              ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.5})`;
-              ctx.fill();
-              if (edges) {
-                ctx.strokeStyle = rgba(op * (0.55 + diff * 0.45));
-                ctx.lineWidth = 0.9;
-                ctx.stroke();
-              }
-              break;
-            }
-            case 'chrome': {
-              const shC = 0.06 + Math.pow(diff, 0.65) * 0.95 + rim * rimK * 1.3;
-              const r = (4 + (ar - 4) * shC) | 0;
-              const g = (6 + (ag - 6) * shC) | 0;
-              const b = (10 + (ab - 10) * shC) | 0;
-              ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
-              ctx.fill();
-              if (edges) {
-                ctx.strokeStyle = rgba(op * (0.15 + diff * 0.85));
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-              }
-              break;
-            }
-            case 'neon': {
-              ctx.fillStyle = `rgba(3,4,6,${op * 0.55})`;
-              ctx.fill();
-              ctx.strokeStyle = rgba(op * (0.7 + diff * 0.3));
-              ctx.lineWidth = 1.2;
-              ctx.stroke();
-              break;
-            }
-            case 'matrix': {
-              const t = clamp((zAvg + 200) / 400, 0, 1);
-              const r = (10 * (1 - t)) | 0;
-              const g = (90 + 160 * (1 - t)) | 0;
-              const b = (30 * (1 - t)) | 0;
-              ctx.fillStyle = `rgba(${r},${g},${b},${op * 0.75})`;
-              ctx.fill();
-              if ((oi + ((now / 100) | 0)) % 7 === 0) {
-                ctx.strokeStyle = `rgba(120,255,140,${op * 0.9})`;
-                ctx.lineWidth = 0.9;
-                ctx.stroke();
-              }
-              break;
-            }
-            case 'glass': {
-              ctx.fillStyle = rgba(op * 0.14);
-              ctx.fill();
-              ctx.strokeStyle = rgba(op * (0.35 + diff * 0.55));
-              ctx.lineWidth = 0.9;
-              ctx.stroke();
-              break;
-            }
-            case 'thermal': {
-              const t = clamp((zAvg + 220) / 440, 0, 1);
-              const r = (60 + 195 * t) | 0;
-              const g = (60 + 120 * (1 - Math.abs(t - 0.5) * 2)) | 0;
-              const b = (200 * (1 - t) + 40) | 0;
-              ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
-              ctx.fill();
-              if (edges) {
-                ctx.strokeStyle = `rgba(${r},${g},${b},${op * 0.7})`;
-                ctx.lineWidth = 0.7;
-                ctx.stroke();
-              }
-              break;
-            }
-            case 'sketch': {
-              ctx.fillStyle = `rgba(220,220,220,${op * 0.12})`;
-              ctx.fill();
-              ctx.strokeStyle = `rgba(240,240,240,${op * (0.4 + diff * 0.5)})`;
-              ctx.lineWidth = 0.7;
-              ctx.stroke();
-              break;
-            }
-            default: {
-              // slab
-              const r = (8 + (ar - 8) * sh) | 0;
-              const g = (10 + (ag - 10) * sh) | 0;
-              const b = (14 + (ab - 14) * sh) | 0;
-              ctx.fillStyle = `rgba(${r},${g},${b},${op})`;
-              ctx.fill();
-              if (edges) {
-                ctx.strokeStyle = rgba(op * 0.75 * (0.30 + diff * 0.70));
-                ctx.stroke();
-              }
-            }
-          }
-        }
-
-        if (isHolo) ctx.globalCompositeOperation = 'source-over';
-      }
-
-      // ============================================================
-      //  DRAW — SKELETON
-      // ============================================================
-      function drawSkeleton(hand) {
-        const pts = hand.pts;
-
-        if (GLOW_OPACITY > 0) {
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.strokeStyle = rgba(GLOW_OPACITY);
-          ctx.lineWidth = BONE_WIDTH * 4.5;
-          ctx.beginPath();
-          for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
-            const c = HAND_CONNECTIONS[i];
-            ctx.moveTo(pts[c[0]].x, pts[c[0]].y);
-            ctx.lineTo(pts[c[1]].x, pts[c[1]].y);
-          }
-          ctx.stroke();
-        }
-
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = rgba(0.94);
-        ctx.lineWidth = BONE_WIDTH;
-        ctx.beginPath();
-        for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
-          const c = HAND_CONNECTIONS[i];
-          ctx.moveTo(pts[c[0]].x, pts[c[0]].y);
-          ctx.lineTo(pts[c[1]].x, pts[c[1]].y);
-        }
-        ctx.stroke();
-
-        ctx.beginPath();
-        for (let i = 0; i < 21; i++) {
-          const r = IS_TIP[i] ? JOINT_RADIUS + 1.2 : JOINT_RADIUS;
-          const p = pts[i];
-          ctx.moveTo(p.x + r, p.y);
-          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        }
-        ctx.fillStyle = rgba(0.96);
-        ctx.fill();
-
-        const wp = pts[0];
-        ctx.strokeStyle = rgba(0.85);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(wp.x - 6, wp.y - 3); ctx.lineTo(wp.x - 3, wp.y - 6);
-        ctx.moveTo(wp.x + 6, wp.y - 3); ctx.lineTo(wp.x + 3, wp.y - 6);
-        ctx.moveTo(wp.x - 6, wp.y + 3); ctx.lineTo(wp.x - 3, wp.y + 6);
-        ctx.moveTo(wp.x + 6, wp.y + 3); ctx.lineTo(wp.x + 3, wp.y + 6);
-        ctx.stroke();
-      }
-
-      // ============================================================
-      //  HAND SLOTS
-      // ============================================================
-      let nextSlotId = 1;
-      const handSlots = new Map();
-
-      function makeSlot(id, label, now) {
+      /* ============================================================
+         SLOTS
+         ============================================================ */
+      function makeSlot(id, label) {
         const slot = {
-          id, label, score: 0,
+          id, label,
           initialized: false,
           smooth: new Array(21),
           pts: new Array(21),
           filters: new Array(63),
+          pinchFilter: new OneEuroFilter(1.0, 0.02, D_CUTOFF),
           lastWrist: null,
-          lastActive: now,
-          active: false,
           lostFrames: 0,
+
+          pinching: false,
+          pinchOnFrames: 0,
+          pinchOffFrames: 0,
+          pinchFilt: 1,
+          pinchStrength: 0,
+          pinch: { x: 0, y: 0 },
+
+          contact: false,
+
+          palm: { x: 0, y: 0 },
+          spanPx: 60,
+          open: false,
+          openFrames: 0,
+          pulse: 0,
         };
         for (let j = 0; j < 21; j++) {
           slot.smooth[j] = { x: 0, y: 0, z: 0 };
@@ -1511,17 +1333,113 @@
         return assigned;
       }
 
-      // ============================================================
-      //  BUILD HAND DATA
-      // ============================================================
+      /* ============================================================
+         METRICS
+         ============================================================ */
+      function fingerExtended(sm, mcp, pip, tip) {
+        const a = angleAt(sm[mcp], sm[pip], sm[tip]);
+        if (a < 2.30) return false;
+        const dTip = dist3(sm[tip], sm[0]);
+        const dPip = dist3(sm[pip], sm[0]);
+        return dTip > dPip * 1.06;
+      }
+
+      function computeMetrics(slot, tSec) {
+        const sm = slot.smooth;
+
+        const span = Math.max(1e-4, dist3(sm[0], sm[9]));
+
+        const rawPinch = dist3(sm[4], sm[8]) / span;
+        slot.pinchFilter.setParams(
+          minCutoffFromSmoothing(config.pinchSmoothing),
+          betaFromResponsiveness(RESPONSIVENESS),
+          D_CUTOFF
+        );
+        slot.pinchFilt = slot.pinchFilter.filter(rawPinch, tSec);
+
+        const sens = clamp(config.pinchSensitivity, 0.4, 3);
+        const onT = clamp(PINCH_ON_BASE * sens, 0.15, 0.55);
+        const offT = Math.min(onT + PINCH_HYST, 0.85);
+
+        /* Full pinch state machine (drives PULL) */
+        if (slot.pinching) {
+          if (slot.pinchFilt > offT) {
+            slot.pinchOffFrames++;
+            if (slot.pinchOffFrames >= PINCH_OFF_FRAMES) {
+              slot.pinching = false;
+              slot.pinchOffFrames = 0;
+              slot.pinchOnFrames = 0;
+            }
+          } else slot.pinchOffFrames = 0;
+        } else {
+          if (slot.pinchFilt < onT) {
+            slot.pinchOnFrames++;
+            if (slot.pinchOnFrames >= PINCH_ON_FRAMES) {
+              slot.pinching = true;
+              slot.pulse = 1;
+              slot.pinchOnFrames = 0;
+              slot.pinchOffFrames = 0;
+            }
+          } else slot.pinchOnFrames = 0;
+        }
+
+        slot.pinchStrength = clamp(1 - slot.pinchFilt / (offT * 1.15), 0, 1);
+
+        /* Loose contact state (drives GRAB) */
+        const looseness = clamp(config.grabLooseness, 0.4, 2.5);
+        const contactOn = clamp(CONTACT_ON_BASE * sens * looseness, 0.25, 0.95);
+        const contactOff = clamp(CONTACT_OFF_BASE * sens * looseness, contactOn + 0.05, 1.4);
+        if (slot.contact) {
+          if (slot.pinchFilt > contactOff) slot.contact = false;
+        } else {
+          if (slot.pinchFilt < contactOn) slot.contact = true;
+        }
+        if (slot.pinching) slot.contact = true;
+
+        /* Screen-space anchors */
+        const thumbP = slot.pts[4];
+        const indexP = slot.pts[8];
+        slot.pinch.x = (thumbP.x + indexP.x) * 0.5;
+        slot.pinch.y = (thumbP.y + indexP.y) * 0.5;
+
+        let px = 0, py = 0;
+        const palmIds = [0, 5, 9, 13, 17];
+        for (let i = 0; i < palmIds.length; i++) {
+          px += slot.pts[palmIds[i]].x;
+          py += slot.pts[palmIds[i]].y;
+        }
+        slot.palm.x = px / palmIds.length;
+        slot.palm.y = py / palmIds.length;
+        slot.spanPx = Math.max(30, dist2(slot.pts[0].x, slot.pts[0].y, slot.pts[9].x, slot.pts[9].y));
+
+        /* Open hand (source of pull) */
+        const fIndex = fingerExtended(sm, 5, 6, 8);
+        const fMiddle = fingerExtended(sm, 9, 10, 12);
+        const fRing = fingerExtended(sm, 13, 14, 16);
+        const fPinky = fingerExtended(sm, 17, 18, 20);
+
+        const fourOpen = fIndex && fMiddle && fRing && fPinky;
+        if (fourOpen && !slot.pinching) slot.openFrames++;
+        else slot.openFrames = Math.max(0, slot.openFrames - 2);
+
+        slot.open = slot.openFrames >= OPEN_FRAMES;
+
+        if (slot.pulse > 0) slot.pulse = Math.max(0, slot.pulse - 0.05);
+      }
+
+      /* ============================================================
+         BUILD HAND DATA
+         ============================================================ */
       function buildHandData(r) {
+        if (!active) return;
+
         const list = r.multiHandLandmarks || [];
         const meta = r.multiHandedness || [];
         const now = performance.now();
         const tSec = now / 1000;
         const predictS = PREDICTION * 0.03;
 
-        const minCutoff = minCutoffFromStabilization(STABILIZATION);
+        const minCutoff = minCutoffFromSmoothing(config.pinchSmoothing);
         const beta = betaFromResponsiveness(RESPONSIVENESS);
 
         const dets = [];
@@ -1529,15 +1447,13 @@
           const lm = list[i];
           const rawLabel = (meta[i] && meta[i].label) || 'Hand';
           const label = rawLabel === 'Left' ? 'Right' : (rawLabel === 'Right' ? 'Left' : 'Hand');
-          const score = (meta[i] && meta[i].score) || 0;
-          dets.push({ lm, label, score });
+          dets.push({ lm, label });
         }
 
         const assigned = matchDetections(dets);
-
         for (let i = 0; i < dets.length; i++) {
           if (assigned[i]) continue;
-          const slot = makeSlot(nextSlotId++, dets[i].label, now);
+          const slot = makeSlot(nextSlotId++, dets[i].label);
           handSlots.set(slot.id, slot);
           assigned[i] = slot;
         }
@@ -1547,8 +1463,7 @@
 
         for (let i = 0; i < dets.length; i++) {
           const slot = assigned[i];
-          const det = dets[i];
-          const lm = det.lm;
+          const lm = dets[i].lm;
           usedSlotIds.add(slot.id);
 
           const filters = slot.filters;
@@ -1558,8 +1473,9 @@
           if (!slot.initialized) {
             for (let j = 0; j < 21; j++) {
               const p = lm[j];
-              const s = smooth[j];
-              s.x = p.x; s.y = p.y; s.z = p.z || 0;
+              smooth[j].x = p.x;
+              smooth[j].y = p.y;
+              smooth[j].z = p.z || 0;
             }
             slot.initialized = true;
           }
@@ -1567,10 +1483,8 @@
           for (let j = 0; j < 21; j++) {
             const p = lm[j];
             const s = smooth[j];
-            const fIdx = j * 3;
-            const fx = filters[fIdx];
-            const fy = filters[fIdx + 1];
-            const fz = filters[fIdx + 2];
+            const k = j * 3;
+            const fx = filters[k], fy = filters[k + 1], fz = filters[k + 2];
             fx.setParams(minCutoff, beta, D_CUTOFF);
             fy.setParams(minCutoff, beta, D_CUTOFF);
             fz.setParams(minCutoff, beta, D_CUTOFF);
@@ -1582,30 +1496,32 @@
           for (let j = 0; j < 21; j++) {
             const s = smooth[j];
             const q = pts[j];
-            const fIdx = j * 3;
-            const vx = filters[fIdx].velocity;
-            const vy = filters[fIdx + 1].velocity;
-            const vz = filters[fIdx + 2].velocity;
-            q.x = projectX(s.x + vx * predictS);
-            q.y = projectY(s.y + vy * predictS);
-            q.z = projectZ(s.z + vz * predictS);
+            const k = j * 3;
+            q.x = projectX(s.x + filters[k].velocity * predictS);
+            q.y = projectY(s.y + filters[k + 1].velocity * predictS);
+            q.z = (s.z + filters[k + 2].velocity * predictS) * cover.drawW;
           }
 
-          slot.label = det.label;
-          slot.score = det.score;
-          slot.active = true;
-          slot.lastActive = now;
-          slot.lostFrames = 0;
           slot.lastWrist = { x: lm[0].x, y: lm[0].y, z: lm[0].z || 0 };
+          slot.lostFrames = 0;
 
+          computeMetrics(slot, tSec);
           out.push(slot);
         }
 
         for (const slot of [...handSlots.values()]) {
           if (usedSlotIds.has(slot.id)) continue;
           slot.lostFrames++;
-          if (slot.lostFrames > GRACE_FRAMES) handSlots.delete(slot.id);
-          else slot.active = false;
+          if (slot.lostFrames > GRACE_FRAMES) {
+            handSlots.delete(slot.id);
+            if (pull.active && (pull.anchorId === slot.id || pull.pinchId === slot.id)) {
+              cancelPull();
+            }
+            /* Release any strands grabbed by this lost hand */
+            for (const s of strands) {
+              if (s.grabbedBy === slot.id) s.grabbedBy = -1;
+            }
+          }
         }
 
         handData = out;
@@ -1613,38 +1529,652 @@
         const n = out.length;
         tHands.textContent = String(n);
         tHands.classList.toggle('idle', n === 0);
+
+        let pinchCount = 0;
+        for (let i = 0; i < out.length; i++) if (out[i].pinching) pinchCount++;
+        tPinch.textContent = pinchCount ? String(pinchCount) : '—';
+        tPinch.classList.toggle('idle', pinchCount === 0);
+
+        updateHint();
       }
 
-      // ============================================================
-      //  RENDER LOOP
-      // ============================================================
-      function render() {
-        if (!cover.valid) updateCover();
-        ctx.clearRect(0, 0, viewW, viewH);
-        if (!active) return;
+      /* ============================================================
+         PULL  (open hand + full pinch → extract a line)
+         ============================================================ */
+      function handIsGrabbing(handId) {
+        for (const s of strands) if (s.grabbedBy === handId) return true;
+        return false;
+      }
 
+      function startPull(openSlot, pinchSlot) {
+        const line = pickLine();
+        const minDim = Math.min(viewW, viewH);
+
+        const maxWidth = minDim * 0.55;
+        let spacing = clamp(minDim / 42, 6, 8.5);
+        let font = spacing / CHAR_RATIO;
+        const natural = line.text.length * spacing;
+        if (natural > maxWidth) {
+          spacing = maxWidth / line.text.length;
+          font = spacing / CHAR_RATIO;
+        }
+        font = clamp(font, FONT_MIN, FONT_MAX);
+
+        pull.active = true;
+        pull.anchorId = openSlot.id;
+        pull.pinchId = pinchSlot.id;
+        pull.anchor.x = openSlot.palm.x;
+        pull.anchor.y = openSlot.palm.y;
+        pull.pinch.x = pinchSlot.pinch.x;
+        pull.pinch.y = pinchSlot.pinch.y;
+        pull.baseline = dist2(pull.pinch.x, pull.pinch.y, pull.anchor.x, pull.anchor.y);
+        pull.line = line;
+        pull.font = font;
+        pull.spacing = spacing;
+        pull.required = clamp(line.text.length * spacing * 0.85, 50, minDim * 0.65);
+        pull.progress = 0;
+      }
+
+      function cancelPull() {
+        pull.active = false;
+        pull.line = null;
+        pull.progress = 0;
+        pull.anchorId = -1;
+        pull.pinchId = -1;
+      }
+
+      function completePull() {
+        const line = pull.line;
+        if (!line) { cancelPull(); return; }
+        const ax = pull.anchor.x, ay = pull.anchor.y;
+        const bx = pull.pinch.x, by = pull.pinch.y;
+        const angle = Math.atan2(by - ay, bx - ax);
+        spawnStrand(line, ax, ay, angle, pull.font, pull.spacing);
+        showToast('EXTRACTED · ' + line.tag);
+        cancelPull();
+      }
+
+      function updatePull() {
+        let openSlot = null;
+        for (let i = 0; i < handData.length; i++) {
+          if (handData[i].open) { openSlot = handData[i]; break; }
+        }
+
+        let pinchSlot = null;
+        for (let i = 0; i < handData.length; i++) {
+          const h = handData[i];
+          if (!h.pinching) continue;
+          if (openSlot && h.id === openSlot.id) continue;
+          if (handIsGrabbing(h.id)) continue;
+          pinchSlot = h;
+          break;
+        }
+
+        if (!pull.active) {
+          if (openSlot && pinchSlot) startPull(openSlot, pinchSlot);
+          return;
+        }
+
+        const anchor = handSlots.get(pull.anchorId);
+        const pinch = handSlots.get(pull.pinchId);
+        if (!anchor || !pinch) { cancelPull(); return; }
+
+        if (!pinch.pinching) {
+          if (pull.progress >= 0.9) completePull();
+          else cancelPull();
+          return;
+        }
+        if (!anchor.open) { cancelPull(); return; }
+
+        pull.anchor.x = anchor.palm.x;
+        pull.anchor.y = anchor.palm.y;
+        pull.pinch.x = pinch.pinch.x;
+        pull.pinch.y = pinch.pinch.y;
+
+        const d = dist2(pull.pinch.x, pull.pinch.y, pull.anchor.x, pull.anchor.y);
+        const pulled = Math.max(0, d - pull.baseline);
+        pull.progress = clamp(pulled / pull.required, 0, 1);
+
+        if (pull.progress >= 1) completePull();
+      }
+
+      /* ============================================================
+         GRAB / DRAG / RETURN-TO-HAND
+         ============================================================ */
+      function updateGrabs(dt) {
+        const now = performance.now();
+
+        /* ---- Update existing grabs ---- */
+        for (let i = strands.length - 1; i >= 0; i--) {
+          const s = strands[i];
+          if (s.grabbedBy < 0) continue;
+
+          const hand = handSlots.get(s.grabbedBy);
+
+          /* Hand lost or released contact → drop */
+          if (!hand || (!hand.contact && !hand.pinching)) {
+            s.grabbedBy = -1;
+            continue;
+          }
+
+          /* Absorbing animation */
+          if (s.absorbing) {
+            s.absorbT += dt * 3.0;
+            const h = handSlots.get(s.absorbHand);
+            const t = Math.min(1, s.absorbT);
+            if (h) {
+              s.x = lerp(s.grabX, h.palm.x, t);
+              s.y = lerp(s.grabY, h.palm.y, t);
+            }
+            s.alpha = Math.max(0, 1 - t);
+            s.scale = lerp(1, 0.35, t);
+            if (s.absorbT >= 1) {
+              strands.splice(i, 1);
+              updateLineCounter();
+            }
+            continue;
+          }
+
+          /* Check for return to any open hand (other than the grabbing one) */
+          if (config.allowReturn) {
+            let absorbed = false;
+            const cx = s.x + Math.cos(s.angle) * s.len * 0.5;
+            const cy = s.y + Math.sin(s.angle) * s.len * 0.5;
+
+            for (let j = 0; j < handData.length; j++) {
+              const other = handData[j];
+              if (other.id === hand.id) continue;
+              if (!other.open) continue;
+              const r = other.spanPx * 1.9;
+              if (dist2(cx, cy, other.palm.x, other.palm.y) < r) {
+                s.absorbing = true;
+                s.absorbHand = other.id;
+                s.absorbT = 0;
+                s.grabX = s.x;
+                s.grabY = s.y;
+                absorbed = true;
+                showToast('RETURNED · ' + s.tag, 900);
+                break;
+              }
+            }
+            if (absorbed) continue;
+          }
+
+          /* Follow the pinch point (offset preserved at grab time) */
+          s.x = hand.pinch.x + s.grabOffsetX;
+          s.y = hand.pinch.y + s.grabOffsetY;
+        }
+
+        /* ---- Look for new grabs ---- */
         for (let i = 0; i < handData.length; i++) {
           const hand = handData[i];
-          if (config.showMesh) drawMesh(hand);
-          drawSkeleton(hand);
+          if (!hand.contact) continue;
+
+          /* Busy with a pull? */
+          if (pull.active && (pull.anchorId === hand.id || pull.pinchId === hand.id)) continue;
+          /* Already grabbing? */
+          if (handIsGrabbing(hand.id)) continue;
+
+          /* Find topmost strand under the pinch */
+          for (let j = strands.length - 1; j >= 0; j--) {
+            const s = strands[j];
+            if (s.grabbedBy >= 0 || s.absorbing) continue;
+            if (now < s.noGrabUntil) continue;
+            if (hitStrand(s, hand.pinch.x, hand.pinch.y)) {
+              s.grabbedBy = hand.id;
+              s.grabOffsetX = s.x - hand.pinch.x;
+              s.grabOffsetY = s.y - hand.pinch.y;
+              s.grabbedAt = now;
+              s.scale = 1;
+              break;
+            }
+          }
         }
       }
 
-      function renderLoop() {
-        render();
-        rafRender = requestAnimationFrame(renderLoop);
+      /* ============================================================
+         STRANDS
+         ============================================================ */
+      function spawnStrand(line, x, y, angle, font, spacing) {
+        const len = line.text.length * spacing;
+        const speed = config.drift ? 10 + Math.random() * 10 : 0;
+
+        const s = {
+          text: line.text,
+          tag: line.tag,
+          x, y, angle,
+          font, spacing, len,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 3,
+          alpha: 1,
+          scale: 1,
+          born: performance.now(),
+          life: 30,
+          copied: false,
+          grabbedBy: -1,
+          grabOffsetX: 0,
+          grabOffsetY: 0,
+          absorbing: false,
+          absorbT: 0,
+          absorbHand: -1,
+          grabX: 0,
+          grabY: 0,
+          noGrabUntil: performance.now() + SPAWN_GRAB_COOLDOWN,
+        };
+
+        strands.push(s);
+        while (strands.length > config.maxStrands) strands.shift();
+        updateLineCounter();
       }
 
-      // ============================================================
-      //  MEDIAPIPE HANDS
-      // ============================================================
+      function updateLineCounter() {
+        tLines.textContent = String(strands.length);
+        tLines.classList.toggle('idle', strands.length === 0);
+      }
+
+      function updateStrands(dt, now) {
+        for (let i = strands.length - 1; i >= 0; i--) {
+          const s = strands[i];
+
+          /* Grabbed / absorbing strands are handled in updateGrabs */
+          if (s.grabbedBy >= 0 || s.absorbing) {
+            /* freeze age so it doesn't expire while held */
+            s.born += dt * 1000;
+            continue;
+          }
+
+          if (config.drift) {
+            s.x += s.vx * dt;
+            s.y += s.vy * dt;
+            if (s.x < 24 || s.x > viewW - 24) s.vx = -s.vx;
+            if (s.y < 40 || s.y > viewH - 40) s.vy = -s.vy;
+          }
+
+          const age = (now - s.born) / 1000;
+          if (s.copied) s.alpha -= dt * 2.2;
+          else if (age > s.life) s.alpha -= dt * 0.9;
+
+          if (s.alpha <= 0) {
+            strands.splice(i, 1);
+            updateLineCounter();
+          }
+        }
+      }
+
+      function clearStrands() {
+        strands.length = 0;
+        updateLineCounter();
+      }
+
+      function hitStrand(s, x, y) {
+        const scale = s.scale || 1;
+        const spacing = s.spacing * scale;
+        const len = s.text.length * spacing;
+        const font = s.font * scale;
+
+        const dx = x - s.x;
+        const dy = y - s.y;
+        const ux = Math.cos(s.angle);
+        const uy = Math.sin(s.angle);
+        const along = dx * ux + dy * uy;
+        const perp = dx * (-uy) + dy * ux;
+
+        const padAlong = 24;                 /* generous ends */
+        const padPerp = Math.max(10, font * 2.0); /* generous sides */
+
+        return along >= -padAlong && along <= len + padAlong && Math.abs(perp) <= padPerp;
+      }
+
+      function copyStrand(s) {
+        const onDone = () => {
+          s.copied = true;
+          showToast('COPIED · ' + s.tag);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(s.text).then(onDone).catch(() => fallbackCopy(s.text, onDone));
+        } else fallbackCopy(s.text, onDone);
+      }
+
+      function fallbackCopy(text, onDone) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.top = '-1000px';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          onDone();
+        } catch (e) { showToast('COPY FAILED'); }
+      }
+
+      /* ============================================================
+         DRAWING — SKELETON
+         ============================================================ */
+      function strokeConnections(pts) {
+        ctx.beginPath();
+        for (let i = 0; i < HAND_CONNECTIONS.length; i++) {
+          const c = HAND_CONNECTIONS[i];
+          const a = pts[c[0]];
+          const b = pts[c[1]];
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+        }
+        ctx.stroke();
+      }
+
+      function drawSkeleton(h) {
+        const pts = h.pts;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.strokeStyle = TC.glow;
+        ctx.lineWidth = 7;
+        strokeConnections(pts);
+
+        ctx.strokeStyle = (h.pinching || h.contact) ? TC.skeletonActive : TC.skeleton;
+        ctx.lineWidth = 1.6;
+        strokeConnections(pts);
+
+        ctx.beginPath();
+        for (let i = 0; i < 21; i++) {
+          const r = IS_TIP[i] ? 2.6 : 1.6;
+          const p = pts[i];
+          ctx.moveTo(p.x + r, p.y);
+          ctx.arc(p.x, p.y, r, 0, TAU);
+        }
+        ctx.fillStyle = TC.joint;
+        ctx.fill();
+      }
+
+      /* ============================================================
+         DRAWING — HALOS
+         ============================================================ */
+      function drawPinchHalo(h) {
+        const s = h.pinchStrength;
+        const r = lerp(30, 8, s);
+
+        ctx.beginPath();
+        ctx.arc(h.pinch.x, h.pinch.y, r, 0, TAU);
+        ctx.strokeStyle = hexRgba(TC.accent, 0.18 + s * 0.55);
+        ctx.lineWidth = h.pinching ? 2.0 : 1.1;
+        ctx.stroke();
+
+        if (h.pinching) {
+          ctx.beginPath();
+          ctx.arc(h.pinch.x, h.pinch.y, 2.6, 0, TAU);
+          ctx.fillStyle = TC.accent;
+          ctx.fill();
+
+          if (h.pulse > 0) {
+            const rr = lerp(8, 46, 1 - h.pulse);
+            ctx.beginPath();
+            ctx.arc(h.pinch.x, h.pinch.y, rr, 0, TAU);
+            ctx.strokeStyle = hexRgba(TC.accent, h.pulse * 0.55);
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      function drawSourceHalo(h, live) {
+        const r = Math.max(38, h.spanPx * 1.55);
+        const now = performance.now();
+        const alpha = live ? 0.55 : 0.18;
+
+        ctx.save();
+        ctx.setLineDash([5, 9]);
+        ctx.lineDashOffset = -(now / 42) % 14;
+        ctx.beginPath();
+        ctx.arc(h.palm.x, h.palm.y, r, 0, TAU);
+        ctx.strokeStyle = hexRgba(TC.accent, alpha);
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.strokeStyle = hexRgba(TC.accent, alpha + 0.12);
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          const a = (i / 4) * TAU + now / 2600;
+          ctx.moveTo(h.palm.x + Math.cos(a) * (r - 5), h.palm.y + Math.sin(a) * (r - 5));
+          ctx.lineTo(h.palm.x + Math.cos(a) * (r + 5), h.palm.y + Math.sin(a) * (r + 5));
+        }
+        ctx.stroke();
+      }
+
+      /* ============================================================
+         DRAWING — TEXT ALONG A THREAD
+         ============================================================ */
+      function glyphAngleOf(angle) {
+        let a = angle;
+        if (a > Math.PI / 2 || a < -Math.PI / 2) a += Math.PI;
+        return a;
+      }
+
+      function drawTextAlong(text, count, x, y, angle, font, spacing, color, alpha) {
+        if (count <= 0) return;
+        const ux = Math.cos(angle);
+        const uy = Math.sin(angle);
+        const ga = glyphAngleOf(angle);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.font = `${font.toFixed(1)}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = color;
+
+        for (let i = 0; i < count; i++) {
+          const t = i * spacing + spacing * 0.5;
+          ctx.save();
+          ctx.translate(x + ux * t, y + uy * t);
+          ctx.rotate(ga);
+          ctx.fillText(text[i], 0, 0);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      function drawStrand(s) {
+        const scale = s.scale || 1;
+        const spacing = s.spacing * scale;
+        const font = s.font * scale;
+        const len = s.text.length * spacing;
+
+        const ux = Math.cos(s.angle);
+        const uy = Math.sin(s.angle);
+        const px = -uy;
+        const py = ux;
+        const P = (a, b) => [s.x + ux * a + px * b, s.y + uy * a + py * b];
+
+        const pad = 9 * scale;
+        const halfH = font * 1.05;
+        const isGrabbed = s.grabbedBy >= 0 && !s.absorbing;
+
+        ctx.save();
+        ctx.globalAlpha = s.alpha;
+
+        const c1 = P(-pad, -halfH);
+        const c2 = P(len + pad, -halfH);
+        const c3 = P(len + pad, halfH);
+        const c4 = P(-pad, halfH);
+
+        ctx.beginPath();
+        ctx.moveTo(c1[0], c1[1]);
+        ctx.lineTo(c2[0], c2[1]);
+        ctx.lineTo(c3[0], c3[1]);
+        ctx.lineTo(c4[0], c4[1]);
+        ctx.closePath();
+
+        ctx.fillStyle = TC.bg;
+        ctx.fill();
+
+        if (isGrabbed) {
+          ctx.strokeStyle = TC.borderGrab;
+          ctx.lineWidth = 1.8;
+        } else if (s.copied) {
+          ctx.strokeStyle = hexRgba(TC.accent, 0.6);
+          ctx.lineWidth = 1.2;
+        } else {
+          ctx.strokeStyle = TC.border;
+          ctx.lineWidth = 1;
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        /* Text */
+        drawTextAlong(s.text, s.text.length, s.x, s.y, s.angle, font, spacing,
+          TC.text, s.alpha);
+
+        /* Tag */
+        if (config.showLineNumbers) {
+          const ga = glyphAngleOf(s.angle);
+          const tagPos = P(-pad, -halfH - 8 * scale);
+          ctx.save();
+          ctx.globalAlpha = s.alpha * 0.8;
+          ctx.translate(tagPos[0], tagPos[1]);
+          ctx.rotate(ga);
+          ctx.font = `${Math.max(7, font * 0.72).toFixed(1)}px ui-monospace, Menlo, monospace`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = s.copied ? TC.tagCopied : TC.tag;
+          ctx.fillText(s.copied ? s.tag + '  \u2713' : s.tag, 0, 0);
+          ctx.restore();
+        }
+      }
+
+      /* ============================================================
+         DRAWING — ACTIVE PULL
+         ============================================================ */
+      function drawPull() {
+        if (!pull.active || !pull.line) return;
+        const ax = pull.anchor.x, ay = pull.anchor.y;
+        const bx = pull.pinch.x, by = pull.pinch.y;
+        const angle = Math.atan2(by - ay, bx - ax);
+        const len = pull.line.text.length;
+
+        ctx.save();
+        ctx.setLineDash([4, 6]);
+        ctx.lineDashOffset = -(performance.now() / 30) % 10;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.strokeStyle = TC.thread;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+
+        const revealed = Math.min(len, Math.round(pull.progress * len));
+        drawTextAlong(pull.line.text, revealed, ax, ay, angle, pull.font, pull.spacing,
+          TC.text, 0.35 + pull.progress * 0.65);
+
+        ctx.beginPath();
+        ctx.arc(ax, ay, 4, 0, TAU);
+        ctx.fillStyle = TC.accent;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(bx, by, 15, -Math.PI / 2, -Math.PI / 2 + TAU * pull.progress);
+        ctx.strokeStyle = TC.ring;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(bx, by, 15, 0, TAU);
+        ctx.strokeStyle = TC.ringDim;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.font = `${Math.max(7, pull.font * 0.7).toFixed(1)}px ui-monospace, Menlo, monospace`;
+        ctx.fillStyle = TC.tag;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(pull.line.tag, bx, by - 22);
+        ctx.restore();
+      }
+
+      /* ============================================================
+         HINT BAR
+         ============================================================ */
+      let hintCache = '';
+      function setHint(html) {
+        if (html === hintCache) return;
+        hintCache = html;
+        hintEl.innerHTML = html;
+      }
+
+      function updateHint() {
+        if (!active) { setHint('OPEN ONE HAND · PINCH &amp; PULL WITH THE OTHER'); return; }
+        if (pull.active) { setHint('<b>PULL</b> · ' + Math.round(pull.progress * 100) + '%'); return; }
+
+        let anyGrab = false;
+        for (const s of strands) if (s.grabbedBy >= 0 && !s.absorbing) { anyGrab = true; break; }
+        if (anyGrab) { setHint('<b>DRAG</b> · RETURN TO AN OPEN HAND TO ABSORB'); return; }
+
+        let openCount = 0, pinchCount = 0;
+        for (let i = 0; i < handData.length; i++) {
+          if (handData[i].open) openCount++;
+          if (handData[i].pinching) pinchCount++;
+        }
+
+        if (handData.length === 0) setHint('SHOW YOUR HANDS TO THE CAMERA');
+        else if (openCount && pinchCount) setHint('<b>PULL APART</b> TO EXTRACT A LINE');
+        else if (openCount) setHint('<b>HAND OPEN</b> · NOW PINCH WITH THE OTHER');
+        else if (pinchCount) setHint('<b>PINCHING</b> · OPEN YOUR OTHER HAND');
+        else setHint('SPREAD YOUR FINGERS ON ONE HAND · LOOSE PINCH TO GRAB');
+      }
+
+      /* ============================================================
+         RENDER LOOP
+         ============================================================ */
+      function render() {
+        const now = performance.now();
+        const dt = lastFrameT ? Math.min(0.05, (now - lastFrameT) / 1000) : 0;
+        lastFrameT = now;
+
+        if (!cover.valid) updateCover();
+        ctx.clearRect(0, 0, viewW, viewH);
+
+        if (!active) return;
+
+        updateGrabs(dt);
+        updatePull();
+        updateStrands(dt, now);
+
+        for (let i = 0; i < strands.length; i++) drawStrand(strands[i]);
+
+        for (let i = 0; i < handData.length; i++) {
+          const h = handData[i];
+          if (config.showSourceHalo && h.open) {
+            drawSourceHalo(h, pull.active && pull.anchorId === h.id);
+          }
+          if (config.showSkeleton) drawSkeleton(h);
+          if (config.showPinchHalo) drawPinchHalo(h);
+        }
+
+        drawPull();
+      }
+
+      function renderLoop() {
+        rafRender = requestAnimationFrame(renderLoop);
+        render();
+      }
+
+      /* ============================================================
+         MEDIAPIPE
+         ============================================================ */
       function ensureHands() {
         if (hands) return hands;
         if (typeof Hands === 'undefined') return null;
         hands = new Hands({
-          locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
+          locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`,
         });
-        hands.onResults(onHandsResults);
+        hands.onResults(buildHandData);
         hands.setOptions({
           maxNumHands: MAX_HANDS,
           modelComplexity: MODEL_COMPLEXITY,
@@ -1655,13 +2185,9 @@
         return hands;
       }
 
-      function onHandsResults(r) {
-        buildHandData(r);
-      }
-
-      // ============================================================
-      //  CAMERA
-      // ============================================================
+      /* ============================================================
+         CAMERA
+         ============================================================ */
       async function startCamera() {
         const constraints = {
           video: {
@@ -1685,14 +2211,14 @@
         video.srcObject = null;
       }
 
-      // ============================================================
-      //  INFERENCE LOOP
-      // ============================================================
+      /* ============================================================
+         INFERENCE LOOP
+         ============================================================ */
       let sendErrorLogged = false;
 
-      async function frameLoop() {
-        if (!active) return;
-        rafInfer = requestAnimationFrame(frameLoop);
+      async function frameLoop(gen) {
+        if (!active || gen !== inferenceGeneration) return;
+        rafInfer = requestAnimationFrame(() => frameLoop(gen));
         if (inferenceInFlight) return;
 
         const now = performance.now();
@@ -1724,15 +2250,13 @@
         inferenceInFlight = false;
       }
 
-      // ============================================================
-      //  ACTIVATION
-      // ============================================================
+      /* ============================================================
+         ACTIVATION
+         ============================================================ */
       async function activate() {
         if (active) return;
 
         if (!ensureHands()) {
-          activateBtn.disabled = false;
-          activateBtn.textContent = 'ACTIVATE';
           bootEl.classList.remove('hidden');
           bootEl.classList.add('error');
           bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
@@ -1760,6 +2284,7 @@
         }
 
         active = true;
+        inferenceGeneration++;
         activateBtn.disabled = false;
         activateBtn.textContent = 'ACTIVE';
         activateBtn.classList.add('on');
@@ -1768,12 +2293,16 @@
         bootEl.classList.remove('error');
 
         inferLast = performance.now();
-        frameLoop();
+        frameLoop(inferenceGeneration);
+
+        showToast('PINCH ENGINE ONLINE');
+        updateHint();
       }
 
       function deactivate() {
         if (!active) return;
         active = false;
+        inferenceGeneration++;
 
         if (rafInfer) { cancelAnimationFrame(rafInfer); rafInfer = null; }
 
@@ -1781,26 +2310,56 @@
         handSlots.clear();
         handData = [];
         inferenceInFlight = false;
+        cancelPull();
+        clearStrands();
 
         activateBtn.textContent = 'ACTIVATE';
         activateBtn.classList.remove('on');
 
         tHands.textContent = '0';
         tHands.classList.add('idle');
+        tPinch.textContent = '—';
+        tPinch.classList.add('idle');
         tFps.textContent = '—';
         tFps.classList.add('idle');
         fpsSmooth = 0;
+        hintCache = '';
+        updateHint();
 
         ctx.clearRect(0, 0, viewW, viewH);
       }
 
       activateBtn.addEventListener('click', () => {
-        if (active) deactivate(); else activate();
+        if (active) deactivate();
+        else activate();
       });
 
-      // ============================================================
-      //  PANEL
-      // ============================================================
+      /* ============================================================
+         TAP-TO-COPY
+         ============================================================ */
+      document.addEventListener('pointerdown', (e) => {
+        if (!active || strands.length === 0) return;
+        const t = e.target;
+        if (t && t.closest && t.closest(
+          'button, input, select, textarea, a, #settingsPanel, #panelOverlay, .topbar, .bottombar'
+        )) return;
+
+        const x = e.clientX;
+        const y = e.clientY;
+
+        for (let i = strands.length - 1; i >= 0; i--) {
+          const s = strands[i];
+          if (s.absorbing) continue;
+          if (hitStrand(s, x, y)) {
+            copyStrand(s);
+            return;
+          }
+        }
+      }, { passive: true });
+
+      /* ============================================================
+         PANEL
+         ============================================================ */
       function openPanel() {
         settingsPanel.classList.add('open');
         settingsPanel.setAttribute('aria-hidden', 'false');
@@ -1811,10 +2370,28 @@
         settingsPanel.setAttribute('aria-hidden', 'true');
         panelOverlay.classList.remove('show');
       }
+
       settingsToggle.addEventListener('click', openPanel);
       settingsClose.addEventListener('click', closePanel);
       panelOverlay.addEventListener('click', closePanel);
 
+      clearStrandsBtn.addEventListener('click', () => {
+        clearStrands();
+        showToast('STRANDS CLEARED');
+      });
+
+      resetDefaultsBtn.addEventListener('click', () => {
+        Object.assign(config, DEFAULTS);
+        saveConfig();
+        syncAllInputs();
+        syncThemeUI();
+        buildThemeColors();
+        showToast('DEFAULTS RESTORED');
+      });
+
+      /* ============================================================
+         KEYBOARD
+         ============================================================ */
       document.addEventListener('keydown', (e) => {
         const tag = (e.target && e.target.tagName) || '';
         if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
@@ -1828,28 +2405,92 @@
           if (active) deactivate(); else activate();
         } else if (k === 'h') {
           hudEl.classList.toggle('hidden');
+        } else if (k === 'c') {
+          clearStrands();
         } else if (k === 'f') {
-          const el = document.getElementById('stage');
+          const el = $('stage');
           if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => { });
           else document.exitFullscreen?.();
         }
       });
 
+      /* ============================================================
+         SECTION COLLAPSE
+         ============================================================ */
       document.querySelectorAll('.section-head').forEach(h => {
-        h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
+        h.addEventListener('click', () => {
+          const parent = h.parentElement;
+          if (parent) parent.classList.toggle('collapsed');
+        });
       });
 
-      // ============================================================
-      //  UI WIRING
-      // ============================================================
+      /* ============================================================
+         THEME UI
+         ============================================================ */
+      function buildThemeSelect() {
+        themeSelect.innerHTML = '';
+        for (let i = 0; i < THEMES.length; i++) {
+          const opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = THEMES[i].name;
+          themeSelect.appendChild(opt);
+        }
+        const customOpt = document.createElement('option');
+        customOpt.value = 'custom';
+        customOpt.textContent = 'CUSTOM';
+        themeSelect.appendChild(customOpt);
+      }
+
+      function syncThemeUI() {
+        const t = getActiveTheme();
+        const isCustom = !!config.customTheme;
+        themeSelect.value = isCustom ? 'custom' : String(config.themeIdx);
+        colorAccent.value = t.accent;
+        colorText.value = t.text;
+        colorBg.value = t.bg;
+        hexAccent.textContent = t.accent.toLowerCase();
+        hexText.textContent = t.text.toLowerCase();
+        hexBg.textContent = t.bg.toLowerCase();
+      }
+
+      function onThemePresetChange(val) {
+        if (val === 'custom') {
+          /* Switch to custom, seeded from the current active theme */
+          config.customTheme = { ...getActiveTheme() };
+          /* Clear the name so it's clearly custom */
+          config.customTheme.name = 'CUSTOM';
+        } else {
+          config.themeIdx = parseInt(val, 10) || 0;
+          config.customTheme = null;
+        }
+        saveConfig();
+        buildThemeColors();
+        syncThemeUI();
+      }
+
+      function onThemeColorChange(field, value) {
+        const base = config.customTheme ? { ...config.customTheme } : { ...getActiveTheme() };
+        base.name = 'CUSTOM';
+        base[field] = value;
+        config.customTheme = base;
+        saveConfig();
+        buildThemeColors();
+        syncThemeUI();
+      }
+
+      themeSelect.addEventListener('change', () => onThemePresetChange(themeSelect.value));
+      colorAccent.addEventListener('input', () => onThemeColorChange('accent', colorAccent.value));
+      colorText.addEventListener('input', () => onThemeColorChange('text', colorText.value));
+      colorBg.addEventListener('input', () => onThemeColorChange('bg', colorBg.value));
+
+      /* ============================================================
+         SLIDERS / TOGGLES
+         ============================================================ */
       const FMT = {
-        meshOpacity: v => v.toFixed(2),
-        meshDensity: v => String(v | 0),
-        depthScale: v => v.toFixed(2),
-        meshThickness: v => v.toFixed(2),
-        rimLight: v => v.toFixed(2),
-        lightAngle: v => String(Math.round(v)),
-        shadeContrast: v => v.toFixed(2),
+        pinchSensitivity: v => v.toFixed(2),
+        pinchSmoothing: v => v.toFixed(2),
+        grabLooseness: v => v.toFixed(2),
+        maxStrands: v => String(v | 0),
       };
 
       const labelEls = {};
@@ -1872,18 +2513,35 @@
         input.style.setProperty('--fill', pct.toFixed(2) + '%');
       }
 
+      function syncAllInputs() {
+        document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
+          const key = input.dataset.key;
+          input.value = config[key];
+          syncSliderLabel(key, input.value);
+          updateSliderFill(input);
+        });
+        document.querySelectorAll('.toggle[data-key]').forEach(t => {
+          t.classList.toggle('on', !!config[t.dataset.key]);
+        });
+      }
+
       function wireInputs() {
         document.querySelectorAll('input[type="range"][data-key]').forEach(input => {
           const key = input.dataset.key;
           input.value = config[key];
           syncSliderLabel(key, input.value);
           updateSliderFill(input);
+
           input.addEventListener('input', () => {
             const val = parseFloat(input.value);
             config[key] = val;
             syncSliderLabel(key, val);
             updateSliderFill(input);
-            if (key === 'lightAngle') updateLight();
+
+            if (key === 'maxStrands') {
+              while (strands.length > config.maxStrands) strands.shift();
+              updateLineCounter();
+            }
             saveConfig();
           });
         });
@@ -1898,27 +2556,21 @@
             saveConfig();
           });
         });
-
-        document.querySelectorAll('select[data-key]').forEach(s => {
-          const key = s.dataset.key;
-          s.value = config[key];
-          s.addEventListener('change', () => {
-            config[key] = s.value;
-            saveConfig();
-          });
-        });
       }
 
+      /* ============================================================
+         TOAST
+         ============================================================ */
       function showToast(text, ms) {
         toastEl.textContent = text;
         toastEl.classList.add('show');
         clearTimeout(showToast._t);
-        showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms || 1100);
+        showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms || 1400);
       }
 
-      // ============================================================
-      //  VISIBILITY
-      // ============================================================
+      /* ============================================================
+         VISIBILITY
+         ============================================================ */
       document.addEventListener('visibilitychange', () => {
         if (!active) return;
         if (document.hidden) {
@@ -1926,34 +2578,55 @@
             cancelAnimationFrame(rafInfer);
             rafInfer = null;
           }
-        } else {
-          if (PAUSE_ON_HIDE && !rafInfer) {
-            inferLast = performance.now();
-            frameLoop();
-          }
+        } else if (PAUSE_ON_HIDE && !rafInfer) {
+          inferLast = performance.now();
+          frameLoop(inferenceGeneration);
         }
       });
 
-      // ============================================================
-      //  BOOT
-      // ============================================================
+      /* ============================================================
+         BOOT
+         ============================================================ */
+      function waitForHands(timeoutMs = 8000) {
+        return new Promise((resolve, reject) => {
+          if (typeof Hands !== 'undefined') return resolve();
+          const start = Date.now();
+          const check = () => {
+            if (typeof Hands !== 'undefined') return resolve();
+            if (Date.now() - start > timeoutMs) return reject(new Error('timeout'));
+            setTimeout(check, 100);
+          };
+          check();
+        });
+      }
+
       function init() {
+        resize();
         loadConfig();
+        buildThemeSelect();
+        syncThemeUI();
+        buildThemeColors();
+        syncAllInputs();
         wireInputs();
-        updateLight();
+        updateHint();
+        updateLineCounter();
         renderLoop();
       }
 
-      setTimeout(() => {
-        init();
-        if (typeof Hands === 'undefined') {
+      bootEl.classList.remove('hidden');
+
+      waitForHands()
+        .then(() => {
+          init();
+          bootEl.classList.add('hidden');
+          bootEl.classList.remove('error');
+        })
+        .catch(() => {
+          init();
           bootEl.classList.add('error');
           bootMsg.textContent = 'TRACKING LIBRARY UNAVAILABLE';
-          setTimeout(() => bootEl.classList.add('hidden'), 2200);
-        } else {
-          bootEl.classList.add('hidden');
-        }
-      }, 300);
+          setTimeout(() => bootEl.classList.add('hidden'), 2600);
+        });
 
     })();
   </script>
